@@ -126,18 +126,24 @@ function MutualSection({ parsed, resume, profileSkills }) {
   if (!parsed || parsed.error) return null
   const mutuals = []
 
-  // Check shared schools
+  // Check shared schools — find the best matching school name (not individual words)
   const userEdu = resume?.parsed?.education || []
   const contactEdu = parsed.education || []
-  for (const ce of contactEdu) {
+  const addedSchools = new Set()
+  const skipWords = new Set(['class', 'bachelor', 'master', 'degree', 'science', 'arts', 'expected', 'university', 'college', 'institute', 'school', 'the', 'and', 'of', 'at', 'in'])
+  outer: for (const ce of contactEdu) {
     for (const ue of userEdu) {
       const ceLower = ce.toLowerCase()
-      const ueLower = ue.toLowerCase()
-      const schoolWords = ueLower.split(/[\s,]+/).filter(w => w.length > 3)
-      for (const word of schoolWords) {
-        if (ceLower.includes(word) && !['class', 'bachelor', 'master', 'degree', 'science', 'arts', 'expected'].includes(word)) {
-          mutuals.push({ type: 'school', icon: '🎓', label: `You both have ties to "${word.charAt(0).toUpperCase() + word.slice(1)}"`, color: '#93c5fd', bg: 'rgba(99,179,255,0.1)', border: 'rgba(99,179,255,0.25)' })
-          break
+      // Extract the school name as the first meaningful segment (before comma or newline)
+      const schoolName = ue.split(/[,\n]/)[0].trim()
+      const schoolNameLower = schoolName.toLowerCase()
+      // Find the most distinctive word in the school name to use as the label
+      const words = schoolNameLower.split(/\s+/).filter(w => w.length > 3 && !skipWords.has(w))
+      for (const word of words) {
+        if (ceLower.includes(word) && !addedSchools.has(schoolName)) {
+          addedSchools.add(schoolName)
+          mutuals.push({ type: 'school', icon: '🎓', label: `You both have ties to "${schoolName}"`, color: '#93c5fd', bg: 'rgba(99,179,255,0.1)', border: 'rgba(99,179,255,0.25)' })
+          break outer
         }
       }
     }
