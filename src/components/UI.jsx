@@ -236,6 +236,147 @@ export function Textarea({ label, value, onChange, placeholder, minHeight = 80 }
   )
 }
 
+// --- Rich Text Notes Editor ---
+const TEXT_COLORS = ['#fff', '#f87171', '#fb923c', '#fbbf24', '#4ade80', '#38bdf8', '#a78bfa', '#f472b6']
+const HIGHLIGHT_COLORS = ['transparent', 'rgba(251,191,36,0.35)', 'rgba(74,222,128,0.3)', 'rgba(56,189,248,0.3)', 'rgba(167,139,250,0.35)', 'rgba(248,113,113,0.3)']
+
+export function RichNotes({ value, onChange, placeholder, minHeight = 120 }) {
+  const ref = React.useRef(null)
+  const [showColors, setShowColors] = React.useState(false)
+  const [showHighlights, setShowHighlights] = React.useState(false)
+  const savedRange = React.useRef(null)
+
+  React.useEffect(() => {
+    if (ref.current && ref.current.innerHTML !== value) {
+      ref.current.innerHTML = value || ''
+    }
+  }, [])
+
+  function saveRange() {
+    const sel = window.getSelection()
+    if (sel && sel.rangeCount > 0) savedRange.current = sel.getRangeAt(0).cloneRange()
+  }
+
+  function restoreRange() {
+    if (!savedRange.current) return
+    const sel = window.getSelection()
+    sel.removeAllRanges()
+    sel.addRange(savedRange.current)
+  }
+
+  function exec(cmd, val = null) {
+    restoreRange()
+    document.execCommand(cmd, false, val)
+    ref.current?.focus()
+    onChange(ref.current?.innerHTML || '')
+  }
+
+  function handleColor(color) {
+    exec('foreColor', color)
+    setShowColors(false)
+  }
+
+  function handleHighlight(color) {
+    if (color === 'transparent') exec('hiliteColor', 'transparent')
+    else exec('hiliteColor', color)
+    setShowHighlights(false)
+  }
+
+  const btnStyle = (active) => ({
+    background: active ? 'var(--accent)' : 'var(--surface-3)',
+    color: active ? '#fff' : 'var(--text-secondary)',
+    border: '1px solid var(--border)',
+    borderRadius: 6,
+    padding: '3px 8px',
+    fontSize: 12,
+    fontWeight: 700,
+    cursor: 'pointer',
+    fontFamily: 'var(--font-sans)',
+    lineHeight: 1.4,
+  })
+
+  return (
+    <div style={{ marginBottom: 14 }}>
+      {/* Toolbar */}
+      <div style={{ display: 'flex', gap: 5, marginBottom: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+        <button style={btnStyle()} onMouseDown={e => { e.preventDefault(); saveRange(); exec('bold') }} title="Bold"><b>B</b></button>
+        <button style={{ ...btnStyle(), fontStyle: 'italic' }} onMouseDown={e => { e.preventDefault(); saveRange(); exec('italic') }} title="Italic"><i>I</i></button>
+        <button style={{ ...btnStyle(), textDecoration: 'underline' }} onMouseDown={e => { e.preventDefault(); saveRange(); exec('underline') }} title="Underline"><u>U</u></button>
+        <button style={{ ...btnStyle(), textDecoration: 'line-through' }} onMouseDown={e => { e.preventDefault(); saveRange(); exec('strikeThrough') }} title="Strikethrough">S</button>
+
+        <div style={{ width: 1, height: 18, background: 'var(--border)', margin: '0 2px' }} />
+
+        {/* Text color */}
+        <div style={{ position: 'relative' }}>
+          <button style={{ ...btnStyle(), display: 'flex', alignItems: 'center', gap: 4 }}
+            onMouseDown={e => { e.preventDefault(); saveRange(); setShowColors(v => !v); setShowHighlights(false) }}
+            title="Text color">
+            A <div style={{ width: 8, height: 3, background: 'var(--accent)', borderRadius: 2 }} />
+          </button>
+          {showColors && (
+            <div style={{ position: 'absolute', top: '110%', left: 0, background: 'var(--surface-2)', border: '1px solid var(--border-strong)', borderRadius: 10, padding: 8, display: 'flex', gap: 5, zIndex: 50, boxShadow: 'var(--shadow-lg)' }}>
+              {TEXT_COLORS.map(c => (
+                <button key={c} onMouseDown={e => { e.preventDefault(); handleColor(c) }}
+                  style={{ width: 18, height: 18, borderRadius: '50%', background: c, border: c === '#fff' ? '1px solid var(--border-strong)' : 'none', cursor: 'pointer', padding: 0 }} />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Highlight */}
+        <div style={{ position: 'relative' }}>
+          <button style={{ ...btnStyle(), display: 'flex', alignItems: 'center', gap: 4 }}
+            onMouseDown={e => { e.preventDefault(); saveRange(); setShowHighlights(v => !v); setShowColors(false) }}
+            title="Highlight">
+            ✦ <div style={{ width: 8, height: 8, background: 'rgba(251,191,36,0.5)', borderRadius: 2 }} />
+          </button>
+          {showHighlights && (
+            <div style={{ position: 'absolute', top: '110%', left: 0, background: 'var(--surface-2)', border: '1px solid var(--border-strong)', borderRadius: 10, padding: 8, display: 'flex', gap: 5, zIndex: 50, boxShadow: 'var(--shadow-lg)' }}>
+              {HIGHLIGHT_COLORS.map((c, i) => (
+                <button key={i} onMouseDown={e => { e.preventDefault(); handleHighlight(c) }}
+                  style={{ width: 18, height: 18, borderRadius: 4, background: c === 'transparent' ? 'var(--surface-3)' : c, border: '1px solid var(--border-strong)', cursor: 'pointer', padding: 0, fontSize: 10, color: 'var(--text-tertiary)' }}>
+                  {c === 'transparent' ? '✕' : ''}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div style={{ width: 1, height: 18, background: 'var(--border)', margin: '0 2px' }} />
+        <button style={btnStyle()} onMouseDown={e => { e.preventDefault(); saveRange(); exec('insertUnorderedList') }} title="Bullet list">• list</button>
+      </div>
+
+      {/* Editor */}
+      <div
+        ref={ref}
+        contentEditable
+        suppressContentEditableWarning
+        onInput={() => onChange(ref.current?.innerHTML || '')}
+        onMouseUp={saveRange}
+        onKeyUp={saveRange}
+        data-placeholder={placeholder}
+        style={{
+          minHeight,
+          background: 'rgba(255,255,255,0.04)',
+          color: 'var(--text-primary)',
+          border: '1px solid var(--border-strong)',
+          borderRadius: 'var(--radius-md)',
+          padding: '10px 14px',
+          fontSize: 14,
+          outline: 'none',
+          fontFamily: 'var(--font-sans)',
+          lineHeight: 1.7,
+          cursor: 'text',
+          wordBreak: 'break-word',
+        }}
+      />
+      <style>{`
+        [contenteditable]:empty:before { content: attr(data-placeholder); color: var(--text-tertiary); pointer-events: none; }
+      `}</style>
+    </div>
+  )
+}
+
 // --- Notice ---
 export function Notice({ children, variant = 'muted', style = {} }) {
   const styles = {

@@ -131,12 +131,12 @@ function TodoList({ todos, onToggle, onDelete }) {
 }
 
 // ─── Skills Input ──────────────────────────────────────────────────────────────
-function SkillsInput({ skills, onChange }) {
+function SkillsInput({ skills, onChange, onPendingChange }) {
   const [input, setInput] = useState('')
   function add() {
     const t = input.trim()
     if (t && !skills.includes(t)) onChange([...skills, t])
-    setInput('')
+    setInput(''); if (onPendingChange) onPendingChange('')
   }
   function remove(s) { onChange(skills.filter(x => x !== s)) }
   return (
@@ -150,7 +150,7 @@ function SkillsInput({ skills, onChange }) {
         ))}
       </div>
       <div style={{ display: 'flex', gap: 8, marginTop: skills.length ? 8 : 0 }}>
-        <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); add() } }}
+        <input value={input} onChange={e => { setInput(e.target.value); if (onPendingChange) onPendingChange(e.target.value) }} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); add() } }}
           placeholder="Add a skill and press Enter..."
           style={{ flex: 1, background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '8px 12px', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)' }} />
         {input.trim() && (
@@ -549,6 +549,7 @@ function EditProfileModal({ profile, onSave, onClose }) {
   const [major, setMajor] = useState(profile.major || '')
   const [goals, setGoals] = useState(profile.goals || '')
   const [skills, setSkills] = useState(profile.skills || [])
+  const [pendingSkill, setPendingSkill] = useState('')
 
   const inp = { width: '100%', background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '9px 12px', fontSize: 14, outline: 'none', fontFamily: 'var(--font-sans)', marginBottom: 16 }
 
@@ -567,11 +568,13 @@ function EditProfileModal({ profile, onSave, onClose }) {
       <label style={{ display: 'block', fontSize: 11, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Goal</label>
       <textarea value={goals} onChange={e => setGoals(e.target.value)} rows={3} style={{ ...inp, resize: 'vertical', lineHeight: 1.6 }} />
       <label style={{ display: 'block', fontSize: 11, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Skills</label>
-      <SkillsInput skills={skills} onChange={setSkills} />
+      <SkillsInput skills={skills} onChange={setSkills} onPendingChange={setPendingSkill} />
       <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 20 }}>
         <button onClick={onClose} style={{ background: 'var(--surface-3)', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 18px', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Cancel</button>
-        <button onClick={() => onSave({ ...profile, name: name.trim(), school: school.trim(), major: major.trim(), goals: goals.trim(), skills })}
-          style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>Save</button>
+        <button onClick={() => {
+          const finalSkills = pendingSkill.trim() && !skills.includes(pendingSkill.trim()) ? [...skills, pendingSkill.trim()] : skills
+          onSave({ ...profile, name: name.trim(), school: school.trim(), major: major.trim(), goals: goals.trim(), skills: finalSkills })
+        }} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>Save</button>
       </div>
     </div>
   )

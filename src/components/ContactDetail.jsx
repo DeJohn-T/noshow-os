@@ -1,6 +1,6 @@
 // components/ContactDetail.jsx
 import React, { useState, useRef } from 'react'
-import { Avatar, StatusBadge, Button, Input, Textarea, Tabs, Notice, Spinner, AIOutput, SectionLabel, Chip } from './UI'
+import { Avatar, StatusBadge, Button, Input, Textarea, RichNotes, Tabs, Notice, Spinner, AIOutput, SectionLabel, Chip } from './UI'
 import { parseLinkedInPDF, generateBrief, generateFollowUp, callClaude } from '../lib/ai'
 import { extractTextFromPDF } from '../lib/pdfParser'
 import { addDays } from '../lib/utils'
@@ -241,9 +241,10 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
   const chatBottomRef = useRef(null)
 
   const upd = (k, v) => setC(p => ({ ...p, [k]: v }))
-  function saveAll(overrides = {}) {
+  function saveAll(overrides = {}, close = false) {
     const updated = { ...c, linkedinUrl, parsedProfile: parsed, brief, followUpText: fuText, pdfName, ...overrides }
     onUpdate(updated)
+    if (close) onClose()
   }
 
   async function handlePDFFile(file) {
@@ -419,11 +420,11 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
           </div>
 
           {/* Notes */}
-          <div style={{ background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px', marginBottom: 16 }}>
+          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px', marginBottom: 16 }}>
             <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
               <span>📝</span> Notes from Chat
             </div>
-            <Textarea value={c.notes} onChange={v => upd('notes', v)} placeholder="Key takeaways, action items, things they mentioned..." minHeight={100} />
+            <RichNotes value={c.notes} onChange={v => upd('notes', v)} placeholder="Key takeaways, action items, things they mentioned..." minHeight={100} />
           </div>
 
           {/* Actions */}
@@ -431,7 +432,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
             <Button variant="danger" size="sm" onClick={() => onDelete(c.id)}>Delete contact</Button>
             <div style={{ display: 'flex', gap: 8 }}>
               <Button size="sm" onClick={onClose}>Close</Button>
-              <Button variant="primary" size="sm" onClick={() => saveAll()}>Save</Button>
+              <Button variant="primary" size="sm" onClick={() => saveAll({}, true)}>Save</Button>
             </div>
           </div>
         </div>
