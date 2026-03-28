@@ -5,7 +5,7 @@ import { ContactDetail } from './components/ContactDetail'
 import { Onboarding } from './components/Onboarding'
 import { JobSearch } from './components/JobSearch'
 import { Avatar, StatusBadge, GlobalStyles, Spinner } from './components/UI'
-import { loadContacts, saveContacts, loadProfile, saveProfile, loadQuotes, saveQuotes, loadTodos, saveTodos, loadBrainDump, saveBrainDump, loadUsers, saveUsers, getCurrentUser, setCurrentUser, clearCurrentUser } from './lib/storage'
+import { loadContacts, saveContacts, loadProfile, saveProfile, loadQuotes, saveQuotes, loadTodos, saveTodos, loadBrainDump, saveBrainDump, loadUsers, saveUsers, getCurrentUser, setCurrentUser, clearCurrentUser, loadScheduledTasks, saveScheduledTasks } from './lib/storage'
 import { generateQuotes, analyzeResume } from './lib/ai'
 import { extractTextFromPDF } from './lib/pdfParser'
 import { parseResumePDF } from './lib/ai'
@@ -295,7 +295,7 @@ function DebriefModal({ contact, onSave, onClose }) {
           </button>
         ))}
       </div>
-      <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="Any quick notes while it's fresh..." rows={3}
+      <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="Any quick notes while it's fresh... (saved to contact overview)" rows={3}
         style={{ width: '100%', background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 10, padding: '10px 12px', fontSize: 13, resize: 'none', fontFamily: 'var(--font-sans)', lineHeight: 1.6, outline: 'none', boxSizing: 'border-box', marginBottom: 16 }} />
       <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginBottom: 8, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Schedule follow-up?</div>
       <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
@@ -724,6 +724,79 @@ function ScheduleModal({ contacts, onSchedule, onClose, prefillDate }) {
   )
 }
 
+// ─── Scheduled Tasks Panel ───────────────────────────────────────────────────────
+function ScheduledTasksPanel({ tasks, contacts, onAdd, onToggle, onDelete }) {
+  const [text, setText] = useState('')
+  const [date, setDate] = useState('')
+  const [forWho, setForWho] = useState('')
+
+  function handleAdd() {
+    if (!text.trim()) return
+    onAdd({ text: text.trim(), date, forWho })
+    setText(''); setDate(''); setForWho('')
+  }
+
+  const sorted = [...tasks].sort((a, b) => {
+    if (!a.date && !b.date) return 0
+    if (!a.date) return 1
+    if (!b.date) return -1
+    return new Date(a.date) - new Date(b.date)
+  })
+  const todayStr = new Date().toISOString().split('T')[0]
+
+  return (
+    <div style={{ marginTop: 24 }}>
+      <div style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-display)', marginBottom: 12 }}>📋 Scheduled Tasks</div>
+
+      {/* Add task form */}
+      <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 16px', marginBottom: 14 }}>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+          <input value={text} onChange={e => setText(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAdd()}
+            placeholder="Task description..."
+            style={{ flex: 2, minWidth: 160, background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '8px 12px', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)' }} />
+          <input type="date" value={date} onChange={e => setDate(e.target.value)}
+            style={{ flex: 1, minWidth: 130, background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '8px 12px', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)' }} />
+          <select value={forWho} onChange={e => setForWho(e.target.value)}
+            style={{ flex: 1, minWidth: 130, background: 'var(--surface-3)', color: forWho ? 'var(--text-primary)' : 'var(--text-tertiary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '8px 12px', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)' }}>
+            <option value="">For who? (optional)</option>
+            {contacts.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+          </select>
+          <button onClick={handleAdd} disabled={!text.trim()}
+            style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 16px', fontSize: 13, fontWeight: 600, cursor: text.trim() ? 'pointer' : 'not-allowed', opacity: text.trim() ? 1 : 0.4, fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap' }}>
+            + Add
+          </button>
+        </div>
+      </div>
+
+      {sorted.length === 0 ? (
+        <div style={{ fontSize: 13, color: 'var(--text-tertiary)', textAlign: 'center', padding: '20px 0' }}>No scheduled tasks yet</div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {sorted.map(task => {
+            const overdue = task.date && task.date < todayStr && !task.done
+            const dateLabel = task.date ? new Date(task.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''
+            return (
+              <div key={task.id} style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'var(--surface-2)', border: `1px solid ${overdue ? 'rgba(248,113,113,0.25)' : 'var(--border)'}`, borderRadius: 12, padding: '12px 16px', opacity: task.done ? 0.5 : 1, transition: 'opacity 0.2s' }}>
+                <button onClick={() => onToggle(task.id)} style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${task.done ? 'var(--accent)' : 'var(--border-strong)'}`, background: task.done ? 'var(--accent)' : 'transparent', cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>
+                  {task.done && <span style={{ color: '#fff', fontSize: 11, lineHeight: 1 }}>✓</span>}
+                </button>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', textDecoration: task.done ? 'line-through' : 'none' }}>{task.text}</div>
+                  <div style={{ display: 'flex', gap: 8, marginTop: 3, flexWrap: 'wrap' }}>
+                    {task.forWho && <span style={{ fontSize: 11, color: 'var(--accent)' }}>👤 {task.forWho}</span>}
+                    {dateLabel && <span style={{ fontSize: 11, color: overdue ? '#f87171' : 'var(--text-tertiary)' }}>📅 {dateLabel}{overdue ? ' · overdue' : ''}</span>}
+                  </div>
+                </div>
+                <button onClick={() => onDelete(task.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 16, lineHeight: 1, padding: 4 }}>×</button>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Resume Tab ──────────────────────────────────────────────────────────────────
 const RESUME_TIPS = [
   { icon: '📏', title: 'Keep it to one page', body: 'For students and recent grads, one page is the standard. Recruiters spend ~7 seconds on a first scan.' },
@@ -1062,14 +1135,24 @@ export default function App() {
   const [debriefContact, setDebriefContact] = useState(null)
   const [showBrainDump, setShowBrainDump] = useState(false)
 
+  const [scheduledTasks, setScheduledTasks] = useState([])
+
   function handleLogin(username) { setUser(username); setProfileLoaded(false) }
   function handleLogout() { clearCurrentUser(); setUser(null); setProfile(null); setProfileLoaded(false); setContacts([]) }
 
-  useEffect(() => { if (currentUser) setTodos(loadTodos(currentUser)) }, [currentUser])
+  useEffect(() => {
+    if (currentUser) {
+      setTodos(loadTodos(currentUser))
+      setScheduledTasks(loadScheduledTasks(currentUser))
+    }
+  }, [currentUser])
   function updateTodos(t) { setTodos(t); saveTodos(currentUser, t) }
   function addTodo(text) { updateTodos([...todos, { id: Date.now(), text, done: false }]) }
   function toggleTodo(id) { updateTodos(todos.map(t => t.id === id ? { ...t, done: !t.done } : t)) }
   function deleteTodo(id) { updateTodos(todos.filter(t => t.id !== id)) }
+  function addScheduledTask(task) { const updated = [...scheduledTasks, { id: Date.now(), ...task, done: false }]; setScheduledTasks(updated); saveScheduledTasks(currentUser, updated) }
+  function toggleScheduledTask(id) { const updated = scheduledTasks.map(t => t.id === id ? { ...t, done: !t.done } : t); setScheduledTasks(updated); saveScheduledTasks(currentUser, updated) }
+  function deleteScheduledTask(id) { const updated = scheduledTasks.filter(t => t.id !== id); setScheduledTasks(updated); saveScheduledTasks(currentUser, updated) }
 
   useEffect(() => {
     if (!currentUser) return
@@ -1166,10 +1249,10 @@ export default function App() {
     : contacts
 
   const STAT_CARDS = [
-    { label: 'Total', value: stats.total, icon: '🤝', accent: '#7c6fff', onClick: () => setTab('contacts') },
-    { label: 'Scheduled', value: stats.scheduled, icon: '📅', accent: '#4ade80', onClick: () => setTab('upcoming'), badge: upcoming.length > 0 ? { text: `${upcoming.length} upcoming`, color: '#4ade80' } : null },
-    { label: 'Completed', value: stats.completed, icon: '✓', accent: '#fbbf24', onClick: () => setTab('contacts') },
-    { label: 'Followed Up', value: stats.followedUp, icon: '✉', accent: '#f472b6', onClick: () => setTab('contacts') },
+    { label: 'Total', value: stats.total, icon: '🤝', accent: '#7c6fff', onClick: () => setTab('contacts'), contactList: contacts },
+    { label: 'Scheduled', value: stats.scheduled, icon: '📅', accent: '#4ade80', onClick: () => setTab('upcoming'), badge: upcoming.length > 0 ? { text: `${upcoming.length} upcoming`, color: '#4ade80' } : null, contactList: contacts.filter(x => x.status === 'scheduled') },
+    { label: 'Completed', value: stats.completed, icon: '✓', accent: '#fbbf24', onClick: () => setTab('contacts'), contactList: contacts.filter(x => x.status === 'completed') },
+    { label: 'Followed Up', value: stats.followedUp, icon: '✉', accent: '#f472b6', onClick: () => setTab('contacts'), contactList: contacts.filter(x => x.status === 'followed up') },
   ]
 
   const modalBg = { position: 'fixed', inset: 0, background: 'rgba(8,16,24,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', zIndex: 100, backdropFilter: 'blur(12px)' }
@@ -1253,21 +1336,44 @@ export default function App() {
 
             {/* ── Stat cards ─── */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: '1.25rem' }}>
-              {STAT_CARDS.map(({ label, value, icon, accent, onClick, badge }) => (
+              {STAT_CARDS.map(({ label, value, icon, accent, onClick, badge, contactList }) => {
+                // Group contacts by company for avatar display
+                const grouped = []
+                const seen = {}
+                ;(contactList || []).forEach(c => {
+                  const co = (c.company || '').toLowerCase().trim()
+                  if (co && seen[co]) { seen[co].count++ }
+                  else if (co) { const entry = { contact: c, count: 1 }; seen[co] = entry; grouped.push(entry) }
+                  else { grouped.push({ contact: c, count: 1 }) }
+                })
+                const visibleGroups = grouped.slice(0, 5)
+                return (
                 <div key={label} onClick={onClick} className="fade-in" style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 20, padding: '1.5rem', cursor: 'pointer', position: 'relative', overflow: 'hidden', transition: 'border-color 0.2s, transform 0.15s' }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = accent + '55'; e.currentTarget.style.transform = 'translateY(-2px)' }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'none' }}>
                   <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: `radial-gradient(circle, ${accent}20 0%, transparent 70%)`, pointerEvents: 'none' }} />
                   <div style={{ fontSize: 11, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>{label}</div>
                   <div style={{ fontSize: 48, fontWeight: 800, fontFamily: 'var(--font-display)', lineHeight: 1 }}>{value}</div>
-                  <div style={{ marginTop: 10, fontSize: 20 }}>{icon}</div>
+                  {visibleGroups.length > 0 ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 10, flexWrap: 'wrap' }}>
+                      {visibleGroups.map(({ contact: ct, count }, i) => (
+                        <div key={i} style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+                          <Avatar name={ct.name} company={ct.company} size={24} />
+                          {count > 1 && <span style={{ position: 'absolute', bottom: -2, right: -6, background: accent, color: '#000', fontSize: 8, fontWeight: 800, borderRadius: 100, padding: '1px 4px', lineHeight: 1.4 }}>×{count}</span>}
+                        </div>
+                      ))}
+                      {grouped.length > 5 && <span style={{ fontSize: 10, color: 'var(--text-tertiary)' }}>+{grouped.length - 5}</span>}
+                    </div>
+                  ) : (
+                    <div style={{ marginTop: 10, fontSize: 20 }}>{icon}</div>
+                  )}
                   {badge && (
                     <div style={{ position: 'absolute', top: 10, right: 10, background: badge.color, color: '#000', fontSize: 9, fontWeight: 700, padding: '3px 7px', borderRadius: 100, whiteSpace: 'nowrap' }}>
                       {badge.text}
                     </div>
                   )}
                 </div>
-              ))}
+              )})}
             </div>
 
             {/* ── Streak + Score ─── */}
@@ -1519,6 +1625,41 @@ export default function App() {
             <div style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-display)', marginBottom: 10 }}>Upcoming Meetings</div>
             <UpcomingList contacts={contacts} onSelect={setDetail} onSchedule={(c) => { setCalendarDate(''); setShowSchedule(true) }} />
           </div>
+
+          {/* ── Follow-up Reminders ── */}
+          {(() => {
+            const reminders = contacts.filter(c => c.followUpDate).sort((a, b) => new Date(a.followUpDate) - new Date(b.followUpDate))
+            if (!reminders.length) return null
+            const todayStr2 = new Date().toISOString().split('T')[0]
+            return (
+              <div style={{ marginTop: 24 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-display)', marginBottom: 10 }}>🔔 Follow-up Reminders</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {reminders.map(c => {
+                    const overdue = c.followUpDate < todayStr2
+                    const dateLabel = new Date(c.followUpDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                    return (
+                      <div key={c.id} onClick={() => setDetail(c)} style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'var(--surface-2)', border: `1px solid ${overdue ? 'rgba(248,113,113,0.3)' : 'var(--border)'}`, borderRadius: 12, padding: '12px 16px', cursor: 'pointer' }}>
+                        <Avatar name={c.name} company={c.company} size={32} />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 13, fontWeight: 600 }}>{c.name}</div>
+                          <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{c.role || ''}{c.company ? ` · ${c.company}` : ''}</div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: 12, fontWeight: 600, color: overdue ? '#f87171' : '#38bdf8' }}>{overdue ? 'Overdue' : 'Due'}</div>
+                          <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{dateLabel}</div>
+                        </div>
+                        {c.followUpNote && <div style={{ fontSize: 11, color: 'var(--text-secondary)', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>"{c.followUpNote}"</div>}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )
+          })()}
+
+          {/* ── Scheduled Tasks ── */}
+          <ScheduledTasksPanel tasks={scheduledTasks} contacts={contacts} onAdd={addScheduledTask} onToggle={toggleScheduledTask} onDelete={deleteScheduledTask} />
         </div>
       )}
 

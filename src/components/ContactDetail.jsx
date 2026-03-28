@@ -404,6 +404,19 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
             </div>
           </div>
 
+          {/* Debrief card */}
+          {c.debrief && (c.debrief.vibe || c.debrief.note) && (() => {
+            const vibeMap = { great: { label: '🔥 Crushed it', color: '#4ade80' }, okay: { label: '👍 Solid', color: '#fbbf24' }, awkward: { label: '😬 Awkward', color: '#f472b6' } }
+            const v = vibeMap[c.debrief.vibe]
+            return (
+              <div style={{ background: 'linear-gradient(135deg, rgba(139,127,255,0.08), rgba(139,127,255,0.03))', border: '1px solid rgba(139,127,255,0.2)', borderRadius: 14, padding: '14px 16px', marginBottom: 16 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#c4b8ff', marginBottom: 8 }}>☕ Post-chat debrief</div>
+                {v && <div style={{ fontSize: 13, fontWeight: 600, color: v.color, marginBottom: c.debrief.note ? 6 : 0 }}>{v.label}</div>}
+                {c.debrief.note && <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.6 }}>{c.debrief.note}</div>}
+              </div>
+            )
+          })()}
+
           {/* Schedule section */}
           <div style={{ background: 'linear-gradient(135deg, rgba(99,179,255,0.08), rgba(99,179,255,0.03))', border: '1px solid rgba(99,179,255,0.2)', borderRadius: 14, padding: '16px', marginBottom: 16 }}>
             <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#93c5fd', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -718,11 +731,15 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
                 )
               })}
             </div>
-            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 10 }}>
               <input type="date" value={c.followUpDate || ''} onChange={e => upd('followUpDate', e.target.value)}
                 style={{ flex: 1, background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 'var(--radius-md)', padding: '8px 12px', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)' }} />
-              <Button variant="primary" size="sm" onClick={() => { if (c.followUpDate) saveAll({ followUpDate: c.followUpDate }) }}>Set reminder</Button>
+              <Button variant="primary" size="sm" onClick={() => { if (c.followUpDate) saveAll({ followUpDate: c.followUpDate, followUpNote: c.followUpNote }) }}>Set reminder</Button>
             </div>
+            <textarea value={c.followUpNote || ''} onChange={e => upd('followUpNote', e.target.value)}
+              placeholder="Any notes for this follow-up? (shows up in your reminders)"
+              rows={2}
+              style={{ width: '100%', background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 'var(--radius-md)', padding: '8px 12px', fontSize: 13, resize: 'none', outline: 'none', fontFamily: 'var(--font-sans)', lineHeight: 1.6, boxSizing: 'border-box' }} />
           </div>
         </div>
       )}

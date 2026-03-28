@@ -74,3 +74,11 @@ export function saveBrainDump(user, notes) {
   try { localStorage.setItem(k(user, 'braindump_v1'), JSON.stringify(notes)) }
   catch (e) { console.error(e) }
 }
+export function loadScheduledTasks(user) {
+  try { return JSON.parse(localStorage.getItem(k(user, 'scheduled_tasks_v1')) || '[]') }
+  catch { return [] }
+}
+export function saveScheduledTasks(user, tasks) {
+  try { localStorage.setItem(k(user, 'scheduled_tasks_v1'), JSON.stringify(tasks)) }
+  catch (e) { console.error(e) }
+}
