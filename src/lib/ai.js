@@ -1,5 +1,9 @@
 // lib/ai.js
-const API = '/api/anthropic/v1/messages'
+// In dev, Vite proxies /api/anthropic/v1/messages → Anthropic directly
+// In production (Vercel), /api/anthropic is a serverless function
+const API = import.meta.env.DEV
+  ? '/api/anthropic/v1/messages'
+  : '/api/anthropic'
 
 export async function callClaude(system, user, maxTokens = 1000) {
   const res = await fetch(API, {
