@@ -1465,6 +1465,54 @@ export default function App() {
                   </div>}
               </div>
 
+              {/* Follow-up Reminders */}
+              {(() => {
+                const reminders = contacts
+                  .filter(c => c.followUpDate)
+                  .sort((a, b) => new Date(a.followUpDate) - new Date(b.followUpDate))
+                if (reminders.length === 0) return null
+                const now = new Date()
+                return (
+                  <div style={{ gridColumn: '1 / -1', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 20, padding: '1.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-display)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-secondary)' }}>🔔 Follow-up Reminders</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span style={{ fontSize: 11, background: 'rgba(99,179,255,0.12)', color: '#93c5fd', border: '1px solid rgba(99,179,255,0.25)', borderRadius: 100, padding: '2px 8px', fontWeight: 600 }}>{reminders.length} scheduled</span>
+                        <button onClick={() => setTab('upcoming')} style={{ fontSize: 12, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>View all →</button>
+                      </div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 8 }}>
+                      {reminders.slice(0, 6).map(c => {
+                        const dt = new Date(c.followUpDate + 'T12:00:00')
+                        const isOverdue = dt < now
+                        const isToday = dt.toDateString() === now.toDateString()
+                        const label = isOverdue ? 'Overdue' : isToday ? 'Today' : dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+                        return (
+                          <div key={c.id} onClick={() => setDetail(c)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.8rem 1rem', background: isOverdue ? 'rgba(239,68,68,0.06)' : 'var(--surface-3)', borderRadius: 12, cursor: 'pointer', border: `1px solid ${isOverdue ? 'rgba(239,68,68,0.2)' : isToday ? 'rgba(99,179,255,0.25)' : 'var(--border)'}`, transition: 'border-color 0.15s' }}
+                            onMouseEnter={e => e.currentTarget.style.borderColor = isOverdue ? 'rgba(239,68,68,0.4)' : 'var(--border-strong)'}
+                            onMouseLeave={e => e.currentTarget.style.borderColor = isOverdue ? 'rgba(239,68,68,0.2)' : isToday ? 'rgba(99,179,255,0.25)' : 'var(--border)'}
+                          >
+                            <div style={{ width: 38, height: 38, borderRadius: 10, background: isOverdue ? 'rgba(239,68,68,0.12)' : isToday ? 'rgba(99,179,255,0.12)' : 'var(--surface-2)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: `1px solid ${isOverdue ? 'rgba(239,68,68,0.2)' : isToday ? 'rgba(99,179,255,0.2)' : 'var(--border)'}` }}>
+                              {isOverdue
+                                ? <span style={{ fontSize: 16 }}>⚠️</span>
+                                : isToday
+                                ? <span style={{ fontSize: 16 }}>🔔</span>
+                                : <><span style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-display)', lineHeight: 1, color: '#93c5fd' }}>{dt.getDate()}</span><span style={{ fontSize: 9, color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>{dt.toLocaleString('en-US', { month: 'short' })}</span></>}
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontWeight: 600, fontSize: 13, fontFamily: 'var(--font-display)' }}>{c.name}</div>
+                              <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{[c.role, c.company].filter(Boolean).join(' · ') || 'No role set'}</div>
+                              {c.followUpNote && <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontStyle: 'italic' }}>"{c.followUpNote}"</div>}
+                            </div>
+                            <div style={{ fontSize: 11, fontWeight: 600, flexShrink: 0, color: isOverdue ? '#f87171' : isToday ? '#93c5fd' : 'var(--text-tertiary)', textAlign: 'right' }}>{label}</div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })()}
+
               {/* To-do list */}
               <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 20, padding: '1.5rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
