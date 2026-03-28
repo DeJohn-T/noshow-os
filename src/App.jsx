@@ -1121,6 +1121,7 @@ export default function App() {
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [contacts, setContacts] = useState([])
   const [tab, setTab] = useState('home')
+  useEffect(() => { window.scrollTo(0, 0) }, [tab])
   const [showAdd, setShowAdd] = useState(false)
   const [showEdit, setShowEdit] = useState(false)
   const [showSchedule, setShowSchedule] = useState(false)
