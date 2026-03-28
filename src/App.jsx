@@ -131,14 +131,44 @@ function TodoList({ todos, onToggle, onDelete }) {
 }
 
 // ─── Skills Input ──────────────────────────────────────────────────────────────
+const SKILL_SUGGESTIONS = [
+  'Python','JavaScript','TypeScript','React','Node.js','SQL','Java','C++','C#','Go','Rust','Swift','Kotlin','R','MATLAB',
+  'HTML','CSS','Tailwind CSS','Next.js','Vue.js','Angular','Flask','Django','FastAPI','Spring Boot','GraphQL','REST APIs',
+  'AWS','Google Cloud','Azure','Docker','Kubernetes','Terraform','CI/CD','Git','GitHub','Linux','Bash',
+  'Machine Learning','Deep Learning','Data Analysis','Data Visualization','Pandas','NumPy','TensorFlow','PyTorch','Scikit-learn',
+  'Excel','PowerPoint','Google Sheets','Tableau','Power BI','Figma','Adobe XD','Photoshop','Illustrator','Canva',
+  'Public Speaking','Leadership','Project Management','Agile','Scrum','Product Management','UX Research','User Testing',
+  'Financial Modeling','Accounting','Valuation','Bloomberg Terminal','Pitch Decks','Market Research','CRM','Salesforce',
+  'Content Writing','Copywriting','SEO','Social Media','Email Marketing','Google Analytics','A/B Testing','Growth Hacking',
+  'Spanish','French','Mandarin','Arabic','German','Portuguese','Japanese','Korean',
+  'Research','Data Collection','Qualitative Analysis','Quantitative Analysis','Survey Design','Statistics',
+  'Video Editing','Podcast Production','Motion Graphics','Photography','3D Modeling',
+]
+
 function SkillsInput({ skills, onChange, onPendingChange }) {
   const [input, setInput] = useState('')
-  function add() {
-    const t = input.trim()
+  const [activeIdx, setActiveIdx] = useState(0)
+
+  const suggestions = input.trim().length > 0
+    ? SKILL_SUGGESTIONS.filter(s => s.toLowerCase().startsWith(input.toLowerCase()) && !skills.includes(s)).slice(0, 6)
+    : []
+
+  function addSkill(val) {
+    const t = (val || input).trim()
     if (t && !skills.includes(t)) onChange([...skills, t])
-    setInput(''); if (onPendingChange) onPendingChange('')
+    setInput(''); setActiveIdx(0); if (onPendingChange) onPendingChange('')
   }
   function remove(s) { onChange(skills.filter(x => x !== s)) }
+
+  function handleKey(e) {
+    if (suggestions.length > 0) {
+      if (e.key === 'ArrowDown') { e.preventDefault(); setActiveIdx(i => Math.min(i + 1, suggestions.length - 1)); return }
+      if (e.key === 'ArrowUp') { e.preventDefault(); setActiveIdx(i => Math.max(i - 1, 0)); return }
+      if (e.key === 'Tab') { e.preventDefault(); addSkill(suggestions[activeIdx]); return }
+    }
+    if (e.key === 'Enter') { e.preventDefault(); addSkill(suggestions[activeIdx] || input) }
+  }
+
   return (
     <div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: skills.length ? 10 : 0 }}>
@@ -149,12 +179,30 @@ function SkillsInput({ skills, onChange, onPendingChange }) {
           </span>
         ))}
       </div>
-      <div style={{ display: 'flex', gap: 8, marginTop: skills.length ? 8 : 0 }}>
-        <input value={input} onChange={e => { setInput(e.target.value); if (onPendingChange) onPendingChange(e.target.value) }} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); add() } }}
-          placeholder="Add a skill and press Enter..."
-          style={{ flex: 1, background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '8px 12px', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)' }} />
+      <div style={{ position: 'relative', display: 'flex', gap: 8, marginTop: skills.length ? 8 : 0 }}>
+        <div style={{ flex: 1, position: 'relative' }}>
+          <input
+            value={input}
+            onChange={e => { setInput(e.target.value); setActiveIdx(0); if (onPendingChange) onPendingChange(e.target.value) }}
+            onKeyDown={handleKey}
+            onBlur={() => setTimeout(() => setInput(i => i), 150)}
+            placeholder="Type a skill — suggestions appear automatically..."
+            style={{ width: '100%', background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '8px 12px', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)', boxSizing: 'border-box' }}
+          />
+          {suggestions.length > 0 && (
+            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, background: 'var(--surface-2)', border: '1px solid var(--border-strong)', borderRadius: 10, overflow: 'hidden', zIndex: 50, boxShadow: 'var(--shadow-lg)' }}>
+              {suggestions.map((s, i) => (
+                <div key={s} onMouseDown={() => addSkill(s)}
+                  style={{ padding: '8px 14px', fontSize: 13, cursor: 'pointer', background: i === activeIdx ? 'var(--accent-dim)' : 'transparent', color: i === activeIdx ? '#c4bfff' : 'var(--text-primary)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  {s}
+                  {i === activeIdx && <span style={{ fontSize: 10, color: 'var(--text-tertiary)' }}>Tab or Enter</span>}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
         {input.trim() && (
-          <button onClick={add} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>Add</button>
+          <button onClick={() => addSkill()} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)', flexShrink: 0 }}>Add</button>
         )}
       </div>
     </div>
