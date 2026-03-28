@@ -228,6 +228,10 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
   const [pdfDragging, setPdfDragging] = useState(false)
   const [pdfName, setPdfName] = useState(contact.pdfName || '')
   const [fuSaved, setFuSaved] = useState(false)
+  const [editingInfo, setEditingInfo] = useState(false)
+  const [editName, setEditName] = useState(contact.name || '')
+  const [editRole, setEditRole] = useState(contact.role || '')
+  const [editCompany, setEditCompany] = useState(contact.company || '')
   const fileInputRef = useRef(null)
 
   // Chatbot state
@@ -344,10 +348,32 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: '1.25rem' }}>
         <Avatar name={c.name} company={c.company} size={48} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-display)' }}>{c.name}</div>
-          <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 2 }}>{[c.role, c.company].filter(Boolean).join(' · ') || 'No role set'}</div>
-          {c.email && (
-            <a href={`mailto:${c.email}`} style={{ fontSize: 12, color: 'var(--accent)', marginTop: 2, display: 'block', textDecoration: 'none' }}>{c.email}</a>
+          {editingInfo ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <input value={editName} onChange={e => setEditName(e.target.value)} placeholder="Name" style={{ background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--accent)', borderRadius: 8, padding: '5px 10px', fontSize: 14, fontWeight: 700, outline: 'none', fontFamily: 'var(--font-display)', width: '100%', boxSizing: 'border-box' }} />
+              <div style={{ display: 'flex', gap: 6 }}>
+                <input value={editRole} onChange={e => setEditRole(e.target.value)} placeholder="Role" style={{ background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '5px 10px', fontSize: 12, outline: 'none', fontFamily: 'var(--font-sans)', flex: 1, boxSizing: 'border-box' }} />
+                <input value={editCompany} onChange={e => setEditCompany(e.target.value)} placeholder="Company" style={{ background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '5px 10px', fontSize: 12, outline: 'none', fontFamily: 'var(--font-sans)', flex: 1, boxSizing: 'border-box' }} />
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button onClick={() => {
+                  const updated = { ...c, name: editName.trim() || c.name, role: editRole.trim(), company: editCompany.trim() }
+                  setC(updated); onUpdate({ ...updated, linkedinUrl, parsedProfile: parsed, brief, followUpText: fuText, pdfName }); setEditingInfo(false)
+                }} style={{ fontSize: 12, padding: '4px 12px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: 'var(--font-sans)', fontWeight: 600 }}>Save</button>
+                <button onClick={() => { setEditName(c.name); setEditRole(c.role || ''); setEditCompany(c.company || ''); setEditingInfo(false) }} style={{ fontSize: 12, padding: '4px 12px', background: 'var(--surface-3)', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 6, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Cancel</button>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-display)' }}>{c.name}</div>
+                <button onClick={() => { setEditName(c.name); setEditRole(c.role || ''); setEditCompany(c.company || ''); setEditingInfo(true) }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 13, padding: 2, lineHeight: 1 }} title="Edit">✏️</button>
+              </div>
+              <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 2 }}>{[c.role, c.company].filter(Boolean).join(' · ') || 'No role set'}</div>
+              {c.email && (
+                <a href={`mailto:${c.email}`} style={{ fontSize: 12, color: 'var(--accent)', marginTop: 2, display: 'block', textDecoration: 'none' }}>{c.email}</a>
+              )}
+            </div>
           )}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
