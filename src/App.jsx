@@ -5,7 +5,7 @@ import { ContactDetail } from './components/ContactDetail'
 import { Onboarding } from './components/Onboarding'
 import { JobSearch } from './components/JobSearch'
 import { Avatar, StatusBadge, GlobalStyles, Spinner } from './components/UI'
-import { loadContacts, saveContacts, loadProfile, saveProfile, loadQuotes, saveQuotes, loadTodos, saveTodos, loadBrainDump, saveBrainDump, findUser, createUser, getCurrentUser, setCurrentUser, clearCurrentUser, loadScheduledTasks, saveScheduledTasks } from './lib/storage'
+import { loadContacts, saveContacts, loadProfile, saveProfile, loadQuotes, saveQuotes, loadTodos, saveTodos, loadBrainDump, saveBrainDump, loadUsers, saveUsers, getCurrentUser, setCurrentUser, clearCurrentUser, loadScheduledTasks, saveScheduledTasks } from './lib/storage'
 import { generateQuotes, analyzeResume } from './lib/ai'
 import { extractTextFromPDF } from './lib/pdfParser'
 import { parseResumePDF } from './lib/ai'
@@ -316,12 +316,8 @@ function DebriefModal({ contact, onSave, onClose }) {
 
 // ─── Brain Dump Panel ────────────────────────────────────────────────────────────
 function BrainDumpPanel({ onClose, user }) {
-  const [notes, setNotes] = useState([])
+  const [notes, setNotes] = useState(() => loadBrainDump(user))
   const [input, setInput] = useState('')
-
-  useEffect(() => {
-    loadBrainDump(user).then(n => setNotes(n || []))
-  }, [user])
 
   function add() {
     const t = input.trim()
@@ -1039,34 +1035,28 @@ function LoginScreen({ onLogin }) {
   const [username, setUsername] = useState('')
   const [pin, setPin] = useState('')
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
 
-  async function handleLogin() {
-    if (!username.trim() || !pin) { setError('Enter username and PIN.'); return }
-    setLoading(true); setError('')
-    try {
-      const user = await findUser(username)
-      if (!user) { setError('No account found. Sign up below.'); return }
-      if (user.pin !== pin) { setError('Incorrect PIN.'); return }
-      setCurrentUser(user.username, user.id)
-      onLogin(user.username)
-    } catch { setError('Something went wrong. Try again.') }
-    finally { setLoading(false) }
+  function handleLogin() {
+    const users = loadUsers()
+    const user = users.find(u => u.username.toLowerCase() === username.trim().toLowerCase())
+    if (!user) { setError('No account found. Sign up below.'); return }
+    if (user.pin !== pin) { setError('Incorrect PIN.'); return }
+    setCurrentUser(user.username)
+    onLogin(user.username)
   }
 
-  async function handleSignup() {
+  function handleSignup() {
     const trimmed = username.trim()
     if (!trimmed) { setError('Enter a username.'); return }
     if (pin.length < 4) { setError('PIN must be at least 4 digits.'); return }
-    setLoading(true); setError('')
-    try {
-      const existing = await findUser(trimmed)
-      if (existing) { setError('Username already taken.'); return }
-      const id = await createUser(trimmed, pin)
-      setCurrentUser(trimmed, id)
-      onLogin(trimmed)
-    } catch { setError('Something went wrong. Try again.') }
-    finally { setLoading(false) }
+    const users = loadUsers()
+    if (users.find(u => u.username.toLowerCase() === trimmed.toLowerCase())) {
+      setError('Username already taken.'); return
+    }
+    const updated = [...users, { username: trimmed, pin }]
+    saveUsers(updated)
+    setCurrentUser(trimmed)
+    onLogin(trimmed)
   }
 
   return (
@@ -1114,8 +1104,8 @@ function LoginScreen({ onLogin }) {
 
         {error && <div style={{ fontSize: 12, color: 'var(--red-text)', marginBottom: 12, padding: '8px 12px', background: 'var(--red-bg, rgba(239,68,68,0.08))', borderRadius: 8, border: '1px solid var(--red-border)' }}>{error}</div>}
 
-        <button onClick={mode === 'login' ? handleLogin : handleSignup} disabled={loading} style={{ width: '100%', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 10, padding: '12px', fontSize: 14, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-display)', opacity: loading ? 0.7 : 1 }}>
-          {loading ? '...' : mode === 'login' ? 'Log in →' : 'Create account →'}
+        <button onClick={mode === 'login' ? handleLogin : handleSignup} style={{ width: '100%', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 10, padding: '12px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>
+          {mode === 'login' ? 'Log in →' : 'Create account →'}
         </button>
       </div>
     </div>
@@ -1151,13 +1141,10 @@ export default function App() {
   function handleLogout() { clearCurrentUser(); setUser(null); setProfile(null); setProfileLoaded(false); setContacts([]) }
 
   useEffect(() => {
-    if (!currentUser) return
-    async function loadTaskData() {
-      const [t, st] = await Promise.all([loadTodos(currentUser), loadScheduledTasks(currentUser)])
-      setTodos(t)
-      setScheduledTasks(st)
+    if (currentUser) {
+      setTodos(loadTodos(currentUser))
+      setScheduledTasks(loadScheduledTasks(currentUser))
     }
-    loadTaskData()
   }, [currentUser])
   function updateTodos(t) { setTodos(t); saveTodos(currentUser, t) }
   function addTodo(text) { updateTodos([...todos, { id: Date.now(), text, done: false }]) }
@@ -1169,27 +1156,21 @@ export default function App() {
 
   useEffect(() => {
     if (!currentUser) return
-    async function loadUserData() {
-      const [p, c] = await Promise.all([loadProfile(currentUser), loadContacts(currentUser)])
-      setProfile(p)
-      setProfileLoaded(true)
-      setContacts(c)
-    }
-    loadUserData()
+    const p = loadProfile(currentUser)
+    setProfile(p)
+    setProfileLoaded(true)
+    setContacts(loadContacts(currentUser))
   }, [currentUser])
 
   useEffect(() => {
     if (!profile || !currentUser) return
-    async function loadOrFetchQuotes() {
-      const cached = await loadQuotes(currentUser)
-      if (cached && cached.length > 0) { setQuotes(cached); return }
-      setQuoteLoading(true)
-      generateQuotes(profile)
-        .then(q => { setQuotes(q); saveQuotes(currentUser, q) })
-        .catch(() => setQuotes(["Every connection is a door you didn't know was there."]))
-        .finally(() => setQuoteLoading(false))
-    }
-    loadOrFetchQuotes()
+    const cached = loadQuotes(currentUser)
+    if (cached && cached.length > 0) { setQuotes(cached); return }
+    setQuoteLoading(true)
+    generateQuotes(profile)
+      .then(q => { setQuotes(q); saveQuotes(currentUser, q) })
+      .catch(() => setQuotes(["Every connection is a door you didn't know was there."]))
+      .finally(() => setQuoteLoading(false))
   }, [profile, currentUser])
 
   // Rotate quotes every 45 minutes

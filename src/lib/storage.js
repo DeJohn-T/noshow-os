@@ -1,117 +1,84 @@
-// lib/storage.js — Supabase-backed storage
+// lib/storage.js
 
-import { supabase } from './supabase.js'
-
-// ─── Session (local only, no need to sync) ────────────────────────────────────
+// ─── User auth (global, not namespaced) ───────────────────────────────────────
+const USERS_KEY = 'nos_users_v1'
 const SESSION_KEY = 'nos_session_v1'
-const SESSION_ID_KEY = 'nos_session_id_v1'
 
+export function loadUsers() {
+  try { return JSON.parse(localStorage.getItem(USERS_KEY) || '[]') }
+  catch { return [] }
+}
+export function saveUsers(users) {
+  try { localStorage.setItem(USERS_KEY, JSON.stringify(users)) }
+  catch (e) { console.error(e) }
+}
 export function getCurrentUser() {
   try { return sessionStorage.getItem(SESSION_KEY) || null }
   catch { return null }
 }
-function getCurrentUserId() {
-  try { return sessionStorage.getItem(SESSION_ID_KEY) || null }
-  catch { return null }
-}
-export function setCurrentUser(username, id) {
-  try {
-    sessionStorage.setItem(SESSION_KEY, username)
-    if (id) sessionStorage.setItem(SESSION_ID_KEY, id)
-  } catch (e) { console.error(e) }
+export function setCurrentUser(username) {
+  try { sessionStorage.setItem(SESSION_KEY, username) }
+  catch (e) { console.error(e) }
 }
 export function clearCurrentUser() {
+  try { sessionStorage.removeItem(SESSION_KEY) }
+  catch (e) { console.error(e) }
+}
+
+// ─── Per-user namespaced keys ─────────────────────────────────────────────────
+function k(user, suffix) { return `nos_${user}_${suffix}` }
+
+export function loadContacts(user) {
+  try { return JSON.parse(localStorage.getItem(k(user, 'contacts_v2')) || '[]') }
+  catch { return [] }
+}
+export function saveContacts(user, c) {
+  try { localStorage.setItem(k(user, 'contacts_v2'), JSON.stringify(c)) }
+  catch (e) { console.error(e) }
+}
+export function loadProfile(user) {
   try {
-    sessionStorage.removeItem(SESSION_KEY)
-    sessionStorage.removeItem(SESSION_ID_KEY)
-  } catch (e) { console.error(e) }
+    const raw = localStorage.getItem(k(user, 'profile_v3'))
+    return raw ? JSON.parse(raw) : null
+  } catch { return null }
 }
-
-// ─── Users ────────────────────────────────────────────────────────────────────
-export async function findUser(username) {
-  const { data } = await supabase
-    .from('users')
-    .select('id, username, pin')
-    .ilike('username', username.trim())
-    .maybeSingle()
-  return data
+export function saveProfile(user, p) {
+  try { localStorage.setItem(k(user, 'profile_v3'), JSON.stringify(p)) }
+  catch (e) { console.error(e) }
 }
-
-export async function createUser(username, pin) {
-  const { data, error } = await supabase
-    .from('users')
-    .insert({ username: username.trim(), pin })
-    .select('id')
-    .single()
-  if (error) throw error
-  return data.id
-}
-
-// ─── Per-user KV helpers ──────────────────────────────────────────────────────
-async function getVal(key) {
-  const userId = getCurrentUserId()
-  if (!userId) return null
-  const { data } = await supabase
-    .from('user_data')
-    .select('value')
-    .eq('user_id', userId)
-    .eq('key', key)
-    .maybeSingle()
-  return data?.value ?? null
-}
-
-async function setVal(key, value) {
-  const userId = getCurrentUserId()
-  if (!userId) return
-  await supabase
-    .from('user_data')
-    .upsert({ user_id: userId, key, value, updated_at: new Date().toISOString() }, { onConflict: 'user_id,key' })
-}
-
-// ─── Data accessors (user param kept for call-site compatibility, ignored) ───
-export async function loadContacts(_user) {
-  return (await getVal('contacts')) ?? []
-}
-export async function saveContacts(_user, c) {
-  setVal('contacts', c) // fire-and-forget
-}
-
-export async function loadProfile(_user) {
-  return await getVal('profile')
-}
-export async function saveProfile(_user, p) {
-  setVal('profile', p)
-}
-
-export async function loadTodos(_user) {
-  return (await getVal('todos')) ?? []
-}
-export async function saveTodos(_user, t) {
-  setVal('todos', t)
-}
-
-export async function loadBrainDump(_user) {
-  return (await getVal('braindump')) ?? []
-}
-export async function saveBrainDump(_user, notes) {
-  setVal('braindump', notes)
-}
-
-export async function loadScheduledTasks(_user) {
-  return (await getVal('scheduled_tasks')) ?? []
-}
-export async function saveScheduledTasks(_user, tasks) {
-  setVal('scheduled_tasks', tasks)
-}
-
-export async function loadQuotes(_user) {
+export function loadQuotes(user) {
   try {
-    const raw = await getVal('quotes')
+    const raw = localStorage.getItem(k(user, 'quotes_v1'))
     if (!raw) return null
-    const { quotes, date } = raw
+    const { quotes, date } = JSON.parse(raw)
     return date === new Date().toDateString() ? quotes : null
   } catch { return null }
 }
-export async function saveQuotes(_user, quotes) {
-  setVal('quotes', { quotes, date: new Date().toDateString() })
+export function saveQuotes(user, quotes) {
+  try { localStorage.setItem(k(user, 'quotes_v1'), JSON.stringify({ quotes, date: new Date().toDateString() })) }
+  catch (e) { console.error(e) }
+}
+export function loadTodos(user) {
+  try { return JSON.parse(localStorage.getItem(k(user, 'todos_v1')) || '[]') }
+  catch { return [] }
+}
+export function saveTodos(user, t) {
+  try { localStorage.setItem(k(user, 'todos_v1'), JSON.stringify(t)) }
+  catch (e) { console.error(e) }
+}
+export function loadBrainDump(user) {
+  try { return JSON.parse(localStorage.getItem(k(user, 'braindump_v1')) || '[]') }
+  catch { return [] }
+}
+export function saveBrainDump(user, notes) {
+  try { localStorage.setItem(k(user, 'braindump_v1'), JSON.stringify(notes)) }
+  catch (e) { console.error(e) }
+}
+export function loadScheduledTasks(user) {
+  try { return JSON.parse(localStorage.getItem(k(user, 'scheduled_tasks_v1')) || '[]') }
+  catch { return [] }
+}
+export function saveScheduledTasks(user, tasks) {
+  try { localStorage.setItem(k(user, 'scheduled_tasks_v1'), JSON.stringify(tasks)) }
+  catch (e) { console.error(e) }
 }
