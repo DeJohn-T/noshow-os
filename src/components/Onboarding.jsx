@@ -148,7 +148,7 @@ export function Onboarding({ onComplete, existingProfile }) {
     <div key="name" style={stepStyle}>
       <div style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 14 }}>Welcome</div>
       <div style={{ fontSize: 38, fontWeight: 800, lineHeight: 1.1, marginBottom: 10 }}>What should<br />we call you?</div>
-      <div style={{ fontSize: 15, color: 'rgba(255,255,255,0.35)', marginBottom: 44 }}>Your personal networking workspace.</div>
+      <div style={{ fontSize: 15, color: 'rgba(255,255,255,0.35)', marginBottom: 44 }}>Show up prepared. Every time.</div>
       <AnimatedField show={true} delay={100}>
         <input autoFocus value={name} onChange={e => setName(e.target.value)} onKeyDown={e => e.key === 'Enter' && name.trim() && goNext()} placeholder="Your name..." style={inputStyle}
           onFocus={e => e.target.style.borderBottomColor = '#7c6fff'} onBlur={e => e.target.style.borderBottomColor = 'rgba(255,255,255,0.15)'} />

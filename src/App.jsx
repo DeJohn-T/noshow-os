@@ -1066,7 +1066,7 @@ function LoginScreen({ onLogin }) {
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div style={{ fontSize: 32, marginBottom: 8 }}>☕</div>
           <div style={{ fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>NoShow OS</div>
-          <div style={{ fontSize: 13, color: 'var(--text-tertiary)', marginTop: 4 }}>Your personal networking hub</div>
+          <div style={{ fontSize: 13, color: 'var(--text-tertiary)', marginTop: 4 }}>Show up prepared. Every time.</div>
           <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 8, opacity: 0.6 }}>⚠️ Data is saved per device — accounts don't sync across devices</div>
         </div>
 
@@ -1266,7 +1266,10 @@ export default function App() {
       <div style={{ background: 'rgba(15,25,35,0.92)', backdropFilter: 'blur(16px)', borderBottom: '1px solid var(--border)', padding: '0 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 56, position: 'sticky', top: 0, zIndex: 50 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontSize: 20 }}>☕</span>
-          <span style={{ fontWeight: 800, fontSize: 15, letterSpacing: '-0.01em', fontFamily: 'var(--font-display)' }}>NoShow OS</span>
+          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
+            <span style={{ fontWeight: 800, fontSize: 15, letterSpacing: '-0.01em', fontFamily: 'var(--font-display)' }}>NoShow OS</span>
+            <span style={{ fontSize: 10, color: 'var(--text-tertiary)', marginTop: 2, letterSpacing: '0.02em' }}>Show up prepared. Every time.</span>
+          </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <button onClick={() => window.open('https://calendar.google.com', '_blank')} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 12px', fontSize: 12, color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', gap: 6 }}>
