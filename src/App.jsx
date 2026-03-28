@@ -1067,6 +1067,7 @@ function LoginScreen({ onLogin }) {
           <div style={{ fontSize: 32, marginBottom: 8 }}>☕</div>
           <div style={{ fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>NoShow OS</div>
           <div style={{ fontSize: 13, color: 'var(--text-tertiary)', marginTop: 4 }}>Your personal networking hub</div>
+          <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 8, opacity: 0.6 }}>⚠️ Data is saved per device — accounts don't sync across devices</div>
         </div>
 
         <div style={{ display: 'flex', borderRadius: 10, overflow: 'hidden', border: '1px solid var(--border)', marginBottom: '1.5rem' }}>
