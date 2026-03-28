@@ -143,6 +143,16 @@ const SKILL_SUGGESTIONS = [
   'Spanish','French','Mandarin','Arabic','German','Portuguese','Japanese','Korean',
   'Research','Data Collection','Qualitative Analysis','Quantitative Analysis','Survey Design','Statistics',
   'Video Editing','Podcast Production','Motion Graphics','Photography','3D Modeling',
+  'Communication','Public Speaking','Storytelling','Active Listening','Written Communication','Presentation Skills',
+  'Leadership','Team Leadership','Mentoring','Conflict Resolution','Decision Making','Delegation',
+  'Teamwork','Collaboration','Cross-functional Collaboration','Relationship Building','Networking',
+  'Problem Solving','Critical Thinking','Creative Thinking','Analytical Thinking','Strategic Thinking',
+  'Time Management','Organization','Prioritization','Multitasking','Attention to Detail','Self-motivation',
+  'Adaptability','Flexibility','Resilience','Emotional Intelligence','Empathy','Patience',
+  'Work Ethic','Initiative','Accountability','Integrity','Professionalism','Dependability',
+  'Customer Service','Client Relations','Negotiation','Persuasion','Sales','Networking',
+  'Creativity','Innovation','Brainstorming','Design Thinking','Curiosity',
+  'Coachability','Feedback Reception','Growth Mindset','Continuous Learning','Open-mindedness',
 ]
 
 function SkillsInput({ skills, onChange, onPendingChange }) {
