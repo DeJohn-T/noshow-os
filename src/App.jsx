@@ -5,8 +5,8 @@ import { ContactDetail } from './components/ContactDetail'
 import { Onboarding } from './components/Onboarding'
 import { JobSearch } from './components/JobSearch'
 import { Avatar, StatusBadge, GlobalStyles, Spinner } from './components/UI'
-import { loadContacts, saveContacts, loadProfile, saveProfile, loadQuotes, saveQuotes, loadTodos, saveTodos, loadBrainDump, saveBrainDump, loadUsers, saveUsers, getCurrentUser, setCurrentUser, clearCurrentUser, loadScheduledTasks, saveScheduledTasks } from './lib/storage'
-import { generateQuotes, analyzeResume } from './lib/ai'
+import { loadContacts, saveContacts, loadProfile, saveProfile, loadQuotes, saveQuotes, loadTodos, saveTodos, loadBrainDump, saveBrainDump, loadUsers, saveUsers, getCurrentUser, setCurrentUser, clearCurrentUser, loadScheduledTasks, saveScheduledTasks, loadJobRecs, saveJobRecs } from './lib/storage'
+import { generateQuotes, analyzeResume, generateJobRecs } from './lib/ai'
 import { extractTextFromPDF } from './lib/pdfParser'
 import { parseResumePDF } from './lib/ai'
 import { formatDate } from './lib/utils'
@@ -1137,9 +1137,11 @@ export default function App() {
   const [showBrainDump, setShowBrainDump] = useState(false)
 
   const [scheduledTasks, setScheduledTasks] = useState([])
+  const [jobRecs, setJobRecs] = useState([])
+  const [jobRecsLoading, setJobRecsLoading] = useState(false)
 
   function handleLogin(username) { setUser(username); setProfileLoaded(false) }
-  function handleLogout() { clearCurrentUser(); setUser(null); setProfile(null); setProfileLoaded(false); setContacts([]) }
+  function handleLogout() { clearCurrentUser(); setUser(null); setProfile(null); setProfileLoaded(false); setContacts([]); setJobRecs([]) }
 
   useEffect(() => {
     if (currentUser) {
@@ -1186,6 +1188,25 @@ export default function App() {
     }, 45 * 60 * 1000)
     return () => clearInterval(interval)
   }, [quotes])
+
+  // Background-fetch job recs as soon as profile is ready
+  useEffect(() => {
+    if (!profile || !currentUser) return
+    const cached = loadJobRecs(currentUser)
+    if (cached && cached.length > 0) { setJobRecs(cached); return }
+    const r = profile?.resumeText ? { text: profile.resumeText, parsed: profile.resumeParsed } : null
+    const s = profile?.skills || []
+    setJobRecsLoading(true)
+    generateJobRecs(profile, r, s)
+      .then(raw => {
+        const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim())
+        const jobs = Array.isArray(parsed) ? parsed : []
+        setJobRecs(jobs)
+        saveJobRecs(currentUser, jobs)
+      })
+      .catch(() => {})
+      .finally(() => setJobRecsLoading(false))
+  }, [profile, currentUser])
 
   function handleOnboardingComplete(p) { saveProfile(currentUser, p); setProfile(p); setShowOnboarding(false) }
   function handleEditSave(p) { saveProfile(currentUser, p); setProfile(p); setShowEdit(false) }
@@ -1725,7 +1746,7 @@ export default function App() {
               {skills.length > 0 && ` Skills: ${skills.slice(0, 3).join(', ')}${skills.length > 3 ? '...' : ''}.`}
             </div>
           </div>
-          <JobSearch profile={profile} resume={resume} skills={skills} />
+          <JobSearch profile={profile} resume={resume} skills={skills} cachedJobs={jobRecs} setCachedJobs={setJobRecs} isLoading={jobRecsLoading} setIsLoading={setJobRecsLoading} currentUser={currentUser} />
         </div>
       )}
 

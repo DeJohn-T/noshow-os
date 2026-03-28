@@ -82,3 +82,15 @@ export function saveScheduledTasks(user, tasks) {
   try { localStorage.setItem(k(user, 'scheduled_tasks_v1'), JSON.stringify(tasks)) }
   catch (e) { console.error(e) }
 }
+export function loadJobRecs(user) {
+  try {
+    const raw = localStorage.getItem(k(user, 'jobrecs_v1'))
+    if (!raw) return null
+    const { jobs, date } = JSON.parse(raw)
+    return date === new Date().toDateString() ? jobs : null
+  } catch { return null }
+}
+export function saveJobRecs(user, jobs) {
+  try { localStorage.setItem(k(user, 'jobrecs_v1'), JSON.stringify({ jobs, date: new Date().toDateString() })) }
+  catch (e) { console.error(e) }
+}

@@ -1,6 +1,7 @@
 // components/JobSearch.jsx
-import React, { useState } from 'react'
+import React from 'react'
 import { generateJobRecs } from '../lib/ai'
+import { saveJobRecs } from '../lib/storage'
 
 const MS = {
   Strong: { bg: 'rgba(74,222,128,0.1)', color: '#4ade80', border: 'rgba(74,222,128,0.2)' },
@@ -8,29 +9,22 @@ const MS = {
   Reach:  { bg: 'rgba(248,113,113,0.1)', color: '#f87171', border: 'rgba(248,113,113,0.2)' },
 }
 
-export function JobSearch({ profile, resume, skills }) {
-  const [jobs, setJobs] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [generated, setGenerated] = useState(false)
+export function JobSearch({ profile, resume, skills, cachedJobs, setCachedJobs, isLoading, setIsLoading, currentUser }) {
+  const jobs = cachedJobs || []
+  const loading = isLoading || false
 
   async function handleGenerate() {
-    setLoading(true); setError('')
+    setIsLoading(true)
+    setCachedJobs([])
     try {
       const raw = await generateJobRecs(profile, resume, skills)
       const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim())
-      setJobs(Array.isArray(parsed) ? parsed : [])
-      setGenerated(true)
-    } catch { setError('Could not generate. Try again.') }
-    setLoading(false)
+      const result = Array.isArray(parsed) ? parsed : []
+      setCachedJobs(result)
+      saveJobRecs(currentUser, result)
+    } catch {}
+    setIsLoading(false)
   }
-
-  // Auto-generate on first mount
-  React.useEffect(() => {
-    if (!generated && !loading && jobs.length === 0) {
-      handleGenerate()
-    }
-  }, [])
 
   if (loading) return (
     <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-secondary)' }}>
@@ -39,12 +33,12 @@ export function JobSearch({ profile, resume, skills }) {
     </div>
   )
 
-  if (error) return (
+  if (jobs.length === 0) return (
     <div style={{ textAlign: 'center', padding: '3rem' }}>
-      <div style={{ fontSize: 28, marginBottom: 12, opacity: 0.4 }}>⚠️</div>
-      <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 16 }}>{error}</div>
+      <div style={{ fontSize: 28, marginBottom: 12, opacity: 0.4 }}>💼</div>
+      <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 16 }}>No matches yet — generate your first list.</div>
       <button onClick={handleGenerate} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>
-        Try Again ↺
+        Generate matches ✦
       </button>
     </div>
   )
