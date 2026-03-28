@@ -601,7 +601,7 @@ function NetworkMap({ contacts, onSelect }) {
 }
 
 // ─── Edit Profile Modal ─────────────────────────────────────────────────────────
-function EditProfileModal({ profile, onSave, onClose }) {
+function EditProfileModal({ profile, onSave, onClose, onLogout, isMobile }) {
   const [name, setName] = useState(profile.name || '')
   const [school, setSchool] = useState(profile.school || '')
   const [major, setMajor] = useState(profile.major || '')
@@ -627,12 +627,17 @@ function EditProfileModal({ profile, onSave, onClose }) {
       <textarea value={goals} onChange={e => setGoals(e.target.value)} rows={3} style={{ ...inp, resize: 'vertical', lineHeight: 1.6 }} />
       <label style={{ display: 'block', fontSize: 11, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Skills</label>
       <SkillsInput skills={skills} onChange={setSkills} onPendingChange={setPendingSkill} />
-      <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 20 }}>
-        <button onClick={onClose} style={{ background: 'var(--surface-3)', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 18px', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Cancel</button>
-        <button onClick={() => {
-          const finalSkills = pendingSkill.trim() && !skills.includes(pendingSkill.trim()) ? [...skills, pendingSkill.trim()] : skills
-          onSave({ ...profile, name: name.trim(), school: school.trim(), major: major.trim(), goals: goals.trim(), skills: finalSkills })
-        }} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>Save</button>
+      <div style={{ display: 'flex', gap: 10, justifyContent: 'space-between', alignItems: 'center', marginTop: 20 }}>
+        {isMobile && onLogout
+          ? <button onClick={onLogout} style={{ background: 'none', border: 'none', color: 'var(--text-tertiary)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-sans)', padding: '10px 4px' }}>Log out</button>
+          : <div />}
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button onClick={onClose} style={{ background: 'var(--surface-3)', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 18px', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Cancel</button>
+          <button onClick={() => {
+            const finalSkills = pendingSkill.trim() && !skills.includes(pendingSkill.trim()) ? [...skills, pendingSkill.trim()] : skills
+            onSave({ ...profile, name: name.trim(), school: school.trim(), major: major.trim(), goals: goals.trim(), skills: finalSkills })
+          }} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>Save</button>
+        </div>
       </div>
     </div>
   )
@@ -1120,6 +1125,13 @@ export default function App() {
   const [profileLoaded, setProfileLoaded] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [contacts, setContacts] = useState([])
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768)
+  useEffect(() => {
+    const fn = () => setIsMobile(window.innerWidth < 768)
+    window.addEventListener('resize', fn)
+    return () => window.removeEventListener('resize', fn)
+  }, [])
+
   const [tab, setTab] = useState('home')
   useEffect(() => { window.scrollTo(0, 0) }, [tab])
   const [showAdd, setShowAdd] = useState(false)
@@ -1285,36 +1297,40 @@ export default function App() {
       <GlobalStyles />
 
       {/* Nav */}
-      <div style={{ background: 'rgba(15,25,35,0.92)', backdropFilter: 'blur(16px)', borderBottom: '1px solid var(--border)', padding: '0 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 56, position: 'sticky', top: 0, zIndex: 50 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 20 }}>☕</span>
+      <div style={{ background: 'rgba(15,25,35,0.92)', backdropFilter: 'blur(16px)', borderBottom: '1px solid var(--border)', padding: isMobile ? '0 1rem' : '0 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 56, position: 'sticky', top: 0, zIndex: 50 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 18 }}>☕</span>
           <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
-            <span style={{ fontWeight: 800, fontSize: 15, letterSpacing: '-0.01em', fontFamily: 'var(--font-display)' }}>NoShow OS</span>
-            <span style={{ fontSize: 10, color: 'var(--text-tertiary)', marginTop: 2, letterSpacing: '0.02em' }}>Show up prepared. Every time.</span>
+            <span style={{ fontWeight: 800, fontSize: isMobile ? 13 : 15, letterSpacing: '-0.01em', fontFamily: 'var(--font-display)' }}>NoShow OS</span>
+            {!isMobile && <span style={{ fontSize: 10, color: 'var(--text-tertiary)', marginTop: 2, letterSpacing: '0.02em' }}>Show up prepared. Every time.</span>}
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <button onClick={() => window.open('https://calendar.google.com', '_blank')} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 12px', fontSize: 12, color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', gap: 6 }}>
-            📅 Calendar
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {!isMobile && (
+            <button onClick={() => window.open('https://calendar.google.com', '_blank')} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 12px', fontSize: 12, color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', gap: 6 }}>
+              📅 Calendar
+            </button>
+          )}
+          <button onClick={() => setShowEdit(true)} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 10px', fontSize: 12, color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
+            {isMobile ? '⚙️' : `${profile.name?.split(' ')[0]} · edit`}
           </button>
-          <button onClick={() => setShowEdit(true)} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 14px', fontSize: 12, color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
-            {profile.name?.split(' ')[0]} · edit
-          </button>
-          <button onClick={handleLogout} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 12px', fontSize: 12, color: 'var(--text-tertiary)', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
-            Log out
-          </button>
-          <button onClick={() => setShowAdd(true)} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>
-            + Add contact
+          {!isMobile && (
+            <button onClick={handleLogout} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 12px', fontSize: 12, color: 'var(--text-tertiary)', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
+              Log out
+            </button>
+          )}
+          <button onClick={() => setShowAdd(true)} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: isMobile ? '8px 12px' : '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>
+            {isMobile ? '+' : '+ Add contact'}
           </button>
         </div>
       </div>
 
       {/* Tab bar */}
-      <div style={{ background: 'rgba(15,25,35,0.8)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)', display: 'flex', padding: '0 1.5rem', position: 'sticky', top: 56, zIndex: 40 }}>
+      <div style={{ background: 'rgba(15,25,35,0.8)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)', display: 'flex', padding: isMobile ? '0 0.5rem' : '0 1.5rem', position: 'sticky', top: 56, zIndex: 40, overflowX: 'auto', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
         {tabs.map(t => (
-          <button key={t} onClick={() => setTab(t)} style={{ fontSize: 13, fontWeight: 500, padding: '12px 18px', background: 'transparent', border: 'none', borderBottom: tab === t ? '2px solid var(--accent)' : '2px solid transparent', color: tab === t ? 'var(--text-primary)' : 'var(--text-tertiary)', cursor: 'pointer', marginBottom: -1, transition: 'color 0.15s', fontFamily: 'var(--font-sans)' }}>
+          <button key={t} onClick={() => setTab(t)} style={{ fontSize: isMobile ? 11 : 13, fontWeight: 500, padding: isMobile ? '11px 12px' : '12px 18px', background: 'transparent', border: 'none', borderBottom: tab === t ? '2px solid var(--accent)' : '2px solid transparent', color: tab === t ? 'var(--text-primary)' : 'var(--text-tertiary)', cursor: 'pointer', marginBottom: -1, transition: 'color 0.15s', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap', flexShrink: 0 }}>
             {tabLabels[t]}
-            {t === 'upcoming' && upcoming.length > 0 && <span style={{ marginLeft: 6, background: 'var(--accent)', color: '#fff', borderRadius: 100, fontSize: 10, padding: '1px 6px', fontWeight: 700 }}>{upcoming.length}</span>}
+            {t === 'upcoming' && upcoming.length > 0 && <span style={{ marginLeft: 5, background: 'var(--accent)', color: '#fff', borderRadius: 100, fontSize: 9, padding: '1px 5px', fontWeight: 700 }}>{upcoming.length}</span>}
           </button>
         ))}
       </div>
@@ -1327,7 +1343,7 @@ export default function App() {
           <div style={{ position: 'fixed', bottom: 0, right: '10%', width: 500, height: 400, borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(251,191,36,0.04) 0%, transparent 65%)', pointerEvents: 'none', zIndex: 0 }} />
           <div style={{ position: 'fixed', inset: 0, opacity: 0.015, backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(200,220,255,0.6) 1px, transparent 0)', backgroundSize: '44px 44px', pointerEvents: 'none', zIndex: 0 }} />
 
-          <div style={{ maxWidth: 1100, margin: '0 auto', padding: '1.75rem 1.5rem', position: 'relative', zIndex: 1 }}>
+          <div style={{ maxWidth: 1100, margin: '0 auto', padding: isMobile ? '1rem' : '1.75rem 1.5rem', position: 'relative', zIndex: 1 }}>
 
             {/* ── Hero greeting ─── */}
             <div style={{ marginBottom: '1.5rem' }}>
@@ -1345,7 +1361,7 @@ export default function App() {
 
             {/* ── Prep brief reminder ─── */}
             {soonChats.length > 0 && (
-              <div style={{ background: 'linear-gradient(135deg, rgba(74,222,128,0.1), rgba(99,179,255,0.06))', border: '1px solid rgba(74,222,128,0.3)', borderRadius: 14, padding: '14px 18px', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div style={{ background: 'linear-gradient(135deg, rgba(74,222,128,0.1), rgba(99,179,255,0.06))', border: '1px solid rgba(74,222,128,0.3)', borderRadius: 14, padding: '14px 18px', marginBottom: '1.25rem', display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', flexDirection: isMobile ? 'column' : 'row', gap: 14 }}>
                 <span style={{ fontSize: 28, flexShrink: 0 }}>☕</span>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 13, fontWeight: 700, color: '#6ee7b7', marginBottom: 3 }}>
@@ -1361,7 +1377,7 @@ export default function App() {
             )}
 
             {/* ── Stat cards ─── */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: '1.25rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: isMobile ? 8 : 12, marginBottom: '1.25rem' }}>
               {STAT_CARDS.map(({ label, value, icon, accent, onClick, badge, contactList }) => {
                 // Group contacts by company for avatar display
                 const grouped = []
@@ -1374,12 +1390,12 @@ export default function App() {
                 })
                 const visibleGroups = grouped.slice(0, 5)
                 return (
-                <div key={label} onClick={onClick} className="fade-in" style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 20, padding: '1.5rem', cursor: 'pointer', position: 'relative', overflow: 'hidden', transition: 'border-color 0.2s, transform 0.15s' }}
+                <div key={label} onClick={onClick} className="fade-in" style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: isMobile ? 14 : 20, padding: isMobile ? '1rem' : '1.5rem', cursor: 'pointer', position: 'relative', overflow: 'hidden', transition: 'border-color 0.2s, transform 0.15s' }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = accent + '55'; e.currentTarget.style.transform = 'translateY(-2px)' }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'none' }}>
                   <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: `radial-gradient(circle, ${accent}20 0%, transparent 70%)`, pointerEvents: 'none' }} />
                   <div style={{ fontSize: 11, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>{label}</div>
-                  <div style={{ fontSize: 48, fontWeight: 800, fontFamily: 'var(--font-display)', lineHeight: 1 }}>{value}</div>
+                  <div style={{ fontSize: isMobile ? 36 : 48, fontWeight: 800, fontFamily: 'var(--font-display)', lineHeight: 1 }}>{value}</div>
                   {visibleGroups.length > 0 ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 10, flexWrap: 'wrap' }}>
                       {visibleGroups.map(({ contact: ct, count }, i) => (
@@ -1403,7 +1419,7 @@ export default function App() {
             </div>
 
             {/* ── Streak + Score ─── */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: '1.25rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 8 : 12, marginBottom: '1.25rem' }}>
               <div style={{ background: 'linear-gradient(135deg, rgba(251,191,36,0.1), rgba(251,146,60,0.06))', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 16, padding: '1.1rem 1.25rem', display: 'flex', alignItems: 'center', gap: 14 }}>
                 <div style={{ fontSize: 36 }}>🔥</div>
                 <div>
@@ -1423,7 +1439,7 @@ export default function App() {
             </div>
 
             {/* ── Main dashboard grid ─── */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 8 : 12 }}>
 
               {/* Upcoming chats */}
               <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 20, padding: '1.5rem' }}>
@@ -1619,7 +1635,7 @@ export default function App() {
 
       {/* ── CONTACTS ─────────────────────────────────────────────────────────────── */}
       {tab === 'contacts' && (
-        <div style={{ maxWidth: 760, margin: '0 auto', padding: '1.5rem 1.5rem' }}>
+        <div style={{ maxWidth: 760, margin: '0 auto', padding: isMobile ? '1rem' : '1.5rem 1.5rem' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: '1rem' }}>
             {[['All', stats.total, '#917aff', 'all'], ['Scheduled', stats.scheduled, '#4ade80', 'scheduled'], ['Completed', stats.completed, '#fbbf24', 'completed'], ['Followed up', stats.followedUp, '#f472b6', 'followed up']].map(([l, v, color, filter]) => (
               <div key={l} onClick={() => setContactFilter(contactFilter === filter ? 'all' : filter)}
@@ -1686,7 +1702,7 @@ export default function App() {
 
       {/* ── UPCOMING ─────────────────────────────────────────────────────────────── */}
       {tab === 'upcoming' && (
-        <div style={{ maxWidth: 900, margin: '0 auto', padding: '1.5rem 1.5rem' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto', padding: isMobile ? '1rem' : '1.5rem 1.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-display)' }}>📅 Calendar</div>
             <button onClick={() => setShowSchedule(true)} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>
@@ -1739,7 +1755,7 @@ export default function App() {
 
       {/* ── JOBS ─────────────────────────────────────────────────────────────────── */}
       {tab === 'jobs' && (
-        <div style={{ maxWidth: 760, margin: '0 auto', padding: '1.5rem 1.5rem' }}>
+        <div style={{ maxWidth: 760, margin: '0 auto', padding: isMobile ? '1rem' : '1.5rem 1.5rem' }}>
           <div style={{ marginBottom: 16 }}>
             <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-display)', marginBottom: 6 }}>Job Matches</div>
             <div style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
@@ -1766,7 +1782,7 @@ export default function App() {
 
       {/* ── NETWORK ──────────────────────────────────────────────────────────────── */}
       {tab === 'network' && (
-        <div style={{ maxWidth: 900, margin: '0 auto', padding: '1.5rem 1.5rem' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto', padding: isMobile ? '1rem' : '1.5rem 1.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <div>
               <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-display)', marginBottom: 4 }}>🕸 Your Network</div>
@@ -1799,7 +1815,7 @@ export default function App() {
       )}
       {showEdit && (
         <div style={modalBg} onClick={e => { if (e.target === e.currentTarget) setShowEdit(false) }}>
-          <EditProfileModal profile={profile} onSave={handleEditSave} onClose={() => setShowEdit(false)} />
+          <EditProfileModal profile={profile} onSave={handleEditSave} onClose={() => setShowEdit(false)} onLogout={handleLogout} isMobile={isMobile} />
         </div>
       )}
       {showSchedule && contacts.length > 0 && (
