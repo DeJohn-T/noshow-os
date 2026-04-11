@@ -10,6 +10,7 @@ import { generateQuotes, analyzeResume, generateJobRecs } from './lib/ai'
 import { extractTextFromPDF } from './lib/pdfParser'
 import { parseResumePDF } from './lib/ai'
 import { formatDate } from './lib/utils'
+import { WorkLog } from './components/WorkLog'
 
 function getGreeting(name) {
   const h = new Date().getHours()
@@ -1270,8 +1271,8 @@ export default function App() {
   const skills = profile?.skills || []
 
   const greeting = getGreeting(profile.name)
-  const tabs = ['home', 'contacts', 'upcoming', 'jobs', 'resume', 'network']
-  const tabLabels = { home: 'Home', contacts: 'Contacts', upcoming: 'Upcoming', jobs: 'Jobs', resume: 'Resume', network: '🕸 Network' }
+  const tabs = ['home', 'contacts', 'upcoming', 'jobs', 'resume', 'network', 'worklog']
+  const tabLabels = { home: 'Home', contacts: 'Contacts', upcoming: 'Upcoming', jobs: 'Jobs', resume: 'Resume', network: '🕸 Network', worklog: 'Work Log' }
   const needsScheduling = contacts.filter(x => x.chatDate && x.status === 'scheduled' && x.chatDate >= todayStr)
 
   const tomorrowStr = new Date(Date.now() + 86400000).toISOString().split('T')[0]
@@ -1805,6 +1806,11 @@ export default function App() {
             ))}
           </div>
         </div>
+      )}
+
+      {/* ── WORK LOG ─────────────────────────────────────────────────────────────── */}
+      {tab === 'worklog' && (
+        <WorkLog profileName={profile.name} />
       )}
 
       {/* ── Modals ────────────────────────────────────────────────────────────────── */}
