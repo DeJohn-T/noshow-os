@@ -10,7 +10,7 @@ export async function callClaude(system, user, maxTokens = 1000) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: maxTokens,
       system,
       messages: [{ role: 'user', content: user }],
@@ -32,8 +32,8 @@ export async function parseLinkedInPDF(pdfText) {
     "education":["Degree, School, 'Class of 'Year. Include ALL schools: primary degree, study abroad, exchange programs, bootcamps."],
     "organizations":["organization or club name"],
     "skills":["skill"],
-    "interests":["interest"]
-    "Honors":["honor or award, year, awarding organization"],
+    "interests":["interest"],
+    "honors":["honor or award, year, awarding organization"],
     "publications":["publication name, publication type (article, book, etc), year"],
     "linkedinUrl":"https://linkedin.com/in/their-handle (extract from the PDF if present)",
     "email":"their email if listed",
