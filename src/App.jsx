@@ -5,7 +5,7 @@ import { ContactDetail } from './components/ContactDetail'
 import { Onboarding } from './components/Onboarding'
 import { JobSearch } from './components/JobSearch'
 import { Avatar, StatusBadge, GlobalStyles, Spinner } from './components/UI'
-import { loadContacts, saveContacts, loadProfile, saveProfile, loadQuotes, saveQuotes, loadTodos, saveTodos, loadBrainDump, saveBrainDump, loadUsers, saveUsers, getCurrentUser, setCurrentUser, clearCurrentUser, loadScheduledTasks, saveScheduledTasks, loadJobRecs, saveJobRecs } from './lib/storage'
+import { loadContacts, saveContacts, loadProfile, saveProfile, loadQuotes, saveQuotes, loadTodos, saveTodos, loadBrainDump, saveBrainDump, loadUsers, saveUsers, getCurrentUser, setCurrentUser, clearCurrentUser, loadScheduledTasks, saveScheduledTasks, loadJobRecs, saveJobRecs, exportBackup, importBackup } from './lib/storage'
 import { generateQuotes, analyzeResume, generateJobRecs } from './lib/ai'
 import { extractTextFromPDF } from './lib/pdfParser'
 import { parseResumePDF } from './lib/ai'
@@ -1040,6 +1040,20 @@ function LoginScreen({ onLogin }) {
   const [username, setUsername] = useState('')
   const [pin, setPin] = useState('')
   const [error, setError] = useState('')
+  const [importSuccess, setImportSuccess] = useState('')
+
+  function handleImport(e) {
+    const file = e.target.files[0]
+    if (!file) return
+    importBackup(file)
+      .then(restoredUser => {
+        setImportSuccess(`Restored! Log in as "${restoredUser}"`)
+        setUsername(restoredUser)
+        setMode('login')
+      })
+      .catch(() => setError('Invalid backup file.'))
+    e.target.value = ''
+  }
 
   function handleLogin() {
     const users = loadUsers()
@@ -1113,6 +1127,15 @@ function LoginScreen({ onLogin }) {
         <button onClick={mode === 'login' ? handleLogin : handleSignup} style={{ width: '100%', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 10, padding: '12px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>
           {mode === 'login' ? 'Log in →' : 'Create account →'}
         </button>
+
+        {importSuccess && <div style={{ fontSize: 12, color: 'var(--green, #4ade80)', marginTop: 10, padding: '8px 12px', background: 'rgba(74,222,128,0.08)', borderRadius: 8, border: '1px solid rgba(74,222,128,0.2)', textAlign: 'center' }}>{importSuccess}</div>}
+
+        <div style={{ marginTop: 16, textAlign: 'center' }}>
+          <label style={{ fontSize: 12, color: 'var(--text-tertiary)', cursor: 'pointer', textDecoration: 'underline' }}>
+            Restore from backup
+            <input type="file" accept=".json" onChange={handleImport} style={{ display: 'none' }} />
+          </label>
+        </div>
       </div>
     </div>
   )
@@ -1131,6 +1154,8 @@ export default function App() {
     window.addEventListener('resize', fn)
     return () => window.removeEventListener('resize', fn)
   }, [])
+
+  const [showBackupBanner, setShowBackupBanner] = useState(() => !sessionStorage.getItem('nos_backup_dismissed'))
 
   const [tab, setTab] = useState('home')
   useEffect(() => { window.scrollTo(0, 0) }, [tab])
@@ -1315,6 +1340,11 @@ export default function App() {
             {isMobile ? '⚙️' : `${profile.name?.split(' ')[0]} · edit`}
           </button>
           {!isMobile && (
+            <button onClick={() => exportBackup(currentUser)} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 12px', fontSize: 12, color: 'var(--text-tertiary)', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
+              Export backup
+            </button>
+          )}
+          {!isMobile && (
             <button onClick={handleLogout} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 12px', fontSize: 12, color: 'var(--text-tertiary)', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
               Log out
             </button>
@@ -1334,6 +1364,21 @@ export default function App() {
           </button>
         ))}
       </div>
+
+      {/* Backup reminder banner */}
+      {showBackupBanner && (
+        <div style={{ background: 'rgba(251,191,36,0.08)', borderBottom: '1px solid rgba(251,191,36,0.2)', padding: '8px 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+            Your data only lives in this browser — clear cache and it's gone.
+          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <button onClick={() => exportBackup(currentUser)} style={{ fontSize: 12, fontWeight: 600, color: '#fbbf24', background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 7, padding: '4px 10px', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
+              Export backup
+            </button>
+            <button onClick={() => { setShowBackupBanner(false); sessionStorage.setItem('nos_backup_dismissed', '1') }} style={{ fontSize: 12, color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>✕</button>
+          </div>
+        </div>
+      )}
 
       {/* ── HOME ─────────────────────────────────────────────────────────────────── */}
       {tab === 'home' && (

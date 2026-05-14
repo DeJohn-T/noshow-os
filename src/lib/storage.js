@@ -94,3 +94,50 @@ export function saveJobRecs(user, jobs) {
   try { localStorage.setItem(k(user, 'jobrecs_v1'), JSON.stringify({ jobs, date: new Date().toDateString() })) }
   catch (e) { console.error(e) }
 }
+
+export function exportBackup(username) {
+  const data = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    username,
+    users: loadUsers(),
+    contacts: loadContacts(username),
+    profile: loadProfile(username),
+    todos: loadTodos(username),
+    scheduledTasks: loadScheduledTasks(username),
+    brainDump: loadBrainDump(username),
+  }
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `noshow-backup-${username}-${new Date().toISOString().slice(0, 10)}.json`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+export function importBackup(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = e => {
+      try {
+        const data = JSON.parse(e.target.result)
+        if (!data.version || !data.username) { reject(new Error('Invalid backup file')); return }
+        const existing = loadUsers()
+        const merged = [...existing]
+        for (const u of (data.users || [])) {
+          if (!merged.find(ex => ex.username.toLowerCase() === u.username.toLowerCase())) merged.push(u)
+        }
+        saveUsers(merged)
+        if (data.contacts) saveContacts(data.username, data.contacts)
+        if (data.profile) saveProfile(data.username, data.profile)
+        if (data.todos) saveTodos(data.username, data.todos)
+        if (data.scheduledTasks) saveScheduledTasks(data.username, data.scheduledTasks)
+        if (data.brainDump) saveBrainDump(data.username, data.brainDump)
+        resolve(data.username)
+      } catch (err) { reject(err) }
+    }
+    reader.onerror = () => reject(new Error('Failed to read file'))
+    reader.readAsText(file)
+  })
+}
