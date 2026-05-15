@@ -22,6 +22,23 @@ export async function callClaude(system, user, maxTokens = 1000) {
   throw new Error('No response')
 }
 
+export async function callClaudeChat(system, messages, maxTokens = 800) {
+  const res = await fetch(API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: maxTokens,
+      system,
+      messages,
+    }),
+  })
+  if (!res.ok) throw new Error(`API error: ${res.status}`)
+  const data = await res.json()
+  if (data.content?.[0]) return data.content[0].text
+  throw new Error('No response')
+}
+
 export async function parseLinkedInPDF(pdfText) {
   return callClaude(
     `You are the highly intelligent LinkedIn PDF profile parser. Autofill linkedin link box with the link displayed in the downloaded profile. You never make up information. You extract it. You interpret and understand it. You never have any grammatical errors. Extract all professional info and return ONLY valid JSON:

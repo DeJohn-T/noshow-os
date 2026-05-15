@@ -1,7 +1,7 @@
 // components/ContactDetail.jsx
 import React, { useState, useRef } from 'react'
 import { Avatar, StatusBadge, Button, Input, Textarea, RichNotes, Tabs, Notice, Spinner, AIOutput, SectionLabel, Chip } from './UI'
-import { parseLinkedInPDF, generateBrief, generateFollowUp, callClaude } from '../lib/ai'
+import { parseLinkedInPDF, generateBrief, generateFollowUp, callClaude, callClaudeChat } from '../lib/ai'
 import { extractTextFromPDF } from '../lib/pdfParser'
 import { addDays } from '../lib/utils'
 
@@ -305,18 +305,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
         : `Role: ${c.role || ''}, Company: ${c.company || ''}`
       const system = `You are a networking coach helping someone prepare for a coffee chat with ${c.name} (${c.role || ''} at ${c.company || ''}). Current prep brief:\n\n${brief}\n\nContext: ${profileCtx}\n\nHelp the user customize or improve their prep. Be concise and specific.`
       const history = newMessages.map(m => ({ role: m.role, content: m.content }))
-      const res = await fetch('/api/anthropic/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 800,
-          system,
-          messages: history,
-        }),
-      })
-      const data = await res.json()
-      const reply = data.content?.[0]?.text || 'Something went wrong.'
+      const reply = await callClaudeChat(system, history)
       setChatMessages(prev => [...prev, { role: 'assistant', content: reply }])
       setTimeout(() => chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
     } catch {
