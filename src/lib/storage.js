@@ -1,4 +1,18 @@
 // lib/storage.js
+import { upsertUserData } from './supabase.js'
+
+// ─── Cloud sync (debounced 2 s) ───────────────────────────────────────────────
+let _syncTimer = null
+let _pendingUpdates = {}
+function queueSync(userId, field, value) {
+  if (!userId) return
+  _pendingUpdates[field] = value
+  clearTimeout(_syncTimer)
+  _syncTimer = setTimeout(() => {
+    upsertUserData(userId, { ..._pendingUpdates }).catch(console.error)
+    _pendingUpdates = {}
+  }, 2000)
+}
 
 // ─── User auth (global, not namespaced) ───────────────────────────────────────
 const USERS_KEY = 'nos_users_v1'
@@ -35,6 +49,7 @@ export function loadContacts(user) {
 export function saveContacts(user, c) {
   try { localStorage.setItem(k(user, 'contacts_v2'), JSON.stringify(c)) }
   catch (e) { console.error(e) }
+  queueSync(user, 'contacts', c)
 }
 export function loadProfile(user) {
   try {
@@ -45,6 +60,7 @@ export function loadProfile(user) {
 export function saveProfile(user, p) {
   try { localStorage.setItem(k(user, 'profile_v3'), JSON.stringify(p)) }
   catch (e) { console.error(e) }
+  queueSync(user, 'profile', p)
 }
 export function loadQuotes(user) {
   try {
@@ -65,6 +81,7 @@ export function loadTodos(user) {
 export function saveTodos(user, t) {
   try { localStorage.setItem(k(user, 'todos_v1'), JSON.stringify(t)) }
   catch (e) { console.error(e) }
+  queueSync(user, 'todos', t)
 }
 export function loadBrainDump(user) {
   try { return JSON.parse(localStorage.getItem(k(user, 'braindump_v1')) || '[]') }
@@ -73,6 +90,7 @@ export function loadBrainDump(user) {
 export function saveBrainDump(user, notes) {
   try { localStorage.setItem(k(user, 'braindump_v1'), JSON.stringify(notes)) }
   catch (e) { console.error(e) }
+  queueSync(user, 'brain_dump', notes)
 }
 export function loadScheduledTasks(user) {
   try { return JSON.parse(localStorage.getItem(k(user, 'scheduled_tasks_v1')) || '[]') }
@@ -81,6 +99,7 @@ export function loadScheduledTasks(user) {
 export function saveScheduledTasks(user, tasks) {
   try { localStorage.setItem(k(user, 'scheduled_tasks_v1'), JSON.stringify(tasks)) }
   catch (e) { console.error(e) }
+  queueSync(user, 'scheduled_tasks', tasks)
 }
 export function loadJobRecs(user) {
   try {
