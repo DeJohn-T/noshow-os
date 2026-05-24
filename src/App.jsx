@@ -1122,13 +1122,18 @@ export default function App() {
 
   // ─── Supabase auth ──────────────────────────────────────────────────────────
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) loginWithSupabase(session.user.id)
-      else setAuthChecked(true)
-    })
+    // INITIAL_SESSION fires once on load — handles both normal visits and
+    // OAuth redirects (where getSession() can briefly return null while
+    // the URL hash is being processed)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) loginWithSupabase(session.user.id)
-      else if (event === 'SIGNED_OUT') handleLogout()
+      if (event === 'INITIAL_SESSION') {
+        if (session) loginWithSupabase(session.user.id)
+        else setAuthChecked(true)
+      } else if (event === 'SIGNED_IN' && session) {
+        loginWithSupabase(session.user.id)
+      } else if (event === 'SIGNED_OUT') {
+        handleLogout()
+      }
     })
     return () => subscription.unsubscribe()
   }, [])
