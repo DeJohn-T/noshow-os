@@ -1148,17 +1148,23 @@ export default function App() {
     try {
       const cloud = await fetchUserData(userId)
       if (cloud) {
-        let changed = false
-        if (Array.isArray(cloud.contacts) && cloud.contacts.length > 0) { saveContacts(userId, cloud.contacts); changed = true }
-        if (cloud.profile && Object.keys(cloud.profile).length > 0) { saveProfile(userId, cloud.profile); changed = true }
-        if (Array.isArray(cloud.todos) && cloud.todos.length > 0) { saveTodos(userId, cloud.todos); changed = true }
-        if (Array.isArray(cloud.brain_dump) && cloud.brain_dump.length > 0) { saveBrainDump(userId, cloud.brain_dump); changed = true }
-        if (Array.isArray(cloud.scheduled_tasks) && cloud.scheduled_tasks.length > 0) { saveScheduledTasks(userId, cloud.scheduled_tasks); changed = true }
-        if (changed) {
-          // Reload state from localStorage now that cloud data is written
+        // Only update each piece of state if that specific field changed in cloud
+        // Never set profile to null — that would wipe the profile and show onboarding
+        if (Array.isArray(cloud.contacts) && cloud.contacts.length > 0) {
+          saveContacts(userId, cloud.contacts)
           setContacts(loadContacts(userId))
-          setProfile(loadProfile(userId))
+        }
+        if (cloud.profile && Object.keys(cloud.profile).length > 0) {
+          saveProfile(userId, cloud.profile)
+          const p = loadProfile(userId)
+          if (p) setProfile(p)
+        }
+        if (Array.isArray(cloud.todos) && cloud.todos.length > 0) {
+          saveTodos(userId, cloud.todos)
           setTodos(loadTodos(userId))
+        }
+        if (Array.isArray(cloud.scheduled_tasks) && cloud.scheduled_tasks.length > 0) {
+          saveScheduledTasks(userId, cloud.scheduled_tasks)
           setScheduledTasks(loadScheduledTasks(userId))
         }
       }
