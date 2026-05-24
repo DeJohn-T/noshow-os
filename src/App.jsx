@@ -1267,16 +1267,7 @@ export default function App() {
     window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dateStr}T${chatTime.replace(':','')}00/${dateStr}T${endTime.replace(':','')}00&details=${details}`, '_blank')
   }
 
-  if (!authChecked) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
-      <GlobalStyles />
-      <div style={{ textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 14 }}>
-        <div style={{ fontSize: 32, marginBottom: 12 }}>☕</div>
-        Loading...
-      </div>
-    </div>
-  )
-  if (!currentUser) return <LoginScreen />
+  if (!authChecked || !currentUser) return <LoginScreen />
   if (!profileLoaded) return null
   if (!profile || showOnboarding) return <Onboarding onComplete={handleOnboardingComplete} existingProfile={profile} />
 
