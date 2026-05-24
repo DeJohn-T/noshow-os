@@ -1139,20 +1139,30 @@ export default function App() {
   }, [])
 
   async function loginWithSupabase(userId) {
-    try {
-      const cloud = await fetchUserData(userId)
-      if (cloud) {
-        if (Array.isArray(cloud.contacts) && cloud.contacts.length > 0) saveContacts(userId, cloud.contacts)
-        if (cloud.profile && Object.keys(cloud.profile).length > 0) saveProfile(userId, cloud.profile)
-        if (Array.isArray(cloud.todos) && cloud.todos.length > 0) saveTodos(userId, cloud.todos)
-        if (Array.isArray(cloud.brain_dump) && cloud.brain_dump.length > 0) saveBrainDump(userId, cloud.brain_dump)
-        if (Array.isArray(cloud.scheduled_tasks) && cloud.scheduled_tasks.length > 0) saveScheduledTasks(userId, cloud.scheduled_tasks)
-      }
-    } catch (e) { console.error('Cloud load failed, using local data:', e) }
+    // Show the app immediately using whatever is in localStorage
     setCurrentUser(userId)
     setUser(userId)
     setProfileLoaded(false)
     setAuthChecked(true)
+    // Then sync cloud data in the background — no blue screen wait
+    try {
+      const cloud = await fetchUserData(userId)
+      if (cloud) {
+        let changed = false
+        if (Array.isArray(cloud.contacts) && cloud.contacts.length > 0) { saveContacts(userId, cloud.contacts); changed = true }
+        if (cloud.profile && Object.keys(cloud.profile).length > 0) { saveProfile(userId, cloud.profile); changed = true }
+        if (Array.isArray(cloud.todos) && cloud.todos.length > 0) { saveTodos(userId, cloud.todos); changed = true }
+        if (Array.isArray(cloud.brain_dump) && cloud.brain_dump.length > 0) { saveBrainDump(userId, cloud.brain_dump); changed = true }
+        if (Array.isArray(cloud.scheduled_tasks) && cloud.scheduled_tasks.length > 0) { saveScheduledTasks(userId, cloud.scheduled_tasks); changed = true }
+        if (changed) {
+          // Reload state from localStorage now that cloud data is written
+          setContacts(loadContacts(userId))
+          setProfile(loadProfile(userId))
+          setTodos(loadTodos(userId))
+          setScheduledTasks(loadScheduledTasks(userId))
+        }
+      }
+    } catch (e) { console.error('Cloud sync failed:', e) }
   }
 
   function handleLogin(userId) { setUser(userId); setProfileLoaded(false) }
