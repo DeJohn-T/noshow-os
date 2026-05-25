@@ -305,8 +305,6 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
   const [tab, setTab] = useState('Overview')
   const [notesSummary, setNotesSummary] = useState(contact.notesSummary || '')
   const [summaryLoading, setSummaryLoading] = useState(false)
-  const [cleaningNotes, setCleaningNotes] = useState(false)
-  const [notesKey, setNotesKey] = useState(0)
   const [notesSubTab, setNotesSubTab] = useState('my-notes')
   const [meetingNotes, setMeetingNotes] = useState(contact.meetingNotes || '')
   const [calDate, setCalDate] = useState(() => { const d = new Date(); d.setDate(d.getDate() + 7); return d.toISOString().split('T')[0] })
@@ -386,36 +384,6 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
     setSummaryLoading(false)
   }
 
-  async function cleanUpNotes() {
-    const raw = (c.notes || '').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim()
-    if (!raw) return
-    setCleaningNotes(true)
-    try {
-      const cleaned = await callClaude(
-        `You are lightly cleaning up raw meeting notes. Fix ONLY formatting issues — do NOT restructure, reorder, summarize, or remove any content.
-
-Do:
-- Fix inconsistent spacing and extra blank lines
-- Clean up separator lines (like ----, ===, ***) into a single clean line
-- Fix obvious duplicate lines (exact repeats only)
-- Normalize bullet points (use - consistently)
-
-Do NOT:
-- Reorder, merge, or split any sections
-- Remove any content, even if redundant
-- Summarize or shorten anything
-- Add new sections or headers that weren't there
-- Change any wording
-
-Return the full cleaned text in plain text.`,
-        `${raw}`,
-        4000
-      )
-      upd('notes', cleaned)
-      setNotesKey(k => k + 1)
-    } catch (e) { console.error(e) }
-    setCleaningNotes(false)
-  }
 
   function addToGoogleCalendar() {
     const start = new Date(`${calDate}T${calTime}:00`)
@@ -575,7 +543,7 @@ Return the full cleaned text in plain text.`,
         </div>
       </div>
 
-      <Tabs tabs={['Overview', 'Notes', 'LinkedIn', 'Prep Brief']} active={tab} onChange={setTab} />
+      <Tabs tabs={['Overview', 'Notes', 'LinkedIn', 'Resume', 'Prep Brief']} active={tab} onChange={setTab} />
 
       {/* ── OVERVIEW ── */}
       {tab === 'Overview' && (
@@ -811,13 +779,8 @@ Return the full cleaned text in plain text.`,
               <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px', marginBottom: 16 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                   <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)' }}>📝 Notes <span style={{ fontSize: 9, opacity: 0.5, fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>· auto-saves</span></div>
-                  {c.notes && (
-                    <Button size="sm" onClick={cleanUpNotes} disabled={cleaningNotes}>
-                      {cleaningNotes ? <><Spinner />Cleaning...</> : '✨ Clean up'}
-                    </Button>
-                  )}
                 </div>
-                <RichNotes key={notesKey} value={c.notes} onChange={v => upd('notes', v)} placeholder="Key takeaways, action items, things they mentioned..." minHeight={160} />
+                <RichNotes value={c.notes} onChange={v => upd('notes', v)} placeholder="Key takeaways, action items, things they mentioned..." minHeight={160} />
               </div>
             </>
           )}
@@ -984,6 +947,47 @@ Return the full cleaned text in plain text.`,
             </div>
           )}
           {parsed?.error && <Notice variant="muted" style={{ marginTop: 10 }}>Couldn't parse. Make sure it's a LinkedIn-exported PDF.</Notice>}
+        </div>
+      )}
+
+      {/* ── RESUME ── */}
+      {tab === 'Resume' && (
+        <div>
+          <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.6 }}>
+            Upload {c.name?.split(' ')[0]}'s resume if they've shared it with you — useful for prep briefs and follow-ups.
+          </div>
+          <div style={{ marginBottom: 16 }}>
+            <Notice variant="blue" style={{ marginBottom: 10 }}>Save as PDF and drop below</Notice>
+            <div
+              onDragOver={e => { e.preventDefault(); setPdfDragging(true) }}
+              onDragLeave={() => setPdfDragging(false)}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+              style={{ border: `2px dashed ${pdfDragging ? 'var(--accent)' : 'var(--border-strong)'}`, borderRadius: 'var(--radius-md)', padding: '1.5rem', textAlign: 'center', cursor: 'pointer', background: pdfDragging ? 'var(--accent-dim)' : 'transparent', transition: 'all 0.15s' }}
+            >
+              {parsing
+                ? <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontSize: 13, color: 'var(--text-secondary)' }}><Spinner /> Parsing resume...</div>
+                : pdfName
+                  ? <div><div style={{ fontSize: 22, marginBottom: 4 }}>📄</div><div style={{ fontSize: 13, fontWeight: 500 }}>{pdfName}</div><div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 2 }}>Click to replace</div></div>
+                  : <div><div style={{ fontSize: 28, marginBottom: 6, opacity: 0.25 }}>⬆</div><div style={{ fontSize: 13 }}>Drop their resume PDF here</div><div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 2 }}>or click to browse</div></div>}
+            </div>
+            <input ref={fileInputRef} type="file" accept=".pdf" style={{ display: 'none' }} onChange={e => handlePDFFile(e.target.files[0])} />
+          </div>
+
+          {parsed && !parsed.error && (
+            <div>
+              <div style={{ borderTop: '1px solid var(--border)', margin: '16px 0' }} />
+              <div style={{ fontWeight: 700, fontFamily: 'var(--font-display)', marginBottom: 12 }}>{c.name}'s Resume</div>
+              {parsed.summary && <div style={{ fontSize: 13, lineHeight: 1.8, color: 'var(--text-secondary)', marginBottom: 16 }}>{parsed.summary}</div>}
+              {parsed.companies?.length > 0 && <div style={{ marginBottom: 12 }}><SectionLabel>Experience</SectionLabel><div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>{parsed.companies.map((x, i) => <div key={i} style={{ display: 'flex', gap: 10, background: 'var(--chip-experience-bg)', border: '1px solid var(--chip-experience-border)', borderRadius: 10, padding: '8px 12px' }}><span style={{ fontSize: 14, flexShrink: 0 }}>💼</span><span style={{ fontSize: 12, color: 'var(--chip-experience-color)', lineHeight: 1.6 }}>{x}</span></div>)}</div></div>}
+              {parsed.education?.length > 0 && <div style={{ marginBottom: 12 }}><SectionLabel>🎓 Education</SectionLabel><div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>{parsed.education.map((x, i) => <Chip key={i} kind="education">{x}</Chip>)}</div></div>}
+              {parsed.skills?.length > 0 && <div style={{ marginBottom: 12 }}><SectionLabel>⚡ Skills</SectionLabel><div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>{parsed.skills.map((x, i) => <Chip key={i} kind="skill">{x}</Chip>)}</div></div>}
+              <div style={{ marginTop: 12 }}>
+                <Button size="sm" variant="primary" onClick={() => saveAll()}>Save</Button>
+              </div>
+            </div>
+          )}
+          {parsed?.error && <Notice variant="muted" style={{ marginTop: 10 }}>Couldn't parse — make sure it's a standard PDF.</Notice>}
         </div>
       )}
 

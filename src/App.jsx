@@ -1849,35 +1849,91 @@ export default function App() {
             </button>
           </div>
 
-          {/* Category sections */}
-          {contactSearch.trim() ? (
-            <div>
-              <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginBottom: 10 }}>{filteredContacts.length} result{filteredContacts.length !== 1 ? 's' : ''} for "{contactSearch}"</div>
-              <ContactList contacts={filteredContacts} onSelect={setDetail} />
-            </div>
-          ) : contactFilter === 'all' ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-              {[
-                { status: 'new', label: 'New — Reach Out', icon: '👋', color: '#917aff' },
-                { status: 'scheduled', label: 'Scheduled Meetings', icon: '📅', color: '#4ade80' },
-                { status: 'completed', label: 'Completed Chats', icon: '✓', color: '#fbbf24' },
-                { status: 'followed up', label: 'Followed Up', icon: '✉', color: '#f472b6' },
-              ].map(cat => {
-                const catContacts = contacts.filter(x => x.status === cat.status)
-                if (catContacts.length === 0) return null
-                return (
-                  <div key={cat.status}>
-                    <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: cat.color, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span>{cat.icon}</span> {cat.label} <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-tertiary)', marginLeft: 4 }}>({catContacts.length})</span>
-                    </div>
-                    <ContactList contacts={catContacts} onSelect={setDetail} />
+          {/* A-Z Directory */}
+          {(() => {
+            const todayStr = new Date().toISOString().split('T')[0]
+            const STATUS_COLORS = { new: '#917aff', scheduled: '#4ade80', completed: '#fbbf24', 'followed up': '#f472b6' }
+            const STATUS_LABELS = { new: 'New', scheduled: 'Scheduled', completed: 'Completed', 'followed up': 'Followed Up' }
+
+            const base = contactSearch.trim() ? filteredContacts
+              : contactFilter === 'all' ? contacts
+              : contacts.filter(x => x.status === contactFilter)
+
+            if (base.length === 0) return (
+              <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-tertiary)', fontSize: 14 }}>
+                {contactSearch.trim() ? `No results for "${contactSearch}"` : 'No contacts yet — add one to get started!'}
+              </div>
+            )
+
+            const sorted = [...base].sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+            const grouped = {}
+            for (const c of sorted) {
+              const letter = (c.name || '#')[0].toUpperCase()
+              if (!grouped[letter]) grouped[letter] = []
+              grouped[letter].push(c)
+            }
+
+            return (
+              <div>
+                {contactSearch.trim() && (
+                  <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginBottom: 12 }}>
+                    {base.length} result{base.length !== 1 ? 's' : ''} for "{contactSearch}"
                   </div>
-                )
-              })}
-            </div>
-          ) : (
-            <ContactList contacts={contacts.filter(x => x.status === contactFilter)} onSelect={setDetail} />
-          )}
+                )}
+                {Object.keys(grouped).sort().map(letter => (
+                  <div key={letter} style={{ marginBottom: 20 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8, paddingBottom: 4, borderBottom: '1px solid var(--border)' }}>
+                      {letter}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {grouped[letter].map(person => {
+                        const followUpDue = person.followUpDate && person.followUpDate <= todayStr && person.nextAction !== 'done' && person.status !== 'followed up'
+                        const hasUpcoming = person.chatDate && person.chatDate >= todayStr && person.status === 'scheduled'
+                        const color = STATUS_COLORS[person.status] || '#917aff'
+                        return (
+                          <div key={person.id} onClick={() => setDetail(person)}
+                            style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 14, padding: '12px 14px', cursor: 'pointer', transition: 'border-color 0.15s' }}
+                            onMouseEnter={e => e.currentTarget.style.borderColor = color + '66'}
+                            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
+                          >
+                            <Avatar name={person.name} company={person.company} size={38} />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', marginBottom: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{person.name}</div>
+                              <div style={{ fontSize: 12, color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {[person.role, person.company].filter(Boolean).join(' · ') || 'No role set'}
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+                              <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20, background: color + '22', color, border: `1px solid ${color}44`, whiteSpace: 'nowrap' }}>
+                                {STATUS_LABELS[person.status] || person.status}
+                              </span>
+                              <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                                {hasUpcoming && (
+                                  <span style={{ fontSize: 10, color: '#4ade80', background: 'rgba(74,222,128,0.1)', padding: '1px 6px', borderRadius: 10 }}>
+                                    ☕ {new Date(person.chatDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                  </span>
+                                )}
+                                {followUpDue && (
+                                  <span style={{ fontSize: 10, color: '#f9a8d4', background: 'rgba(244,114,182,0.1)', padding: '1px 6px', borderRadius: 10 }}>
+                                    🔔 Follow-up due
+                                  </span>
+                                )}
+                                {person.nextAction === 'done' && (
+                                  <span style={{ fontSize: 10, color: '#4ade80', background: 'rgba(74,222,128,0.08)', padding: '1px 6px', borderRadius: 10 }}>
+                                    ✓ Done
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          })()}
 
           <div style={{ marginTop: '1.5rem' }}>
             <ProTipBox />
