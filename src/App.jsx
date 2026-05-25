@@ -1,5 +1,5 @@
 // App.jsx
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { ContactList, UpcomingList, MonthCalendar } from './components/ContactList'
 import { ContactDetail } from './components/ContactDetail'
 import { Onboarding } from './components/Onboarding'
@@ -1083,6 +1083,7 @@ function LoginScreen() {
 
 // ─── Main App ───────────────────────────────────────────────────────────────────
 export default function App() {
+  const authedUserId = useRef(null) // tracks which user we've already initialized for
   const [currentUser, setUser] = useState(null)
   const [authChecked, setAuthChecked] = useState(false)
   const [profile, setProfile] = useState(null)
@@ -1139,12 +1140,19 @@ export default function App() {
   }, [])
 
   async function loginWithSupabase(userId) {
-    // Show the app immediately using whatever is in localStorage
-    setCurrentUser(userId)
-    setUser(userId)
-    setProfileLoaded(false)
-    setAuthChecked(true)
-    // Then sync cloud data in the background — no blue screen wait
+    // Only run the UI setup once per user — SIGNED_IN fires on every token
+    // refresh which would otherwise reset profileLoaded and flash the screen
+    const isFirstLogin = authedUserId.current !== userId
+    authedUserId.current = userId
+
+    if (isFirstLogin) {
+      setCurrentUser(userId)
+      setUser(userId)
+      setProfileLoaded(false)
+      setAuthChecked(true)
+    }
+
+    // Background cloud sync always runs to get latest data
     try {
       const cloud = await fetchUserData(userId)
       if (cloud) {
