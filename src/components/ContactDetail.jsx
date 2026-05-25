@@ -306,6 +306,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
   const [notesSummary, setNotesSummary] = useState(contact.notesSummary || '')
   const [summaryLoading, setSummaryLoading] = useState(false)
   const [cleaningNotes, setCleaningNotes] = useState(false)
+  const [notesKey, setNotesKey] = useState(0)
   const [notesSubTab, setNotesSubTab] = useState('my-notes')
   const [meetingNotes, setMeetingNotes] = useState(contact.meetingNotes || '')
   const [calDate, setCalDate] = useState(() => { const d = new Date(); d.setDate(d.getDate() + 7); return d.toISOString().split('T')[0] })
@@ -386,7 +387,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
   }
 
   async function cleanUpNotes() {
-    const raw = c.notes?.replace(/<[^>]+>/g, '').trim()
+    const raw = (c.notes || '').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').trim()
     if (!raw) return
     setCleaningNotes(true)
     try {
@@ -401,6 +402,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
         `Notes from meeting with ${c.name}:\n\n${raw.slice(0, 6000)}`
       )
       upd('notes', cleaned)
+      setNotesKey(k => k + 1)
     } catch (e) { console.error(e) }
     setCleaningNotes(false)
   }
@@ -805,7 +807,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
                     </Button>
                   )}
                 </div>
-                <RichNotes value={c.notes} onChange={v => upd('notes', v)} placeholder="Key takeaways, action items, things they mentioned..." minHeight={160} />
+                <RichNotes key={notesKey} value={c.notes} onChange={v => upd('notes', v)} placeholder="Key takeaways, action items, things they mentioned..." minHeight={160} />
               </div>
             </>
           )}
