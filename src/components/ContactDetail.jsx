@@ -220,7 +220,7 @@ const STATUSES = ['new', 'scheduled', 'completed', 'followed up']
 
 export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule, resume, profileSkills }) {
   const [c, setC] = useState(contact)
-  const [tab, setTab] = useState('Overview')
+  const [tab, setTab] = useState(!contact.name || contact.name === 'Unknown' || contact.name === 'New Contact' ? 'Edit' : 'Overview')
   const [linkedinUrl, setLinkedinUrl] = useState(contact.linkedinUrl || '')
   const [parsing, setParsing] = useState(false)
   const [parsed, setParsed] = useState(contact.parsedProfile || null)
@@ -401,7 +401,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
         </div>
       </div>
 
-      <Tabs tabs={['Overview', 'LinkedIn', 'Prep Brief', 'Follow-up']} active={tab} onChange={setTab} />
+      <Tabs tabs={['Overview', 'Edit', 'LinkedIn', 'Prep Brief', 'Follow-up']} active={tab} onChange={setTab} />
 
       {/* ── OVERVIEW ── */}
       {tab === 'Overview' && (
@@ -530,6 +530,53 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
           </div>
         </div>
       )}
+
+      {/* ── EDIT ── */}
+      {tab === 'Edit' && (() => {
+        const iStyle = { width: '100%', background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 10, padding: '10px 13px', fontSize: 14, outline: 'none', fontFamily: 'var(--font-sans)', boxSizing: 'border-box' }
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, paddingTop: 4 }}>
+            <div>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>Name</label>
+              <input value={editName} onChange={e => setEditName(e.target.value)} placeholder="Full name" style={iStyle} />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <div>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>Role</label>
+                <input value={editRole} onChange={e => setEditRole(e.target.value)} placeholder="e.g. Recruiter" style={iStyle} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>Company</label>
+                <input value={editCompany} onChange={e => setEditCompany(e.target.value)} placeholder="e.g. Google" style={iStyle} />
+              </div>
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>Notes</label>
+              <textarea
+                value={c.notes || ''}
+                onChange={e => upd('notes', e.target.value)}
+                placeholder="How you met, what you talked about..."
+                rows={4}
+                style={{ ...iStyle, resize: 'none', lineHeight: 1.6 }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>Email</label>
+              <input value={c.email || ''} onChange={e => upd('email', e.target.value)} placeholder="email@company.com" style={iStyle} />
+            </div>
+            <button
+              onClick={() => {
+                const updated = { ...c, name: editName.trim() || c.name, role: editRole.trim(), company: editCompany.trim() }
+                setC(updated)
+                onUpdate({ ...updated, linkedinUrl, parsedProfile: parsed, brief, followUpText: fuText, pdfName, pastRoles })
+                setTab('Overview')
+              }}
+              style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 10, padding: '13px', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)', marginTop: 4 }}>
+              Save Changes
+            </button>
+          </div>
+        )
+      })()}
 
       {/* ── LINKEDIN ── */}
       {tab === 'LinkedIn' && (
