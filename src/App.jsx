@@ -1114,6 +1114,7 @@ export default function App() {
   const [calendarDate, setCalendarDate] = useState('')
   const [contactFilter, setContactFilter] = useState('all')
   const [contactSearch, setContactSearch] = useState('')
+  const [contactView, setContactView] = useState('az') // 'az' | 'grouped'
   const [debriefContact, setDebriefContact] = useState(null)
   const [showBrainDump, setShowBrainDump] = useState(false)
 
@@ -1844,12 +1845,20 @@ export default function App() {
             <button onClick={() => setShowNotionImport(true)} style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6, padding: '10px 14px', background: 'var(--surface-3)', color: 'var(--text-secondary)', border: '1px solid var(--border-strong)', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap' }}>
               📋 Import
             </button>
+            {/* View toggle */}
+            <div style={{ display: 'flex', background: 'var(--surface-3)', border: '1px solid var(--border-strong)', borderRadius: 10, overflow: 'hidden', flexShrink: 0 }}>
+              {[['az', '⬡'], ['grouped', '▤']].map(([v, icon]) => (
+                <button key={v} onClick={() => setContactView(v)} title={v === 'az' ? 'A–Z Directory' : 'By Status'} style={{ padding: '10px 12px', background: contactView === v ? 'var(--accent-dim)' : 'transparent', color: contactView === v ? 'var(--accent)' : 'var(--text-tertiary)', border: 'none', cursor: 'pointer', fontSize: 15, lineHeight: 1 }}>
+                  {icon}
+                </button>
+              ))}
+            </div>
             <button onClick={() => setShowAdd(true)} style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px', background: 'var(--accent)', color: 'var(--accent-fg)', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap' }}>
               + Add Contact
             </button>
           </div>
 
-          {/* A-Z Directory */}
+          {/* A-Z Directory or Grouped */}
           {(() => {
             const todayStr = new Date().toISOString().split('T')[0]
             const STATUS_COLORS = { new: '#917aff', scheduled: '#4ade80', completed: '#fbbf24', 'followed up': '#f472b6' }
@@ -1858,6 +1867,34 @@ export default function App() {
             const base = contactSearch.trim() ? filteredContacts
               : contactFilter === 'all' ? contacts
               : contacts.filter(x => x.status === contactFilter)
+
+            // Grouped by status view (recently added feel)
+            if (contactView === 'grouped' && !contactSearch.trim()) {
+              const cats = [
+                { status: 'new', label: 'New — Reach Out', icon: '👋', color: '#917aff' },
+                { status: 'scheduled', label: 'Scheduled Meetings', icon: '📅', color: '#4ade80' },
+                { status: 'completed', label: 'Completed Chats', icon: '✓', color: '#fbbf24' },
+                { status: 'followed up', label: 'Followed Up', icon: '✉', color: '#f472b6' },
+              ]
+              const toShow = contactFilter === 'all' ? cats : cats.filter(c => c.status === contactFilter)
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                  {toShow.map(cat => {
+                    const catContacts = base.filter(x => x.status === cat.status)
+                    if (catContacts.length === 0) return null
+                    return (
+                      <div key={cat.status}>
+                        <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: cat.color, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span>{cat.icon}</span> {cat.label} <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-tertiary)', marginLeft: 4 }}>({catContacts.length})</span>
+                        </div>
+                        <ContactList contacts={catContacts} onSelect={setDetail} />
+                      </div>
+                    )
+                  })}
+                  {base.length === 0 && <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-tertiary)', fontSize: 14 }}>No contacts yet.</div>}
+                </div>
+              )
+            }
 
             if (base.length === 0) return (
               <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-tertiary)', fontSize: 14 }}>
