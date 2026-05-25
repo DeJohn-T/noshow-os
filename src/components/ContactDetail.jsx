@@ -2,7 +2,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react'
 import { Avatar, StatusBadge, Button, Input, Textarea, RichNotes, Tabs, Notice, Spinner, AIOutput, SectionLabel, Chip } from './UI'
 import { parseLinkedInPDF, generateBrief, generateFollowUp, callClaude, callClaudeChat } from '../lib/ai'
-import { supabase } from '../lib/supabase.js'
 import { extractTextFromPDF } from '../lib/pdfParser'
 import { addDays } from '../lib/utils'
 
@@ -406,37 +405,19 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
     setCleaningNotes(false)
   }
 
-  async function addToGoogleCalendar() {
-    setCalLoading2(true)
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      const token = session?.provider_token
-      if (!token) throw new Error('No Google token — re-sign in to grant calendar access')
-      const start = new Date(`${calDate}T${calTime}:00`)
-      const end = new Date(start.getTime() + 60 * 60 * 1000)
-      const res = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          summary: `Follow-up · ${c.name}`,
-          description: `${c.role ? `${c.role} at ${c.company}` : c.company || ''}\n\nScheduled via NoShow OS`,
-          start: { dateTime: start.toISOString() },
-          end: { dateTime: end.toISOString() },
-        }),
-      })
-      if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.error?.message || `Calendar error ${res.status}`)
-      }
-      // save the date too
-      const updates = { followUpDate: calDate }
-      const updated = { ...c, ...updates }; setC(updated); saveAll(updates)
-      setCalAdded(true)
-      setTimeout(() => setCalAdded(false), 3000)
-    } catch (e) {
-      alert(e.message)
-    }
-    setCalLoading2(false)
+  function addToGoogleCalendar() {
+    const start = new Date(`${calDate}T${calTime}:00`)
+    const end = new Date(start.getTime() + 60 * 60 * 1000)
+    const fmt = d => d.toISOString().replace(/[-:]/g, '').split('.')[0]
+    const title = encodeURIComponent(`Follow-up · ${c.name}`)
+    const details = encodeURIComponent(`${[c.role, c.company].filter(Boolean).join(' at ')}\n\nScheduled via NoShow OS`)
+    const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${fmt(start)}/${fmt(end)}&details=${details}`
+    window.open(url, '_blank')
+    // also save the date in-app
+    const updates = { followUpDate: calDate }
+    const updated = { ...c, ...updates }; setC(updated); saveAll(updates)
+    setCalAdded(true)
+    setTimeout(() => setCalAdded(false), 2000)
   }
 
   function savePastRole() {
