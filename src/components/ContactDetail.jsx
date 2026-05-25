@@ -614,8 +614,17 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
             {/* Date picker — shown when Follow Up or Circle Back selected */}
             {(c.nextAction === 'follow-up' || c.nextAction === 'circle-back') && (
               <div style={{ borderTop: '1px solid var(--border)', paddingTop: 12, marginTop: 2 }}>
-                <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginBottom: 8, fontWeight: 600 }}>
-                  {c.nextAction === 'follow-up' ? '📬 When do you want to follow up?' : '🔄 When do you want to circle back?'}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-tertiary)', fontWeight: 600 }}>
+                    {c.nextAction === 'follow-up' ? '📬 When do you want to follow up?' : '🔄 When do you want to circle back?'}
+                  </div>
+                  <button onClick={() => {
+                    const today = new Date().toISOString().split('T')[0]
+                    const updates = { followUpDate: today, nextAction: 'done', status: 'followed up' }
+                    const updated = { ...c, ...updates }; setC(updated); saveAll(updates)
+                  }} style={{ background: 'rgba(74,222,128,0.15)', border: '1px solid rgba(74,222,128,0.3)', color: '#4ade80', borderRadius: 8, padding: '4px 10px', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap' }}>
+                    ✓ Already did it
+                  </button>
                 </div>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                   <input type="date" value={calDate} onChange={e => setCalDate(e.target.value)}
