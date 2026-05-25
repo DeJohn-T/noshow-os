@@ -305,6 +305,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
   const [tab, setTab] = useState('Overview')
   const [notesSummary, setNotesSummary] = useState(contact.notesSummary || '')
   const [summaryLoading, setSummaryLoading] = useState(false)
+  const [cleaningNotes, setCleaningNotes] = useState(false)
   const [notesSubTab, setNotesSubTab] = useState('my-notes')
   const [meetingNotes, setMeetingNotes] = useState(contact.meetingNotes || '')
   const [linkedinUrl, setLinkedinUrl] = useState(contact.linkedinUrl || '')
@@ -378,6 +379,26 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
       onUpdate(updated)
     } catch (e) { console.error(e) }
     setSummaryLoading(false)
+  }
+
+  async function cleanUpNotes() {
+    const raw = c.notes?.replace(/<[^>]+>/g, '').trim()
+    if (!raw) return
+    setCleaningNotes(true)
+    try {
+      const cleaned = await callClaude(
+        `Clean up and reformat these meeting notes. Make them readable and well-structured. Rules:
+- Preserve ALL information and every specific detail — do not remove or summarize anything
+- Keep exact quotes and specific advice word for word
+- Add clear structure: use bullet points, short paragraphs, or headers where it makes sense
+- Remove duplicate lines, weird formatting artifacts, and clutter
+- Return plain text only — no markdown symbols like ** or ##
+- Keep it concise but complete`,
+        `Notes from meeting with ${c.name}:\n\n${raw.slice(0, 6000)}`
+      )
+      upd('notes', cleaned)
+    } catch (e) { console.error(e) }
+    setCleaningNotes(false)
   }
 
   function savePastRole() {
@@ -723,7 +744,14 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
                 </div>
               )}
               <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px', marginBottom: 16 }}>
-                <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)', marginBottom: 10 }}>📝 Notes <span style={{ fontSize: 9, opacity: 0.5, fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>· auto-saves</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)' }}>📝 Notes <span style={{ fontSize: 9, opacity: 0.5, fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>· auto-saves</span></div>
+                  {c.notes && (
+                    <Button size="sm" onClick={cleanUpNotes} disabled={cleaningNotes}>
+                      {cleaningNotes ? <><Spinner />Cleaning...</> : '✨ Clean up'}
+                    </Button>
+                  )}
+                </div>
                 <RichNotes value={c.notes} onChange={v => upd('notes', v)} placeholder="Key takeaways, action items, things they mentioned..." minHeight={160} />
               </div>
             </>
