@@ -1,6 +1,6 @@
 // components/ContactDetail.jsx
 import React, { useState, useRef, useEffect, useMemo } from 'react'
-import { Avatar, StatusBadge, Button, Input, Textarea, RichNotes, Tabs, Notice, Spinner, AIOutput, SectionLabel, Chip } from './UI'
+import { Avatar, StatusBadge, Button, Input, Textarea, RichNotes, Tabs, Notice, Spinner, AIOutput, SectionLabel, Chip, CompanyLogo } from './UI'
 import { parseLinkedInPDF, generateBrief, generateFollowUp, callClaude, callClaudeChat } from '../lib/ai'
 import { extractTextFromPDF } from '../lib/pdfParser'
 import { addDays } from '../lib/utils'
@@ -558,7 +558,10 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
             <div style={{ background: 'linear-gradient(135deg, rgba(139,127,255,0.1), rgba(139,127,255,0.03))', border: '1px solid rgba(139,127,255,0.25)', borderRadius: 14, padding: '14px 16px' }}>
               <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#c4b8ff', marginBottom: 8 }}>💼 Role</div>
               <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{c.role || 'Not set'}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>{c.company || 'No company'}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+                <CompanyLogo company={c.company} size={16} />
+                <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{c.company || 'No company'}</span>
+              </div>
             </div>
             <div style={{ background: 'linear-gradient(135deg, rgba(74,222,128,0.1), rgba(74,222,128,0.03))', border: '1px solid rgba(74,222,128,0.25)', borderRadius: 14, padding: '14px 16px' }}>
               <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6ee7b7', marginBottom: 8 }}>📊 Status</div>
@@ -644,7 +647,10 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
                     </div>
                     <div>
                       <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{c.role || 'Unknown role'}</div>
-                      <div style={{ fontSize: 12, color: 'var(--accent)', marginTop: 1 }}>{c.company || ''} · <span style={{ opacity: 0.7 }}>Current</span></div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
+                        <CompanyLogo company={c.company} size={14} />
+                        <span style={{ fontSize: 12, color: 'var(--accent)' }}>{c.company || ''} · <span style={{ opacity: 0.7 }}>Current</span></span>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -656,8 +662,11 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{r.role || r.company}</div>
-                      <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 1 }}>
-                        {r.role && r.company ? r.company : ''}{r.period ? ` · ${r.period}` : ''}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
+                        <CompanyLogo company={r.company} size={14} />
+                        <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                          {r.role && r.company ? r.company : ''}{r.period ? ` · ${r.period}` : ''}
+                        </span>
                       </div>
                     </div>
                     <button onClick={() => removePastRole(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 16, lineHeight: 1, padding: '2px 4px', flexShrink: 0 }}>×</button>

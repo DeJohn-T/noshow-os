@@ -109,6 +109,27 @@ export function Avatar({ name, company, size = 38 }) {
 }
 
 // --- Status Badge ---
+export function CompanyLogo({ company, size = 18 }) {
+  const [state, setState] = React.useState('loading')
+  const domain = getDomain(company)
+  if (!domain) return null
+  return (
+    <img
+      src={`https://logo.clearbit.com/${domain}`}
+      alt={company}
+      onLoad={() => setState('loaded')}
+      onError={() => setState('error')}
+      style={{
+        width: size, height: size, borderRadius: 4, objectFit: 'contain',
+        background: state === 'loaded' ? '#fff' : 'transparent',
+        flexShrink: 0, display: state === 'error' ? 'none' : 'inline-block',
+        border: state === 'loaded' ? '1px solid rgba(255,255,255,0.12)' : 'none',
+        padding: state === 'loaded' ? 1 : 0,
+      }}
+    />
+  )
+}
+
 export function StatusBadge({ status }) {
   const { bg, color } = statusColor(status)
   return (
