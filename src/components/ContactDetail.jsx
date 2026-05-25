@@ -2,7 +2,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react'
 import { Avatar, StatusBadge, Button, Input, Textarea, RichNotes, Tabs, Notice, Spinner, AIOutput, SectionLabel, Chip, CompanyLogo } from './UI'
 import { parseLinkedInPDF, generateBrief, generateFollowUp, callClaude, callClaudeChat } from '../lib/ai'
-import { HOW_WE_MET } from '../App.jsx'
 import { extractTextFromPDF } from '../lib/pdfParser'
 import { addDays } from '../lib/utils'
 
@@ -518,14 +517,9 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
                 <input value={editRole} onChange={e => setEditRole(e.target.value)} placeholder="Role" style={{ background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '5px 10px', fontSize: 12, outline: 'none', fontFamily: 'var(--font-sans)', flex: 1, boxSizing: 'border-box' }} />
                 <input value={editCompany} onChange={e => setEditCompany(e.target.value)} placeholder="Company" style={{ background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '5px 10px', fontSize: 12, outline: 'none', fontFamily: 'var(--font-sans)', flex: 1, boxSizing: 'border-box' }} />
               </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 2 }}>
-                {HOW_WE_MET.map(o => (
-                  <button key={o.value} onClick={() => setEditHowWeMet(editHowWeMet === o.value ? '' : o.value)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 20, border: `1px solid ${editHowWeMet === o.value ? 'var(--accent)' : 'var(--border)'}`, background: editHowWeMet === o.value ? 'var(--accent-dim)' : 'transparent', color: editHowWeMet === o.value ? 'var(--accent)' : 'var(--text-tertiary)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
-                    <span>{o.icon}</span> {o.label}
-                  </button>
-                ))}
-              </div>
+              <input value={editHowWeMet} onChange={e => setEditHowWeMet(e.target.value)}
+                placeholder="How did you meet? (e.g. LinkedIn, Networking event...)"
+                style={{ background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '5px 10px', fontSize: 11, outline: 'none', fontFamily: 'var(--font-sans)', width: '100%', boxSizing: 'border-box', marginBottom: 4 }} />
               <div style={{ display: 'flex', gap: 6 }}>
                 <button onClick={() => {
                   const updated = { ...c, name: editName.trim() || c.name, role: editRole.trim(), company: editCompany.trim(), howWeMet: editHowWeMet }
@@ -575,14 +569,11 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
                 <CompanyLogo company={c.company} size={16} />
                 <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{c.company || 'No company'}</span>
               </div>
-              {c.howWeMet && (() => {
-                const meta = HOW_WE_MET.find(o => o.value === c.howWeMet)
-                return meta ? (
-                  <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--text-tertiary)' }}>
-                    <span>{meta.icon}</span> Met via {meta.label}
-                  </div>
-                ) : null
-              })()}
+              {c.howWeMet && (
+                <div style={{ marginTop: 6, fontSize: 11, color: 'var(--text-tertiary)' }}>
+                  🤝 Met via {c.howWeMet}
+                </div>
+              )}
             </div>
             <div style={{ background: 'linear-gradient(135deg, rgba(74,222,128,0.1), rgba(74,222,128,0.03))', border: '1px solid rgba(74,222,128,0.25)', borderRadius: 14, padding: '14px 16px' }}>
               <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6ee7b7', marginBottom: 8 }}>📊 Status</div>

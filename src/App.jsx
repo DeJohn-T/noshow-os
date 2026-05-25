@@ -811,26 +811,16 @@ function EditProfileModal({ profile, onSave, onClose, onLogout, isMobile }) {
 }
 
 // ─── Add Contact Modal ──────────────────────────────────────────────────────────
-export const HOW_WE_MET = [
-  { value: 'class', label: 'Class / School', icon: '🎓' },
-  { value: 'work', label: 'Work / Internship', icon: '💼' },
-  { value: 'networking', label: 'Networking Event', icon: '🤝' },
-  { value: 'intro', label: 'Mutual Introduction', icon: '👥' },
-  { value: 'linkedin', label: 'LinkedIn / Online', icon: '💻' },
-  { value: 'coffee', label: 'Coffee Chat', icon: '☕' },
-  { value: 'conference', label: 'Conference / Workshop', icon: '🎤' },
-  { value: 'hackathon', label: 'Hackathon / Competition', icon: '🚀' },
-  { value: 'social', label: 'Social Event', icon: '🎉' },
-  { value: 'activity', label: 'Activity / Hobby', icon: '⚡' },
-  { value: 'other', label: 'Other', icon: '✦' },
-]
+export const HOW_WE_MET = [] // user-defined — see getHowWeMetSuggestions()
 
-function AddModal({ onAdd, onClose }) {
+function AddModal({ onAdd, onClose, contacts = [] }) {
   const [name, setName] = useState('')
   const [role, setRole] = useState('')
   const [company, setCompany] = useState('')
   const [howWeMet, setHowWeMet] = useState('')
   const inp = { width: '100%', background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '9px 12px', fontSize: 14, outline: 'none', fontFamily: 'var(--font-sans)', marginBottom: 14 }
+  // Pull suggestions from existing contacts' howWeMet values
+  const suggestions = [...new Set(contacts.map(c => c.howWeMet).filter(Boolean))].slice(0, 8)
   return (
     <div style={{ background: 'var(--surface-2)', borderRadius: 20, border: '1px solid var(--border-strong)', padding: '1.75rem', width: '100%', maxWidth: 440, boxShadow: 'var(--shadow-lg)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
@@ -849,15 +839,18 @@ function AddModal({ onAdd, onClose }) {
           <input value={company} onChange={e => setCompany(e.target.value)} placeholder="Amazon" style={inp} />
         </div>
       </div>
-      <label style={{ display: 'block', fontSize: 11, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>How we met <span style={{ fontWeight: 400, opacity: 0.5 }}>(optional)</span></label>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 18 }}>
-        {HOW_WE_MET.map(o => (
-          <button key={o.value} onClick={() => setHowWeMet(howWeMet === o.value ? '' : o.value)}
-            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 20, border: `1px solid ${howWeMet === o.value ? 'var(--accent)' : 'var(--border)'}`, background: howWeMet === o.value ? 'var(--accent-dim)' : 'var(--surface-3)', color: howWeMet === o.value ? 'var(--accent)' : 'var(--text-secondary)', fontSize: 12, fontWeight: howWeMet === o.value ? 600 : 400, cursor: 'pointer', fontFamily: 'var(--font-sans)', transition: 'all 0.15s' }}>
-            <span>{o.icon}</span> {o.label}
-          </button>
-        ))}
-      </div>
+      <label style={{ display: 'block', fontSize: 11, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>How we met <span style={{ fontWeight: 400, opacity: 0.5 }}>(optional)</span></label>
+      <input value={howWeMet} onChange={e => setHowWeMet(e.target.value)} placeholder="e.g. Coffee chat, LinkedIn, Networking event..." style={{ ...inp, marginBottom: suggestions.length ? 8 : 18 }} />
+      {suggestions.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 14 }}>
+          {suggestions.map(s => (
+            <button key={s} onClick={() => setHowWeMet(s)}
+              style={{ padding: '4px 10px', borderRadius: 20, border: `1px solid ${howWeMet === s ? 'var(--accent)' : 'var(--border)'}`, background: howWeMet === s ? 'var(--accent-dim)' : 'var(--surface-3)', color: howWeMet === s ? 'var(--accent)' : 'var(--text-secondary)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
         <button onClick={onClose} style={{ background: 'var(--surface-3)', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 18px', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Cancel</button>
         <button onClick={() => { if (name.trim()) onAdd({ name, role, company, howWeMet }) }} disabled={!name.trim()}
@@ -1296,6 +1289,9 @@ export default function App() {
   const [detail, setDetail] = useState(null)
   const [quotes, setQuotes] = useState([])
   const [highlights, setHighlights] = useState(() => loadProfile(currentUser)?.highlights || [])
+  const DEFAULT_HOME_CONFIG = { statCards: true, streak: true, networkScore: true, upcoming: true, followUp: true, highlights: true, circleBack: true, tips: true }
+  const [homeConfig, setHomeConfig] = useState(() => ({ ...DEFAULT_HOME_CONFIG, ...loadProfile(currentUser)?.homeConfig }))
+  const [showHomeCustomize, setShowHomeCustomize] = useState(false)
   const [quoteIdx, setQuoteIdx] = useState(0)
   const [quoteFade, setQuoteFade] = useState(true)
   const [quoteLoading, setQuoteLoading] = useState(false)
@@ -1378,9 +1374,16 @@ export default function App() {
           setContacts(loadContacts(userId))
         }
         if (cloud.profile && Object.keys(cloud.profile).length > 0) {
-          saveProfile(userId, cloud.profile)
+          // Merge: preserve local-only fields that cloud might not have yet (e.g. highlights just added)
+          const localProfile = loadProfile(userId)
+          const merged = { ...cloud.profile }
+          if ((localProfile?.highlights?.length || 0) > (cloud.profile.highlights?.length || 0)) {
+            merged.highlights = localProfile.highlights
+          }
+          if (localProfile?.homeConfig) merged.homeConfig = { ...cloud.profile.homeConfig, ...localProfile.homeConfig }
+          saveProfile(userId, merged)
           const p = loadProfile(userId)
-          if (p) setProfile(p)
+          if (p) { setProfile(p); setHighlights(p.highlights || []) }
         }
         if (Array.isArray(cloud.todos) && cloud.todos.length > 0) {
           saveTodos(userId, cloud.todos)
@@ -1407,6 +1410,13 @@ export default function App() {
     const p = { ...profile, highlights: updated }
     setProfile(p); saveProfile(currentUser, p)
   }
+  function toggleHomeSection(key) {
+    const updated = { ...homeConfig, [key]: !homeConfig[key] }
+    setHomeConfig(updated)
+    const p = { ...profile, homeConfig: updated }
+    setProfile(p); saveProfile(currentUser, p)
+  }
+
   function reorderHighlights(updated) {
     setHighlights(updated)
     const p = { ...profile, highlights: updated }
@@ -1658,7 +1668,21 @@ export default function App() {
 
             {/* ── Hero greeting ─── */}
             <div style={{ marginBottom: '1.5rem' }}>
-              <div style={{ fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 10, fontWeight: 500 }}>✦ Dashboard</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <div style={{ fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500 }}>✦ Dashboard</div>
+                <button onClick={() => setShowHomeCustomize(v => !v)} style={{ background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 8, padding: '4px 10px', fontSize: 11, color: 'var(--text-tertiary)', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
+                  {showHomeCustomize ? 'Done' : 'Customize'}
+                </button>
+              </div>
+              {showHomeCustomize && (
+                <div style={{ background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 12, padding: '12px 14px', marginBottom: 14, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {[['statCards','Stats'], ['streak','Streak'], ['networkScore','Network Score'], ['highlights','Highlights'], ['circleBack','Circle Back'], ['upcoming','Upcoming'], ['followUp','Follow-ups'], ['tips','Pro Tips']].map(([key, label]) => (
+                    <button key={key} onClick={() => toggleHomeSection(key)} style={{ padding: '5px 12px', borderRadius: 20, border: `1px solid ${homeConfig[key] ? 'var(--accent)' : 'var(--border)'}`, background: homeConfig[key] ? 'var(--accent-dim)' : 'transparent', color: homeConfig[key] ? 'var(--accent)' : 'var(--text-tertiary)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-sans)', fontWeight: homeConfig[key] ? 600 : 400, transition: 'all 0.15s' }}>
+                      {homeConfig[key] ? '✓ ' : ''}{label}
+                    </button>
+                  ))}
+                </div>
+              )}
               <div style={{ fontFamily: 'var(--font-display)', lineHeight: 1.05, marginBottom: 12 }}>
                 <span style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 400, color: 'var(--text-secondary)' }}>{greeting.line1} </span>
                 <span style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 800, color: 'var(--text-primary)' }}>{greeting.line2}</span>
@@ -1671,7 +1695,7 @@ export default function App() {
             </div>
 
             {/* ── Highlights ─── */}
-            <HighlightsBox highlights={highlights} onAdd={addHighlight} onRemove={removeHighlight} onReorder={reorderHighlights} />
+            {homeConfig.highlights && <HighlightsBox highlights={highlights} onAdd={addHighlight} onRemove={removeHighlight} onReorder={reorderHighlights} />}
 
             {/* ── Prep brief reminder ─── */}
             {soonChats.length > 0 && (
@@ -1691,7 +1715,7 @@ export default function App() {
             )}
 
             {/* ── Stat cards ─── */}
-            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: isMobile ? 8 : 12, marginBottom: '1.25rem' }}>
+            {homeConfig.statCards && <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: isMobile ? 8 : 12, marginBottom: '1.25rem' }}>
               {STAT_CARDS.map(({ label, value, icon, accent, onClick, badge, contactList }) => {
                 // Group contacts by company for avatar display
                 const grouped = []
@@ -1730,33 +1754,33 @@ export default function App() {
                   )}
                 </div>
               )})}
-            </div>
+            </div>}
 
             {/* ── Streak + Score ─── */}
-            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 8 : 12, marginBottom: '1.25rem' }}>
-              <div style={{ background: 'linear-gradient(135deg, rgba(251,191,36,0.1), rgba(251,146,60,0.06))', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 16, padding: '1.1rem 1.25rem', display: 'flex', alignItems: 'center', gap: 14 }}>
+            {(homeConfig.streak || homeConfig.networkScore) && <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : (homeConfig.streak && homeConfig.networkScore ? '1fr 1fr' : '1fr'), gap: isMobile ? 8 : 12, marginBottom: '1.25rem' }}>
+              {homeConfig.streak && <div style={{ background: 'linear-gradient(135deg, rgba(251,191,36,0.1), rgba(251,146,60,0.06))', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 16, padding: '1.1rem 1.25rem', display: 'flex', alignItems: 'center', gap: 14 }}>
                 <div style={{ fontSize: 36 }}>🔥</div>
                 <div>
                   <div style={{ fontSize: 28, fontWeight: 800, fontFamily: 'var(--font-display)', color: '#fbbf24', lineHeight: 1 }}>{streak}</div>
                   <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>week{streak !== 1 ? 's' : ''} streak</div>
                   <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>{streak === 0 ? 'Complete a chat to start!' : streak >= 4 ? 'On fire 🔥 keep going!' : 'Keep it up!'}</div>
                 </div>
-              </div>
-              <div style={{ background: 'linear-gradient(135deg, rgba(139,127,255,0.1), rgba(99,179,255,0.06))', border: '1px solid rgba(139,127,255,0.25)', borderRadius: 16, padding: '1.1rem 1.25rem', display: 'flex', alignItems: 'center', gap: 14 }}>
+              </div>}
+              {homeConfig.networkScore && <div style={{ background: 'linear-gradient(135deg, rgba(139,127,255,0.1), rgba(99,179,255,0.06))', border: '1px solid rgba(139,127,255,0.25)', borderRadius: 16, padding: '1.1rem 1.25rem', display: 'flex', alignItems: 'center', gap: 14 }}>
                 <div style={{ fontSize: 36 }}>⚡</div>
                 <div>
                   <div style={{ fontSize: 28, fontWeight: 800, fontFamily: 'var(--font-display)', color: '#a78bfa', lineHeight: 1 }}>{networkScore}</div>
                   <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>network score</div>
                   <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>{networkScore < 50 ? 'Just getting started' : networkScore < 150 ? 'Building momentum' : networkScore < 300 ? 'Well connected!' : 'Network legend 👑'}</div>
                 </div>
-              </div>
-            </div>
+              </div>}
+            </div>}
 
             {/* ── Main dashboard grid ─── */}
-            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 8 : 12 }}>
+            {(homeConfig.upcoming || homeConfig.followUp) && <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : (homeConfig.upcoming && homeConfig.followUp ? '1fr 1fr' : '1fr'), gap: isMobile ? 8 : 12 }}>
 
               {/* Upcoming chats */}
-              <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 20, padding: '1.5rem' }}>
+              {homeConfig.upcoming && <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 20, padding: '1.5rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                   <div style={{ fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-display)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-secondary)' }}>📅 Upcoming</div>
                   <button onClick={() => setTab('upcoming')} style={{ fontSize: 12, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>View all →</button>
@@ -1789,10 +1813,10 @@ export default function App() {
                       )
                     })}
                   </div>}
-              </div>
+              </div>}
 
               {/* Follow-ups needed */}
-              <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 20, padding: '1.5rem' }}>
+              {homeConfig.followUp && <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 20, padding: '1.5rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                   <div style={{ fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-display)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-secondary)' }}>✉ Follow-ups</div>
                   {needsFollowUp.length > 0 && <span style={{ fontSize: 11, background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.2)', borderRadius: 100, padding: '2px 8px', fontWeight: 600 }}>{needsFollowUp.length} pending</span>}
@@ -1819,7 +1843,7 @@ export default function App() {
                       </div>
                     ))}
                   </div>}
-              </div>
+              </div>}
 
               {/* Circle Back Reminder */}
               {(() => {
@@ -1833,7 +1857,8 @@ export default function App() {
                 const reminders = contacts
                   .filter(c => c.followUpDate && c.nextAction !== 'done' && c.status !== 'followed up')
                   .sort((a, b) => new Date(a.followUpDate) - new Date(b.followUpDate))
-                if (reminders.length === 0) return null
+                const hasCompleted = contacts.some(c => (c.status === 'followed up' || c.nextAction === 'done') && (c.activity || []).some(a => ['followed_up', 'follow_up_written'].includes(a.type)))
+                if (reminders.length === 0 && !hasCompleted) return null
                 const now = new Date()
                 return (
                   <div style={{ gridColumn: '1 / -1', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 20, padding: '1.5rem' }}>
@@ -1844,8 +1869,9 @@ export default function App() {
                         <button onClick={() => setTab('upcoming')} style={{ fontSize: 12, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>View all →</button>
                       </div>
                     </div>
+                    {reminders.length === 0 && <div style={{ fontSize: 13, color: 'var(--text-tertiary)', marginBottom: 8 }}>No pending follow-ups.</div>}
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 8 }}>
-                      {reminders.slice(0, 6).map(c => {
+                      {reminders.slice(0, 4).map(c => {
                         const dt = new Date(c.followUpDate + 'T12:00:00')
                         const isOverdue = dt < now
                         const isToday = dt.toDateString() === now.toDateString()
@@ -1872,6 +1898,36 @@ export default function App() {
                         )
                       })}
                     </div>
+                    {/* Completed follow-ups */}
+                    {(() => {
+                      const done = contacts.filter(c =>
+                        (c.status === 'followed up' || c.nextAction === 'done') &&
+                        (c.activity || []).some(a => ['followed_up', 'follow_up_written'].includes(a.type))
+                      ).slice(0, 4)
+                      if (!done.length) return null
+                      return (
+                        <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border)' }}>
+                          <div style={{ fontSize: 10, color: 'var(--text-tertiary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>✓ Completed</div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                            {done.map(person => {
+                              const lastFu = (person.activity || []).filter(a => ['followed_up', 'follow_up_written'].includes(a.type)).slice(-1)[0]
+                              return (
+                                <div key={person.id} onClick={() => setDetail(person)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: 'rgba(74,222,128,0.05)', border: '1px solid rgba(74,222,128,0.15)', borderRadius: 10, cursor: 'pointer' }}>
+                                  <Avatar name={person.name} company={person.company} size={28} />
+                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ fontSize: 13, fontWeight: 600 }}>{person.name}</div>
+                                    <div style={{ fontSize: 11, color: 'var(--text-tertiary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{[person.role, person.company].filter(Boolean).join(' · ')}</div>
+                                  </div>
+                                  <div style={{ fontSize: 11, color: '#4ade80', fontWeight: 600, flexShrink: 0 }}>
+                                    ✓ {lastFu ? new Date(lastFu.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Done'}
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )
+                    })()}
                   </div>
                 )
               })()}
@@ -1949,7 +2005,7 @@ export default function App() {
                   <button onClick={() => setShowEdit(true)} style={{ fontSize: 12, color: 'var(--text-tertiary)', background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontFamily: 'var(--font-sans)', fontWeight: 500 }}>Manage skills</button>
                 </div>
               </div>
-            </div>
+            </div>}
           </div>
         </div>
       )}
@@ -2359,7 +2415,7 @@ export default function App() {
       {/* ── Modals ────────────────────────────────────────────────────────────────── */}
       {showAdd && (
         <div style={modalBg} onClick={e => { if (e.target === e.currentTarget) setShowAdd(false) }}>
-          <AddModal onAdd={addContact} onClose={() => setShowAdd(false)} />
+          <AddModal onAdd={addContact} onClose={() => setShowAdd(false)} contacts={contacts} />
         </div>
       )}
       {showEdit && (
