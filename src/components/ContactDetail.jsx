@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react'
 import { Avatar, StatusBadge, Button, Input, Textarea, RichNotes, Tabs, Notice, Spinner, AIOutput, SectionLabel, Chip } from './UI'
 import { parseLinkedInPDF, generateBrief, generateFollowUp, callClaude, callClaudeChat } from '../lib/ai'
+import { supabase } from '../lib/supabase.js'
 import { extractTextFromPDF } from '../lib/pdfParser'
 import { addDays } from '../lib/utils'
 
@@ -308,6 +309,10 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
   const [cleaningNotes, setCleaningNotes] = useState(false)
   const [notesSubTab, setNotesSubTab] = useState('my-notes')
   const [meetingNotes, setMeetingNotes] = useState(contact.meetingNotes || '')
+  const [calDate, setCalDate] = useState(() => { const d = new Date(); d.setDate(d.getDate() + 7); return d.toISOString().split('T')[0] })
+  const [calTime, setCalTime] = useState('10:00')
+  const [calLoading2, setCalLoading2] = useState(false)
+  const [calAdded, setCalAdded] = useState(false)
   const [linkedinUrl, setLinkedinUrl] = useState(contact.linkedinUrl || '')
   const [parsing, setParsing] = useState(false)
   const [parsed, setParsed] = useState(contact.parsedProfile || null)
@@ -399,6 +404,39 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
       upd('notes', cleaned)
     } catch (e) { console.error(e) }
     setCleaningNotes(false)
+  }
+
+  async function addToGoogleCalendar() {
+    setCalLoading2(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.provider_token
+      if (!token) throw new Error('No Google token — re-sign in to grant calendar access')
+      const start = new Date(`${calDate}T${calTime}:00`)
+      const end = new Date(start.getTime() + 60 * 60 * 1000)
+      const res = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          summary: `Follow-up · ${c.name}`,
+          description: `${c.role ? `${c.role} at ${c.company}` : c.company || ''}\n\nScheduled via NoShow OS`,
+          start: { dateTime: start.toISOString() },
+          end: { dateTime: end.toISOString() },
+        }),
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error?.message || `Calendar error ${res.status}`)
+      }
+      // save the date too
+      const updates = { followUpDate: calDate }
+      const updated = { ...c, ...updates }; setC(updated); saveAll(updates)
+      setCalAdded(true)
+      setTimeout(() => setCalAdded(false), 3000)
+    } catch (e) {
+      alert(e.message)
+    }
+    setCalLoading2(false)
   }
 
   function savePastRole() {
@@ -569,16 +607,16 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
           {/* What's next */}
           <div style={{ marginBottom: 16, background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 16px' }}>
             <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)', marginBottom: 10 }}>🔮 What's next?</div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: (c.nextAction === 'follow-up' || c.nextAction === 'circle-back') ? 14 : 0 }}>
               {[
-                { key: 'follow-up', icon: '🔄', label: 'Follow Up', sub: 'Send a follow-up soon', color: '#a78bfa' },
-                { key: 'circle-back', icon: '📅', label: 'Circle Back', sub: 'Reconnect in 60-90 days', color: '#60a5fa' },
+                { key: 'follow-up', icon: '🔄', label: 'Follow Up', sub: 'Pick a date below', color: '#a78bfa' },
+                { key: 'circle-back', icon: '📅', label: 'Circle Back', sub: 'Pick a date below', color: '#60a5fa' },
                 { key: 'one-time', icon: '✅', label: 'One & Done', sub: 'No action needed', color: '#34d399' },
               ].map(opt => (
                 <button key={opt.key} onClick={() => {
                   const updates = { nextAction: opt.key }
-                  if (opt.key === 'follow-up') { const d = new Date(); d.setDate(d.getDate() + 30); updates.followUpDate = d.toISOString().split('T')[0]; updates.status = 'followed up' }
-                  if (opt.key === 'circle-back') { const d = new Date(); d.setDate(d.getDate() + 90); updates.followUpDate = d.toISOString().split('T')[0] }
+                  if (opt.key === 'follow-up') { const d = new Date(); d.setDate(d.getDate() + 7); setCalDate(d.toISOString().split('T')[0]); updates.status = 'followed up' }
+                  if (opt.key === 'circle-back') { const d = new Date(); d.setDate(d.getDate() + 90); setCalDate(d.toISOString().split('T')[0]) }
                   const updated = { ...c, ...updates }; setC(updated); saveAll(updates)
                 }} style={{
                   flex: 1, minWidth: 90, background: c.nextAction === opt.key ? `${opt.color}22` : 'var(--surface-2)',
@@ -591,6 +629,31 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
                 </button>
               ))}
             </div>
+
+            {/* Date picker — shown when Follow Up or Circle Back selected */}
+            {(c.nextAction === 'follow-up' || c.nextAction === 'circle-back') && (
+              <div style={{ borderTop: '1px solid var(--border)', paddingTop: 12, marginTop: 2 }}>
+                <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginBottom: 8, fontWeight: 600 }}>
+                  {c.nextAction === 'follow-up' ? '📬 When do you want to follow up?' : '🔄 When do you want to circle back?'}
+                </div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <input type="date" value={calDate} onChange={e => setCalDate(e.target.value)}
+                    style={{ background: 'var(--surface-2)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '7px 10px', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)', flex: 1, minWidth: 130 }} />
+                  <input type="time" value={calTime} onChange={e => setCalTime(e.target.value)}
+                    style={{ background: 'var(--surface-2)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '7px 10px', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)', width: 100 }} />
+                  <button onClick={() => {
+                    const updates = { followUpDate: calDate }
+                    const updated = { ...c, ...updates }; setC(updated); saveAll(updates)
+                  }} style={{ background: 'var(--surface-2)', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 8, padding: '7px 12px', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap' }}>
+                    Save date
+                  </button>
+                  <button onClick={addToGoogleCalendar} disabled={calLoading2 || calAdded}
+                    style={{ background: calAdded ? 'rgba(74,222,128,0.2)' : 'rgba(99,179,255,0.15)', color: calAdded ? '#4ade80' : '#93c5fd', border: `1px solid ${calAdded ? 'rgba(74,222,128,0.3)' : 'rgba(99,179,255,0.3)'}`, borderRadius: 8, padding: '7px 12px', fontSize: 12, cursor: calLoading2 ? 'default' : 'pointer', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}>
+                    {calLoading2 ? <><Spinner />Adding...</> : calAdded ? '✓ Added!' : '📅 Add to Google Calendar'}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Career history */}
