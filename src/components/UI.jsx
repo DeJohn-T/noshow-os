@@ -1,21 +1,18 @@
-// components/UI.jsx — shared reusable components
+// components/UI.jsx - shared reusable components
 
 import React from 'react'
+import { Building2, Highlighter, Loader2, X } from 'lucide-react'
 import { initials, statusColor } from '../lib/utils'
 
 // --- Avatar ---
 const AVATAR_GRADIENTS = [
-  ['#8b7fff', '#6366f1'],
-  ['#f472b6', '#ec4899'],
-  ['#4ade80', '#22c55e'],
-  ['#fbbf24', '#f59e0b'],
-  ['#38bdf8', '#0ea5e9'],
-  ['#fb923c', '#f97316'],
-  ['#a78bfa', '#7c3aed'],
-  ['#34d399', '#10b981'],
+  ['#8fe3ff', '#3ba7c8'],
+  ['#c5ff5a', '#7ea832'],
+  ['#ff7aa8', '#b9476d'],
+  ['#f0ba4d', '#9f7322'],
+  ['#a6b4ff', '#6675c8'],
+  ['#80e29b', '#359b58'],
 ]
-
-const AVATAR_ICONS = ['☕', '✦', '◆', '●', '▲', '★', '◉', '⬟']
 
 function getDomain(company) {
   if (!company) return null
@@ -29,10 +26,9 @@ export function Avatar({ name, company, size = 38 }) {
   const domain = getDomain(company)
   const hash = (name || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0)
   const gradient = AVATAR_GRADIENTS[hash % AVATAR_GRADIENTS.length]
-  const icon = AVATAR_ICONS[hash % AVATAR_ICONS.length]
-  const iconSize = size < 40 ? 14 : 18
+  const fallback = initials(name) || 'NS'
+  const iconSize = size < 40 ? 11 : 14
 
-  // Try Clearbit first, then Google favicon
   const clearbitUrl = domain ? `https://logo.clearbit.com/${domain}` : null
   const googleUrl = domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=128` : null
   const [src, setSrc] = React.useState(clearbitUrl)
@@ -58,15 +54,12 @@ export function Avatar({ name, company, size = 38 }) {
         flexShrink: 0,
         overflow: 'hidden',
       }}>
-        {/* Blurred logo background */}
         <img
           src={src}
           alt=""
           style={{ position: 'absolute', inset: -4, width: 'calc(100% + 8px)', height: 'calc(100% + 8px)', objectFit: 'cover', filter: 'blur(4px) saturate(1.8)', opacity: logoState === 'loaded' ? 0.45 : 0, transition: 'opacity 0.2s' }}
         />
-        {/* Dark overlay for contrast */}
         <div style={{ position: 'absolute', inset: 0, background: 'rgba(15,25,35,0.35)', borderRadius: '50%' }} />
-        {/* Crisp logo on top */}
         <img
           src={src}
           alt={company}
@@ -81,7 +74,7 @@ export function Avatar({ name, company, size = 38 }) {
           style={{ position: 'relative', zIndex: 1, width: size * 0.6, height: size * 0.6, objectFit: 'contain', opacity: logoState === 'loaded' ? 1 : 0, transition: 'opacity 0.2s' }}
         />
         {logoState === 'loading' && (
-          <span style={{ position: 'absolute', fontSize: iconSize, color: '#fff', zIndex: 1 }}>{icon}</span>
+          <span style={{ position: 'absolute', fontSize: iconSize, color: '#fff', zIndex: 1, fontWeight: 800, letterSpacing: '0.02em' }}>{fallback}</span>
         )}
       </div>
     )
@@ -103,7 +96,7 @@ export function Avatar({ name, company, size = 38 }) {
       flexShrink: 0,
       boxShadow: `0 2px 8px ${gradient[0]}44`,
     }}>
-      {icon}
+      {fallback}
     </div>
   )
 }
@@ -119,13 +112,7 @@ export function CompanyLogo({ company, size = 18 }) {
   React.useEffect(() => { setSrc(clearbitUrl); setFailed(false) }, [company])
 
   if (failed || !domain) {
-    return (
-      <svg width={size} height={size} viewBox="0 0 18 18" fill="none" style={{ flexShrink: 0, opacity: 0.3 }}>
-        <rect x="2" y="6" width="14" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
-        <path d="M6 6V4.5A3 3 0 0 1 12 4.5V6" stroke="currentColor" strokeWidth="1.4"/>
-        <rect x="7.5" y="9" width="3" height="4" rx="0.5" fill="currentColor"/>
-      </svg>
-    )
+    return <Building2 size={size} strokeWidth={1.8} style={{ flexShrink: 0, opacity: 0.42 }} aria-hidden="true" />
   }
   return (
     <img
@@ -180,9 +167,9 @@ export function Button({ children, onClick, disabled, variant = 'default', size 
   }
   const variants = {
     default: {
-      background: 'var(--surface)',
+      background: 'rgba(244,247,249,0.04)',
       color: 'var(--text-primary)',
-      borderColor: 'var(--border-strong)',
+      borderColor: 'var(--border)',
     },
     primary: {
       background: 'var(--accent)',
@@ -195,7 +182,7 @@ export function Button({ children, onClick, disabled, variant = 'default', size 
       borderColor: 'transparent',
     },
     danger: {
-      background: 'transparent',
+      background: 'var(--red-dim)',
       color: 'var(--red-text)',
       borderColor: 'var(--red-border)',
     },
@@ -359,14 +346,14 @@ export function RichNotes({ value, onChange, placeholder, minHeight = 120 }) {
           <button style={{ ...btnStyle(), display: 'flex', alignItems: 'center', gap: 4 }}
             onMouseDown={e => { e.preventDefault(); saveRange(); setShowHighlights(v => !v); setShowColors(false) }}
             title="Highlight">
-            ✦ <div style={{ width: 8, height: 8, background: 'rgba(251,191,36,0.5)', borderRadius: 2 }} />
+            <Highlighter size={13} strokeWidth={1.9} aria-hidden="true" />
           </button>
           {showHighlights && (
             <div style={{ position: 'absolute', top: '110%', left: 0, background: 'var(--surface-2)', border: '1px solid var(--border-strong)', borderRadius: 10, padding: 8, display: 'flex', gap: 5, zIndex: 50, boxShadow: 'var(--shadow-lg)' }}>
               {HIGHLIGHT_COLORS.map((c, i) => (
                 <button key={i} onMouseDown={e => { e.preventDefault(); handleHighlight(c) }}
                   style={{ width: 18, height: 18, borderRadius: 4, background: c === 'transparent' ? 'var(--surface-3)' : c, border: '1px solid var(--border-strong)', cursor: 'pointer', padding: 0, fontSize: 10, color: 'var(--text-tertiary)' }}>
-                  {c === 'transparent' ? '✕' : ''}
+                  {c === 'transparent' ? <X size={10} aria-hidden="true" /> : ''}
                 </button>
               ))}
             </div>
@@ -425,17 +412,7 @@ export function Notice({ children, variant = 'muted', style = {} }) {
 // --- Spinner ---
 export function Spinner() {
   return (
-    <span style={{
-      display: 'inline-block',
-      width: 13,
-      height: 13,
-      border: '2px solid var(--border-strong)',
-      borderTopColor: 'var(--accent)',
-      borderRadius: '50%',
-      animation: 'spin 0.65s linear infinite',
-      verticalAlign: 'middle',
-      marginRight: 6,
-    }} />
+    <Loader2 size={14} className="spinner-icon" style={{ marginRight: 6, verticalAlign: 'middle' }} aria-hidden="true" />
   )
 }
 
@@ -467,7 +444,7 @@ export function Tabs({ tabs, active, onChange }) {
   )
 }
 
-// --- Colored Chip — pass a "kind" to get section-specific color ---
+// --- Colored Chip: pass a "kind" to get section-specific color ---
 export function Chip({ children, kind = 'default' }) {
   const kindStyles = {
     experience: { background: 'var(--chip-experience-bg)', color: 'var(--chip-experience-color)', border: '1px solid var(--chip-experience-border)' },
@@ -514,8 +491,8 @@ export function SectionLabel({ children }) {
 export function AIOutput({ children }) {
   return (
     <div style={{
-      background: 'linear-gradient(135deg, rgba(139,127,255,0.06), rgba(99,179,255,0.04))',
-      border: '1px solid rgba(139,127,255,0.2)',
+      background: 'linear-gradient(135deg, rgba(143,227,255,0.07), rgba(197,255,90,0.04))',
+      border: '1px solid var(--border)',
       borderRadius: 'var(--radius-lg)',
       padding: '1.1rem 1.25rem',
       fontSize: 13,
@@ -529,6 +506,25 @@ export function AIOutput({ children }) {
   )
 }
 
+export function IconButton({ label, icon: Icon, onClick, disabled = false, style = {} }) {
+  return (
+    <button className="icon-btn" aria-label={label} title={label} onClick={disabled ? undefined : onClick} disabled={disabled} style={style}>
+      <Icon size={17} strokeWidth={1.8} aria-hidden="true" />
+    </button>
+  )
+}
+
+export function EmptyState({ icon: Icon, title, body, action }) {
+  return (
+    <div style={{ textAlign: 'center', padding: '2.25rem 1rem', color: 'var(--text-tertiary)' }}>
+      {Icon && <Icon size={28} strokeWidth={1.6} style={{ marginBottom: 12, opacity: 0.68 }} aria-hidden="true" />}
+      <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>{title}</div>
+      {body && <div style={{ fontSize: 13, lineHeight: 1.6, maxWidth: 320, margin: '0 auto 14px' }}>{body}</div>}
+      {action}
+    </div>
+  )
+}
+
 // --- Keyframe injection ---
 export function GlobalStyles() {
   return (
@@ -538,7 +534,7 @@ export function GlobalStyles() {
       .fade-in { animation: fadeIn 0.2s ease forwards; }
       input:focus, textarea:focus, select:focus {
         border-color: var(--accent-glow) !important;
-        box-shadow: 0 0 0 3px rgba(139,127,255,0.1);
+        box-shadow: 0 0 0 3px rgba(197,255,90,0.1);
       }
       button:active:not(:disabled) { transform: scale(0.98); }
     `}</style>
