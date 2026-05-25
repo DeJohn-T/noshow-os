@@ -703,6 +703,41 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
             )
           })()}
 
+          {/* Activity timeline */}
+          {(() => {
+            const activity = c.activity || []
+            const connectedDate = c.connectedDate || (c.id ? new Date(c.id).toISOString().split('T')[0] : null)
+            const allEvents = []
+            if (connectedDate && !activity.some(a => a.type === 'connected')) {
+              allEvents.push({ type: 'connected', date: connectedDate, note: 'Connected' })
+            }
+            allEvents.push(...activity)
+            allEvents.sort((a, b) => a.date.localeCompare(b.date))
+            if (!allEvents.length) return null
+            const ICONS = { connected: '🤝', meeting_scheduled: '📅', meeting_completed: '☕', followed_up: '✉', follow_up_written: '✍', status_new: '·' }
+            const LABELS = { connected: 'Connected', meeting_scheduled: 'Meeting scheduled', meeting_completed: 'Meeting completed', followed_up: 'Followed up', follow_up_written: 'Follow-up written' }
+            const fmtD = d => new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            return (
+              <div style={{ marginBottom: 16, background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 16px' }}>
+                <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)', marginBottom: 12 }}>🗓 Activity</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {allEvents.filter(a => LABELS[a.type]).map((a, i) => (
+                    <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <div style={{ fontSize: 14, lineHeight: 1.2 }}>{ICONS[a.type] || '·'}</div>
+                        {i < allEvents.filter(x => LABELS[x.type]).length - 1 && <div style={{ width: 1, flex: 1, background: 'var(--border)', margin: '4px 0', minHeight: 12 }} />}
+                      </div>
+                      <div style={{ paddingTop: 1 }}>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{LABELS[a.type]}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{fmtD(a.date)}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          })()}
+
           {/* Follow-up section */}
           <div style={{ background: 'linear-gradient(135deg, rgba(244,114,182,0.06), rgba(139,127,255,0.04))', border: '1px solid rgba(244,114,182,0.18)', borderRadius: 14, padding: '16px', marginBottom: 16 }}>
             <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#f9a8d4', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

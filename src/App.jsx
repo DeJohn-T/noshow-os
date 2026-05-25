@@ -1299,15 +1299,37 @@ export default function App() {
   function handleOnboardingComplete(p) { saveProfile(currentUser, p); setProfile(p); setShowOnboarding(false) }
   function handleEditSave(p) { saveProfile(currentUser, p); setProfile(p); setShowEdit(false) }
   function persist(u) { setContacts(u); saveContacts(currentUser, u) }
+  function logActivity(existing = [], type, note = '') {
+    const date = new Date().toISOString().split('T')[0]
+    // avoid duplicate same-day same-type entries
+    if (existing.some(e => e.type === type && e.date === date)) return existing
+    return [...existing, { type, date, note }]
+  }
+
   function addContact(c) {
-    persist([{ ...c, id: Date.now(), status: 'new', notes: '', chatDate: '', linkedinUrl: '', parsedProfile: null, brief: '', followUpText: '', pdfName: '' }, ...contacts])
+    const today = new Date().toISOString().split('T')[0]
+    const newContact = { ...c, id: Date.now(), status: 'new', notes: '', chatDate: '', linkedinUrl: '', parsedProfile: null, brief: '', followUpText: '', pdfName: '', connectedDate: today, activity: [{ type: 'connected', date: today }] }
+    persist([newContact, ...contacts])
     setShowAdd(false)
   }
   function updateContact(c) {
     const prev = contacts.find(x => x.id === c.id)
-    persist(contacts.map(x => x.id === c.id ? c : x))
-    setDetail(c)
-    if (c.status === 'completed' && prev?.status !== 'completed') setDebriefContact(c)
+    let activity = c.activity || []
+    if (prev && prev.status !== c.status) {
+      const typeMap = { scheduled: 'meeting_scheduled', completed: 'meeting_completed', 'followed up': 'followed_up', new: 'status_new' }
+      const noteMap = { scheduled: 'Meeting scheduled', completed: 'Meeting completed', 'followed up': 'Followed up', new: 'Moved to new' }
+      activity = logActivity(activity, typeMap[c.status] || 'status_changed', noteMap[c.status] || c.status)
+    }
+    if (prev && c.followUpText && !prev.followUpText) {
+      activity = logActivity(activity, 'follow_up_written', 'Follow-up message written')
+    }
+    if (prev && c.nextAction === 'done' && prev.nextAction !== 'done') {
+      activity = logActivity(activity, 'followed_up', 'Marked follow-up as done')
+    }
+    const updated = { ...c, activity }
+    persist(contacts.map(x => x.id === c.id ? updated : x))
+    setDetail(updated)
+    if (c.status === 'completed' && prev?.status !== 'completed') setDebriefContact(updated)
   }
   function deleteContact(id) { persist(contacts.filter(x => x.id !== id)); setDetail(null) }
 
@@ -1939,6 +1961,22 @@ export default function App() {
                               <div style={{ fontSize: 12, color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {[person.role, person.company].filter(Boolean).join(' · ') || 'No role set'}
                               </div>
+                              {(() => {
+                                const fmtD = d => new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                                const ACT_ICONS = { connected: '🤝', meeting_scheduled: '📅', meeting_completed: '☕', followed_up: '✉', follow_up_written: '✉', status_new: '·' }
+                                const ACT_LABELS = { connected: 'Connected', meeting_scheduled: 'Scheduled', meeting_completed: 'Met', followed_up: 'Followed up', follow_up_written: 'Follow-up sent' }
+                                const items = (person.activity || []).filter(a => ACT_LABELS[a.type])
+                                const connected = person.connectedDate || (person.id ? new Date(person.id).toISOString().split('T')[0] : null)
+                                if (!items.length && !connected) return null
+                                const display = connected && !items.length
+                                  ? [`🤝 Connected ${fmtD(connected)}`]
+                                  : items.slice(-3).map(a => `${ACT_ICONS[a.type] || '·'} ${ACT_LABELS[a.type]} ${fmtD(a.date)}`)
+                                return (
+                                  <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    {display.join('  ·  ')}
+                                  </div>
+                                )
+                              })()}
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
                               <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20, background: color + '22', color, border: `1px solid ${color}44`, whiteSpace: 'nowrap' }}>
