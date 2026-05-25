@@ -1098,7 +1098,6 @@ export default function App() {
     return () => window.removeEventListener('resize', fn)
   }, [])
 
-  const [showBackupBanner, setShowBackupBanner] = useState(() => !sessionStorage.getItem('nos_backup_dismissed'))
 
   const [tab, setTab] = useState('home')
   useEffect(() => { window.scrollTo(0, 0) }, [tab])
@@ -1438,19 +1437,6 @@ export default function App() {
       </div>
 
       {/* Backup reminder banner */}
-      {showBackupBanner && (
-        <div style={{ background: 'rgba(251,191,36,0.08)', borderBottom: '1px solid rgba(251,191,36,0.2)', padding: '8px 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-            Your data only lives in this browser — clear cache and it's gone.
-          </span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-            <button onClick={() => exportBackup(currentUser)} style={{ fontSize: 12, fontWeight: 600, color: '#fbbf24', background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 7, padding: '4px 10px', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
-              Export backup
-            </button>
-            <button onClick={() => { setShowBackupBanner(false); sessionStorage.setItem('nos_backup_dismissed', '1') }} style={{ fontSize: 12, color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>✕</button>
-          </div>
-        </div>
-      )}
 
       {/* ── HOME ─────────────────────────────────────────────────────────────────── */}
       {tab === 'home' && (
