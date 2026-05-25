@@ -110,11 +110,17 @@ export function Avatar({ name, company, size = 38 }) {
 
 // --- Status Badge ---
 export function CompanyLogo({ company, size = 18 }) {
-  const [state, setState] = React.useState('loading')
   const domain = getDomain(company)
-  if (state === 'error' || !domain) {
+  const clearbitUrl = domain ? `https://logo.clearbit.com/${domain}` : null
+  const googleUrl = domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=64` : null
+  const [src, setSrc] = React.useState(clearbitUrl)
+  const [failed, setFailed] = React.useState(false)
+
+  React.useEffect(() => { setSrc(clearbitUrl); setFailed(false) }, [company])
+
+  if (failed || !domain) {
     return (
-      <svg width={size} height={size} viewBox="0 0 18 18" fill="none" style={{ flexShrink: 0, opacity: 0.35 }}>
+      <svg width={size} height={size} viewBox="0 0 18 18" fill="none" style={{ flexShrink: 0, opacity: 0.3 }}>
         <rect x="2" y="6" width="14" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
         <path d="M6 6V4.5A3 3 0 0 1 12 4.5V6" stroke="currentColor" strokeWidth="1.4"/>
         <rect x="7.5" y="9" width="3" height="4" rx="0.5" fill="currentColor"/>
@@ -123,19 +129,13 @@ export function CompanyLogo({ company, size = 18 }) {
   }
   return (
     <img
-      src={`https://logo.clearbit.com/${domain}`}
+      src={src}
       alt={company}
-      onLoad={() => setState('loaded')}
-      onError={() => setState('error')}
-      style={{
-        width: size, height: size, borderRadius: 4, objectFit: 'contain',
-        background: state === 'loaded' ? '#fff' : 'transparent',
-        flexShrink: 0,
-        border: state === 'loaded' ? '1px solid rgba(255,255,255,0.12)' : 'none',
-        padding: state === 'loaded' ? 1 : 0,
-        opacity: state === 'loading' ? 0 : 1,
-        transition: 'opacity 0.2s',
+      onError={() => {
+        if (src === clearbitUrl && googleUrl) { setSrc(googleUrl) }
+        else { setFailed(true) }
       }}
+      style={{ width: size, height: size, borderRadius: 3, objectFit: 'contain', flexShrink: 0, background: '#fff', padding: 1, border: '1px solid rgba(255,255,255,0.1)' }}
     />
   )
 }

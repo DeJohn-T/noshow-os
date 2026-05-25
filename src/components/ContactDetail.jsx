@@ -309,7 +309,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
   const [meetingNotes, setMeetingNotes] = useState(contact.meetingNotes || '')
   const [editingConnectedDate, setEditingConnectedDate] = useState(false)
   const [connectedDateInput, setConnectedDateInput] = useState(contact.connectedDate || '')
-  const [calDate, setCalDate] = useState(() => { const d = new Date(); d.setDate(d.getDate() + 7); return d.toISOString().split('T')[0] })
+  const [calDate, setCalDate] = useState(() => contact.followUpDate || (() => { const d = new Date(); d.setDate(d.getDate() + 7); return d.toISOString().split('T')[0] })())
   const [calTime, setCalTime] = useState('10:00')
   const [calLoading2, setCalLoading2] = useState(false)
   const [calAdded, setCalAdded] = useState(false)
@@ -575,7 +575,15 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
 
           {/* What's next */}
           <div style={{ marginBottom: 16, background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 16px' }}>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)', marginBottom: 10 }}>🔮 What's next?</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)' }}>🔮 What's next?</div>
+              {(() => {
+                const lastFu = (c.activity || []).filter(a => ['followed_up', 'follow_up_written'].includes(a.type)).slice(-1)[0]
+                if (!lastFu) return null
+                const d = new Date(lastFu.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                return <span style={{ fontSize: 11, color: 'var(--success)', fontWeight: 500 }}>✓ Followed up {d}</span>
+              })()}
+            </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: (c.nextAction === 'follow-up' || c.nextAction === 'circle-back') ? 14 : 0 }}>
               {[
                 { key: 'follow-up', icon: '🔄', label: 'Follow Up', sub: 'Pick a date below', color: '#a78bfa' },
