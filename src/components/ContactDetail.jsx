@@ -307,6 +307,8 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
   const [summaryLoading, setSummaryLoading] = useState(false)
   const [notesSubTab, setNotesSubTab] = useState('my-notes')
   const [meetingNotes, setMeetingNotes] = useState(contact.meetingNotes || '')
+  const [editingConnectedDate, setEditingConnectedDate] = useState(false)
+  const [connectedDateInput, setConnectedDateInput] = useState(contact.connectedDate || '')
   const [calDate, setCalDate] = useState(() => { const d = new Date(); d.setDate(d.getDate() + 7); return d.toISOString().split('T')[0] })
   const [calTime, setCalTime] = useState('10:00')
   const [calLoading2, setCalLoading2] = useState(false)
@@ -727,9 +729,28 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
                         <div style={{ fontSize: 14, lineHeight: 1.2 }}>{ICONS[a.type] || '·'}</div>
                         {i < allEvents.filter(x => LABELS[x.type]).length - 1 && <div style={{ width: 1, flex: 1, background: 'var(--border)', margin: '4px 0', minHeight: 12 }} />}
                       </div>
-                      <div style={{ paddingTop: 1 }}>
+                      <div style={{ paddingTop: 1, flex: 1 }}>
                         <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{LABELS[a.type]}</div>
-                        <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{fmtD(a.date)}</div>
+                        {a.type === 'connected' && editingConnectedDate ? (
+                          <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 4 }}>
+                            <input type="date" value={connectedDateInput} onChange={e => setConnectedDateInput(e.target.value)}
+                              style={{ background: 'var(--surface-2)', color: 'var(--text-primary)', border: '1px solid var(--accent)', borderRadius: 6, padding: '3px 8px', fontSize: 12, outline: 'none', fontFamily: 'var(--font-sans)' }} />
+                            <button onClick={() => {
+                              const updated = { ...c, connectedDate: connectedDateInput, activity: (c.activity || []).map(ev => ev.type === 'connected' ? { ...ev, date: connectedDateInput } : ev) }
+                              setC(updated); onUpdate({ ...updated, linkedinUrl, parsedProfile: parsed, brief, followUpText: fuText, pdfName, pastRoles, notesSummary, meetingNotes })
+                              setEditingConnectedDate(false)
+                            }} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 6, padding: '3px 10px', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>Save</button>
+                            <button onClick={() => setEditingConnectedDate(false)} style={{ background: 'none', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer', fontSize: 12 }}>Cancel</button>
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{fmtD(a.date)}</span>
+                            {a.type === 'connected' && (
+                              <button onClick={() => { setConnectedDateInput(a.date); setEditingConnectedDate(true) }}
+                                style={{ background: 'none', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer', fontSize: 11, padding: 0, opacity: 0.6 }}>✏️</button>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
