@@ -31,7 +31,7 @@ const PRO_TIPS = [
   { icon: '⚡', text: 'Add your skills and resume to get better, more personalized prep briefs and job matches.' },
 ]
 
-function HighlightsBox({ highlights, onAdd, onRemove }) {
+function HighlightsBox({ highlights, onAdd, onRemove, onReorder }) {
   const [idx, setIdx] = useState(0)
   const [fade, setFade] = useState(true)
   const [input, setInput] = useState('')
@@ -101,17 +101,37 @@ function HighlightsBox({ highlights, onAdd, onRemove }) {
         <div style={{ fontSize: 13, color: 'var(--text-tertiary)', marginBottom: 10 }}>Add advice, rules, or anything you want to remember. It'll cycle through here.</div>
       )}
 
-      {managing && highlights.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12, maxHeight: 180, overflowY: 'auto' }}>
-          {highlights.map((h, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, background: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: '7px 10px' }}>
-              <span style={{ flex: 1, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{h}</span>
-              <button onClick={() => { onRemove(i); if (idx >= highlights.length - 1) setIdx(Math.max(0, highlights.length - 2)) }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 16, lineHeight: 1, padding: '0 2px', flexShrink: 0 }}>×</button>
+      {managing && highlights.length > 0 && (() => {
+        function DragList({ items, onReorder, onRemove }) {
+          const [dragIdx, setDragIdx] = React.useState(null)
+          const [overIdx, setOverIdx] = React.useState(null)
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 12, maxHeight: 200, overflowY: 'auto' }}>
+              {items.map((h, i) => (
+                <div key={i} draggable
+                  onDragStart={() => setDragIdx(i)}
+                  onDragOver={e => { e.preventDefault(); setOverIdx(i) }}
+                  onDrop={() => {
+                    if (dragIdx === null || dragIdx === i) return
+                    const reordered = [...items]
+                    const [moved] = reordered.splice(dragIdx, 1)
+                    reordered.splice(i, 0, moved)
+                    onReorder(reordered)
+                    setDragIdx(null); setOverIdx(null)
+                  }}
+                  onDragEnd={() => { setDragIdx(null); setOverIdx(null) }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, background: overIdx === i ? 'rgba(251,191,36,0.1)' : 'rgba(255,255,255,0.04)', borderRadius: 8, padding: '7px 10px', border: `1px solid ${overIdx === i ? 'rgba(251,191,36,0.3)' : 'transparent'}`, cursor: 'grab', opacity: dragIdx === i ? 0.4 : 1, transition: 'all 0.1s' }}>
+                  <span style={{ color: 'rgba(251,191,36,0.4)', fontSize: 12, flexShrink: 0 }}>⠿</span>
+                  <span style={{ flex: 1, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{h}</span>
+                  <button onClick={() => { onRemove(i); if (idx >= items.length - 1) setIdx(Math.max(0, items.length - 2)) }}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 16, lineHeight: 1, padding: '0 2px', flexShrink: 0 }}>×</button>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      )}
+          )
+        }
+        return <DragList items={highlights} onReorder={onReorder} onRemove={onRemove} />
+      })()}
 
       <div style={{ borderTop: '1px solid rgba(251,191,36,0.15)', paddingTop: 10, display: 'flex', gap: 8 }}>
         <input
@@ -791,10 +811,25 @@ function EditProfileModal({ profile, onSave, onClose, onLogout, isMobile }) {
 }
 
 // ─── Add Contact Modal ──────────────────────────────────────────────────────────
+export const HOW_WE_MET = [
+  { value: 'class', label: 'Class / School', icon: '🎓' },
+  { value: 'work', label: 'Work / Internship', icon: '💼' },
+  { value: 'networking', label: 'Networking Event', icon: '🤝' },
+  { value: 'intro', label: 'Mutual Introduction', icon: '👥' },
+  { value: 'linkedin', label: 'LinkedIn / Online', icon: '💻' },
+  { value: 'coffee', label: 'Coffee Chat', icon: '☕' },
+  { value: 'conference', label: 'Conference / Workshop', icon: '🎤' },
+  { value: 'hackathon', label: 'Hackathon / Competition', icon: '🚀' },
+  { value: 'social', label: 'Social Event', icon: '🎉' },
+  { value: 'activity', label: 'Activity / Hobby', icon: '⚡' },
+  { value: 'other', label: 'Other', icon: '✦' },
+]
+
 function AddModal({ onAdd, onClose }) {
   const [name, setName] = useState('')
   const [role, setRole] = useState('')
   const [company, setCompany] = useState('')
+  const [howWeMet, setHowWeMet] = useState('')
   const inp = { width: '100%', background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '9px 12px', fontSize: 14, outline: 'none', fontFamily: 'var(--font-sans)', marginBottom: 14 }
   return (
     <div style={{ background: 'var(--surface-2)', borderRadius: 20, border: '1px solid var(--border-strong)', padding: '1.75rem', width: '100%', maxWidth: 440, boxShadow: 'var(--shadow-lg)' }}>
@@ -814,9 +849,18 @@ function AddModal({ onAdd, onClose }) {
           <input value={company} onChange={e => setCompany(e.target.value)} placeholder="Amazon" style={inp} />
         </div>
       </div>
+      <label style={{ display: 'block', fontSize: 11, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>How we met <span style={{ fontWeight: 400, opacity: 0.5 }}>(optional)</span></label>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 18 }}>
+        {HOW_WE_MET.map(o => (
+          <button key={o.value} onClick={() => setHowWeMet(howWeMet === o.value ? '' : o.value)}
+            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 20, border: `1px solid ${howWeMet === o.value ? 'var(--accent)' : 'var(--border)'}`, background: howWeMet === o.value ? 'var(--accent-dim)' : 'var(--surface-3)', color: howWeMet === o.value ? 'var(--accent)' : 'var(--text-secondary)', fontSize: 12, fontWeight: howWeMet === o.value ? 600 : 400, cursor: 'pointer', fontFamily: 'var(--font-sans)', transition: 'all 0.15s' }}>
+            <span>{o.icon}</span> {o.label}
+          </button>
+        ))}
+      </div>
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
         <button onClick={onClose} style={{ background: 'var(--surface-3)', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 18px', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Cancel</button>
-        <button onClick={() => { if (name.trim()) onAdd({ name, role, company }) }} disabled={!name.trim()}
+        <button onClick={() => { if (name.trim()) onAdd({ name, role, company, howWeMet }) }} disabled={!name.trim()}
           style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontSize: 14, fontWeight: 600, cursor: name.trim() ? 'pointer' : 'not-allowed', opacity: name.trim() ? 1 : 0.4, fontFamily: 'var(--font-display)' }}>
           Add contact
         </button>
@@ -1259,7 +1303,7 @@ export default function App() {
   const [calendarDate, setCalendarDate] = useState('')
   const [contactFilter, setContactFilter] = useState('all')
   const [contactSearch, setContactSearch] = useState('')
-  const [contactView, setContactView] = useState('az') // 'az' | 'grouped'
+  const [contactView, setContactView] = useState('az') // 'az' | 'grouped' | 'connection'
   const [debriefContact, setDebriefContact] = useState(null)
   const [showBrainDump, setShowBrainDump] = useState(false)
 
@@ -1359,6 +1403,11 @@ export default function App() {
   }
   function removeHighlight(i) {
     const updated = highlights.filter((_, idx) => idx !== i)
+    setHighlights(updated)
+    const p = { ...profile, highlights: updated }
+    setProfile(p); saveProfile(currentUser, p)
+  }
+  function reorderHighlights(updated) {
     setHighlights(updated)
     const p = { ...profile, highlights: updated }
     setProfile(p); saveProfile(currentUser, p)
@@ -1622,7 +1671,7 @@ export default function App() {
             </div>
 
             {/* ── Highlights ─── */}
-            <HighlightsBox highlights={highlights} onAdd={addHighlight} onRemove={removeHighlight} />
+            <HighlightsBox highlights={highlights} onAdd={addHighlight} onRemove={removeHighlight} onReorder={reorderHighlights} />
 
             {/* ── Prep brief reminder ─── */}
             {soonChats.length > 0 && (
@@ -2024,8 +2073,8 @@ export default function App() {
             </button>
             {/* View toggle */}
             <div style={{ display: 'flex', background: 'var(--surface-3)', border: '1px solid var(--border-strong)', borderRadius: 10, overflow: 'hidden', flexShrink: 0 }}>
-              {[['az', '⬡'], ['grouped', '▤']].map(([v, icon]) => (
-                <button key={v} onClick={() => setContactView(v)} title={v === 'az' ? 'A–Z Directory' : 'By Status'} style={{ padding: '10px 12px', background: contactView === v ? 'var(--accent-dim)' : 'transparent', color: contactView === v ? 'var(--accent)' : 'var(--text-tertiary)', border: 'none', cursor: 'pointer', fontSize: 15, lineHeight: 1 }}>
+              {[['az', '⬡', 'A–Z Directory'], ['grouped', '▤', 'By Status'], ['connection', '🤝', 'By How We Met']].map(([v, icon, title]) => (
+                <button key={v} onClick={() => setContactView(v)} title={title} style={{ padding: '9px 11px', background: contactView === v ? 'var(--accent-dim)' : 'transparent', color: contactView === v ? 'var(--accent)' : 'var(--text-tertiary)', border: 'none', cursor: 'pointer', fontSize: 14, lineHeight: 1 }}>
                   {icon}
                 </button>
               ))}
@@ -2044,6 +2093,35 @@ export default function App() {
             const base = contactSearch.trim() ? filteredContacts
               : contactFilter === 'all' ? contacts
               : contacts.filter(x => x.status === contactFilter)
+
+            // Grouped by how we met
+            if (contactView === 'connection' && !contactSearch.trim()) {
+              const grouped = {}
+              for (const c of base) {
+                const key = c.howWeMet || 'other'
+                if (!grouped[key]) grouped[key] = []
+                grouped[key].push(c)
+              }
+              const order = HOW_WE_MET.map(o => o.value).concat(['other'])
+              const toShow = order.filter(k => grouped[k])
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                  {toShow.map(key => {
+                    const meta = HOW_WE_MET.find(o => o.value === key) || { icon: '✦', label: 'Other' }
+                    const catContacts = grouped[key]
+                    return (
+                      <div key={key}>
+                        <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--accent)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{ fontSize: 16 }}>{meta.icon}</span> {meta.label} <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-tertiary)', marginLeft: 4 }}>({catContacts.length})</span>
+                        </div>
+                        <ContactList contacts={catContacts} onSelect={setDetail} />
+                      </div>
+                    )
+                  })}
+                  {base.length === 0 && <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-tertiary)', fontSize: 14 }}>No contacts yet.</div>}
+                </div>
+              )
+            }
 
             // Grouped by status view (recently added feel)
             if (contactView === 'grouped' && !contactSearch.trim()) {
