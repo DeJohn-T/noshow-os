@@ -1697,6 +1697,45 @@ export default function App() {
             ))}
           </div>
 
+          {/* Follow-up reminder box */}
+          {(() => {
+            const today = new Date().toISOString().split('T')[0]
+            const due = contacts.filter(c =>
+              c.nextAction !== 'one-time' && (
+                c.nextAction === 'follow-up' ||
+                (c.followUpDate && c.followUpDate <= today) ||
+                (c.status === 'completed' && !c.followUpText && !c.nextAction)
+              )
+            )
+            if (!due.length) return null
+            return (
+              <div style={{ background: 'linear-gradient(135deg, rgba(244,114,182,0.1), rgba(251,191,36,0.06))', border: '1px solid rgba(244,114,182,0.3)', borderRadius: 16, padding: '14px 16px', marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#f9a8d4' }}>
+                      🔔 {due.length} follow-up{due.length > 1 ? 's' : ''} pending
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 2 }}>Don't let these connections go cold</div>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  {due.slice(0, 8).map(person => (
+                    <div key={person.id} onClick={() => setDetail(person)} title={person.name}
+                      style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--surface-3)', border: '1px solid rgba(244,114,182,0.2)', borderRadius: 20, padding: '4px 10px 4px 4px', cursor: 'pointer', transition: 'border-color 0.15s' }}>
+                      <Avatar name={person.name} company={person.company} size={22} />
+                      <span style={{ fontSize: 12, color: 'var(--text-primary)' }}>{person.name?.split(' ')[0] || '?'}</span>
+                    </div>
+                  ))}
+                  {due.length > 8 && (
+                    <div style={{ display: 'flex', alignItems: 'center', padding: '4px 12px', background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 20, fontSize: 12, color: 'var(--text-tertiary)' }}>
+                      +{due.length - 8} more
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
+          })()}
+
           {/* Search bar + Add button */}
           <div style={{ display: 'flex', gap: 8, marginBottom: '1rem', alignItems: 'center' }}>
             <div style={{ position: 'relative', flex: 1 }}>

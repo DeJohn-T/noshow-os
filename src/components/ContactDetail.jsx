@@ -246,8 +246,28 @@ function getInsights(contact, parsed) {
     `✉️ Keep follow-ups under 3 sentences — specific and genuine beats long and generic`,
     `🤝 Mention one specific thing from your conversation to make your message stand out`,
     `📈 Reaching out 3× per week to new contacts compounds your network fast`,
+    `☕ Ask for a 15-minute coffee chat — shorter requests get more yes's`,
+    `🔄 Reconnect with dormant contacts by sharing something relevant to them`,
+    `📌 People remember how you made them feel, not everything you said`,
+    `🚀 Your next opportunity is more likely to come from a weak tie than a close friend`,
+    `🧠 Research them on LinkedIn before your chat — it shows you're serious`,
+    `✨ Send a thank-you message after every conversation, no exceptions`,
+    `💬 Ask questions more than you talk — people love feeling heard`,
+    `🔗 Offer value first — share an article, make an intro, give a resource`,
+    `📅 Set a recurring reminder to reach out to your top contacts every 90 days`,
+    `🎯 Be specific about what you're looking for — vague asks get vague help`,
+    `💼 Update your LinkedIn before you start networking hard`,
+    `🌐 Attend events in your target industry even when you don't feel ready`,
+    `📝 Take notes right after every meeting while it's still fresh`,
+    `⚡ The best time to network is before you need something`,
+    `🤝 Introduce two people who should know each other — givers gain`,
+    `📊 Track your outreach — most people need 3-5 touchpoints before responding`,
+    `🎓 Alumni networks are wildly underused — reach out to people from your school`,
+    `🏆 Celebrate their wins publicly — comment on their posts, congratulate milestones`,
+    `💡 Cold DMs work when they're short, personal, and ask for nothing big`,
+    `🔔 Set a calendar reminder to follow up if you haven't heard back in a week`,
   ]
-  while (facts.length < 3) facts.push(tips[facts.length % tips.length])
+  while (facts.length < 4) facts.push(tips[facts.length % tips.length])
   return facts
 }
 
@@ -307,6 +327,16 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
   const [newRoleTitle, setNewRoleTitle] = useState('')
   const [newRoleCompany, setNewRoleCompany] = useState('')
   const [newRolePeriod, setNewRolePeriod] = useState('')
+  const notesSaveTimer = useRef(null)
+  const notesMounted = useRef(false)
+
+  // Auto-save notes 1 s after last keystroke
+  useEffect(() => {
+    if (!notesMounted.current) { notesMounted.current = true; return }
+    clearTimeout(notesSaveTimer.current)
+    notesSaveTimer.current = setTimeout(() => saveAll(), 1000)
+    return () => clearTimeout(notesSaveTimer.current)
+  }, [c.notes]) // eslint-disable-line
   const fileInputRef = useRef(null)
 
   // Chatbot state
