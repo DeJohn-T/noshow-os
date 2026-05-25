@@ -1,6 +1,6 @@
 // components/JobSearch.jsx
 import React from 'react'
-import { BriefcaseBusiness, Sparkles } from 'lucide-react'
+import { BriefcaseBusiness, RefreshCw, Sparkles } from 'lucide-react'
 import { generateJobRecs } from '../lib/ai'
 import { saveJobRecs } from '../lib/storage'
 
@@ -48,7 +48,10 @@ export function JobSearch({ profile, resume, skills, cachedJobs, setCachedJobs, 
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <div style={{ fontSize: 12, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{jobs.length} matches</div>
-        <button onClick={handleGenerate} style={{ fontSize: 12, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Regenerate ↺</button>
+        <button onClick={handleGenerate} style={{ fontSize: 12, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <RefreshCw size={13} strokeWidth={1.8} aria-hidden="true" />
+          Regenerate
+        </button>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {jobs.map((job, i) => {

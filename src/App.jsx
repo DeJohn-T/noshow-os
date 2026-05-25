@@ -3,7 +3,10 @@ import React, { useState, useEffect, useRef, useMemo } from 'react'
 import {
   Bell,
   CalendarDays,
+  Check,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   Clock3,
   Contact as ContactIcon,
   FileText,
@@ -18,6 +21,7 @@ import {
   Settings2,
   Sparkles,
   Target,
+  X,
   Zap,
 } from 'lucide-react'
 import { ContactList, UpcomingList, MonthCalendar } from './components/ContactList'
@@ -84,7 +88,7 @@ function HighlightsBox({ highlights, onAdd, onRemove, onReorder }) {
       <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: 'radial-gradient(circle, rgba(251,191,36,0.15) 0%, transparent 70%)', pointerEvents: 'none' }} />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: highlights.length ? 12 : 8 }}>
         <div style={{ fontSize: 12, color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span>★</span> My Highlights
+          <Sparkles size={14} strokeWidth={1.8} aria-hidden="true" /> My Highlights
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           {highlights.length > 1 && (
@@ -105,13 +109,17 @@ function HighlightsBox({ highlights, onAdd, onRemove, onReorder }) {
         <>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
             {highlights.length > 1 && (
-              <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: 'rgba(251,191,36,0.6)', cursor: 'pointer', fontSize: 20, lineHeight: 1, padding: '0 2px', flexShrink: 0 }}>‹</button>
+              <button onClick={() => navigate(-1)} aria-label="Previous highlight" style={{ background: 'none', border: 'none', color: 'rgba(251,191,36,0.6)', cursor: 'pointer', lineHeight: 1, padding: '0 2px', flexShrink: 0 }}>
+                <ChevronLeft size={18} strokeWidth={1.8} aria-hidden="true" />
+              </button>
             )}
             <div style={{ flex: 1, opacity: fade ? 1 : 0, transform: fade ? 'none' : 'translateY(5px)', transition: 'all 0.3s ease', fontSize: 15, color: 'var(--text-primary)', lineHeight: 1.7, fontWeight: 500 }}>
               {current}
             </div>
             {highlights.length > 1 && (
-              <button onClick={() => navigate(1)} style={{ background: 'none', border: 'none', color: 'rgba(251,191,36,0.6)', cursor: 'pointer', fontSize: 20, lineHeight: 1, padding: '0 2px', flexShrink: 0 }}>›</button>
+              <button onClick={() => navigate(1)} aria-label="Next highlight" style={{ background: 'none', border: 'none', color: 'rgba(251,191,36,0.6)', cursor: 'pointer', lineHeight: 1, padding: '0 2px', flexShrink: 0 }}>
+                <ChevronRight size={18} strokeWidth={1.8} aria-hidden="true" />
+              </button>
             )}
           </div>
           {highlights.length > 1 && (
@@ -145,7 +153,8 @@ function HighlightsBox({ highlights, onAdd, onRemove, onReorder }) {
                   <span style={{ color: 'rgba(251,191,36,0.4)', fontSize: 12, flexShrink: 0 }}>⠿</span>
                   <span style={{ flex: 1, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{h}</span>
                   <button onClick={() => { onRemove(i); if (idx >= items.length - 1) setIdx(Math.max(0, items.length - 2)) }}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 16, lineHeight: 1, padding: '0 2px', flexShrink: 0 }}>×</button>
+                    aria-label="Remove highlight"
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', lineHeight: 1, padding: '0 2px', flexShrink: 0 }}><X size={14} strokeWidth={1.8} aria-hidden="true" /></button>
                 </div>
               ))}
             </div>
@@ -282,7 +291,7 @@ function TodoList({ todos, onToggle, onDelete }) {
   if (todos.length === 0) {
     return (
       <div style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--text-tertiary)', fontSize: 13 }}>
-        <div style={{ fontSize: 24, marginBottom: 8, opacity: 0.4 }}>✓</div>
+        <Check size={24} style={{ marginBottom: 8, opacity: 0.4 }} aria-hidden="true" />
         No tasks yet - add one to stay organized!
       </div>
     )
@@ -296,7 +305,7 @@ function TodoList({ todos, onToggle, onDelete }) {
           {pending.map(t => (
             <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'var(--surface-3)', borderRadius: 10, border: '1px solid var(--border)' }}>
               <button onClick={() => onToggle(t.id)} style={{ width: 18, height: 18, borderRadius: 4, border: '2px solid var(--accent)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontSize: 12, color: 'var(--accent)', lineHeight: 0 }}>✓</span>
+                <Check size={12} color="var(--accent)" strokeWidth={2.2} aria-hidden="true" />
               </button>
               <span style={{ flex: 1, fontSize: 13, color: 'var(--text-primary)' }}>{t.text}</span>
               <button onClick={() => onDelete(t.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 16, lineHeight: 1, padding: '2px 4px' }}>×</button>
@@ -309,7 +318,7 @@ function TodoList({ todos, onToggle, onDelete }) {
           {done.map(t => (
             <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'var(--surface-3)', borderRadius: 10, border: '1px solid var(--border)', textDecoration: 'line-through' }}>
               <button onClick={() => onToggle(t.id)} style={{ width: 18, height: 18, borderRadius: 4, border: '2px solid var(--accent)', background: 'var(--accent)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontSize: 12, color: '#fff', lineHeight: 0 }}>✓</span>
+                <Check size={12} color="#fff" strokeWidth={2.2} aria-hidden="true" />
               </button>
               <span style={{ flex: 1, fontSize: 13, color: 'var(--text-tertiary)' }}>{t.text}</span>
               <button onClick={() => onDelete(t.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 16, lineHeight: 1, padding: '2px 4px' }}>×</button>
@@ -478,7 +487,7 @@ function DebriefModal({ contact, onSave, onClose }) {
           <MessageSquareText size={18} strokeWidth={1.8} aria-hidden="true" />
           How'd it go?
         </div>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 22, lineHeight: 1 }}>✕</button>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 22, lineHeight: 1 }}><X size={16} strokeWidth={1.8} aria-hidden="true" /></button>
       </div>
       <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16 }}>Quick debrief for your chat with <strong style={{ color: 'var(--text-primary)' }}>{contact.name}</strong></div>
       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
@@ -530,7 +539,7 @@ function BrainDumpPanel({ onClose, user }) {
         <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: 8 }}>
           <NotebookText size={18} strokeWidth={1.8} aria-hidden="true" /> Quick Notes
         </div>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 18, lineHeight: 1 }}>✕</button>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 18, lineHeight: 1 }}><X size={16} strokeWidth={1.8} aria-hidden="true" /></button>
       </div>
       <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
         <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); add() } }}
@@ -809,7 +818,7 @@ function EditProfileModal({ profile, onSave, onClose, onLogout, isMobile }) {
     <div style={{ background: 'var(--surface-2)', borderRadius: 20, border: '1px solid var(--border-strong)', padding: '1.75rem', width: '100%', maxWidth: 460, boxShadow: 'var(--shadow-lg)', maxHeight: '85vh', overflowY: 'auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-display)' }}>Edit Profile</div>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 22, lineHeight: 1 }}>✕</button>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 22, lineHeight: 1 }}><X size={16} strokeWidth={1.8} aria-hidden="true" /></button>
       </div>
       {[['Name', name, setName], ['School', school, setSchool], ['Major', major, setMajor]].map(([label, val, setter]) => (
         <div key={label}>
@@ -852,7 +861,7 @@ function AddModal({ onAdd, onClose, contacts = [] }) {
     <div style={{ background: 'var(--surface-2)', borderRadius: 20, border: '1px solid var(--border-strong)', padding: '1.75rem', width: '100%', maxWidth: 440, boxShadow: 'var(--shadow-lg)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div style={{ fontSize: 17, fontWeight: 700, fontFamily: 'var(--font-display)' }}>New contact</div>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 22, lineHeight: 1 }}>✕</button>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 22, lineHeight: 1 }}><X size={16} strokeWidth={1.8} aria-hidden="true" /></button>
       </div>
       <label style={{ display: 'block', fontSize: 11, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Full name</label>
       <input value={name} onChange={e => setName(e.target.value)} placeholder="Alex Chen" autoFocus style={inp} />
@@ -917,7 +926,7 @@ function ScheduleModal({ contacts, onSchedule, onClose, prefillDate }) {
           <CalendarDays size={18} strokeWidth={1.8} aria-hidden="true" />
           Schedule Meeting
         </div>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 22, lineHeight: 1 }}>✕</button>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 22, lineHeight: 1 }}><X size={16} strokeWidth={1.8} aria-hidden="true" /></button>
       </div>
       <label style={{ display: 'block', fontSize: 11, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Contact</label>
       <select value={contactId} onChange={e => setContactId(e.target.value)} style={{ ...inp, cursor: 'pointer' }}>
@@ -1000,7 +1009,7 @@ function ScheduledTasksPanel({ tasks, contacts, onAdd, onToggle, onDelete }) {
             return (
               <div key={task.id} style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'var(--surface-2)', border: `1px solid ${overdue ? 'rgba(248,113,113,0.25)' : 'var(--border)'}`, borderRadius: 12, padding: '12px 16px', opacity: task.done ? 0.5 : 1, transition: 'opacity 0.2s' }}>
                 <button onClick={() => onToggle(task.id)} style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${task.done ? 'var(--accent)' : 'var(--border-strong)'}`, background: task.done ? 'var(--accent)' : 'transparent', cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>
-                  {task.done && <span style={{ color: '#fff', fontSize: 11, lineHeight: 1 }}>✓</span>}
+                  {task.done && <Check size={11} color="#fff" strokeWidth={2.2} aria-hidden="true" />}
                 </button>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', textDecoration: task.done ? 'line-through' : 'none' }}>{task.text}</div>
@@ -1143,7 +1152,7 @@ function ResumeTab({ resume, profile, onUpdateResume }) {
                   <div style={{ fontSize: 11, fontWeight: 600, color: '#4ade80', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Strengths</div>
                   {analysis.strengths?.map((s, i) => (
                     <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8, fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.6 }}>
-                      <span style={{ color: '#4ade80', flexShrink: 0 }}>✓</span>{s}
+                      <Check size={13} color="#4ade80" strokeWidth={2.2} style={{ flexShrink: 0 }} aria-hidden="true" />{s}
                     </div>
                   ))}
                 </div>
@@ -1837,7 +1846,7 @@ export default function App() {
             <div style={{ position: 'absolute', top: -30, right: -30, width: 130, height: 130, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,127,255,0.15) 0%, transparent 70%)', pointerEvents: 'none' }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: allInsights.length ? 12 : 8 }}>
               <div style={{ fontSize: 12, color: '#a78bfa', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span>✦</span> Wisdom from your network
+                <Sparkles size={14} strokeWidth={1.8} aria-hidden="true" /> Wisdom from your network
               </div>
               {allInsights.length > 1 && (
                 <div style={{ display: 'flex', gap: 4 }}>
@@ -1871,7 +1880,7 @@ export default function App() {
                   {generatingInsights
                     ? `Generating insights ${insightsProgress.done}/${insightsProgress.total}...`
                     : contacts.some(c => c.notes || c.meetingNotes)
-                      ? '✦ Generate Insights'
+                      ? 'Generate Insights'
                       : 'Add notes to contacts first'}
                 </button>
               </div>

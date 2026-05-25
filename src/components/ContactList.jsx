@@ -1,7 +1,7 @@
 // components/ContactList.jsx
 
 import React, { useState } from 'react'
-import { AlertTriangle, CalendarDays, UserPlus } from 'lucide-react'
+import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, UserPlus } from 'lucide-react'
 import { Avatar, StatusBadge } from './UI'
 import { formatDate } from '../lib/utils'
 
@@ -248,9 +248,9 @@ export function MonthCalendar({ contacts, onSelect, onDayClick }) {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button onClick={prevMonth} style={{ background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--text-secondary)', fontSize: 16 }}>‹</button>
+          <button onClick={prevMonth} aria-label="Previous month" style={{ background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center' }}><ChevronLeft size={16} strokeWidth={1.8} aria-hidden="true" /></button>
           <button onClick={goToday} style={{ background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', color: 'var(--text-secondary)', fontSize: 11, fontWeight: 600, textTransform: 'uppercase' }}>Today</button>
-          <button onClick={nextMonth} style={{ background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--text-secondary)', fontSize: 16 }}>›</button>
+          <button onClick={nextMonth} aria-label="Next month" style={{ background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center' }}><ChevronRight size={16} strokeWidth={1.8} aria-hidden="true" /></button>
         </div>
         <div style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-display)' }}>{monthNames[month]} {year}</div>
         <div style={{ width: 100 }} />
