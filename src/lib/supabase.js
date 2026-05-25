@@ -8,7 +8,10 @@ export const supabase = createClient(
 export async function signInWithGoogle() {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: window.location.origin },
+    options: {
+      redirectTo: window.location.origin,
+      scopes: 'https://www.googleapis.com/auth/calendar.events',
+    },
   })
   if (error) throw error
 }
