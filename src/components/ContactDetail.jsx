@@ -1,5 +1,5 @@
 // components/ContactDetail.jsx
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect, useMemo } from 'react'
 import { Avatar, StatusBadge, Button, Input, Textarea, RichNotes, Tabs, Notice, Spinner, AIOutput, SectionLabel, Chip } from './UI'
 import { parseLinkedInPDF, generateBrief, generateFollowUp, callClaude, callClaudeChat } from '../lib/ai'
 import { extractTextFromPDF } from '../lib/pdfParser'
@@ -218,9 +218,73 @@ function formatLinkedInExport(parsed, contact) {
 
 const STATUSES = ['new', 'scheduled', 'completed', 'followed up']
 
+function getInsights(contact, parsed) {
+  const name = contact.name?.split(' ')[0] || 'They'
+  const facts = []
+  if (parsed?.education?.length) facts.push(`🎓 ${name} studied at ${parsed.education[0].split(',')[0]}`)
+  if (parsed?.companies?.length) {
+    const co = parsed.companies[0]
+    facts.push(`💼 Background includes ${co.length > 60 ? co.slice(0, 60) + '…' : co}`)
+  }
+  if (contact.pastRoles?.length) {
+    const r = contact.pastRoles[0]
+    facts.push(`📌 Previously ${r.role ? `${r.role} at ${r.company}` : r.company}${r.period ? ` (${r.period})` : ''}`)
+  }
+  if (parsed?.locations?.length) facts.push(`📍 ${name} is based in ${parsed.locations[0]}`)
+  if (parsed?.skills?.length > 1) facts.push(`⚡ Skills include ${parsed.skills.slice(0, 3).join(', ')}`)
+  if (contact.notes) {
+    const first = contact.notes.replace(/<[^>]+>/g, '').split(/[.!\n]/)[0]?.trim()
+    if (first?.length > 25) facts.push(`📝 From your notes: "${first.slice(0, 90)}${first.length > 90 ? '…' : ''}"`)
+  }
+  if (contact.followUpDate) {
+    const d = new Date(contact.followUpDate + 'T12:00:00')
+    facts.push(`🔔 Follow-up scheduled for ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`)
+  }
+  const tips = [
+    `💡 Follow up within 24 hours — the connection is freshest right after you meet`,
+    `🎯 Warm intros are 5× more likely to get a response than cold outreach`,
+    `✉️ Keep follow-ups under 3 sentences — specific and genuine beats long and generic`,
+    `🤝 Mention one specific thing from your conversation to make your message stand out`,
+    `📈 Reaching out 3× per week to new contacts compounds your network fast`,
+  ]
+  while (facts.length < 3) facts.push(tips[facts.length % tips.length])
+  return facts
+}
+
+function InsightCard({ contact, parsed }) {
+  const insights = useMemo(() => getInsights(contact, parsed), [contact?.notes, contact?.followUpDate, parsed])
+  const [idx, setIdx] = useState(0)
+  const [fade, setFade] = useState(true)
+  useEffect(() => {
+    if (insights.length <= 1) return
+    const t = setInterval(() => {
+      setFade(false)
+      setTimeout(() => { setIdx(i => (i + 1) % insights.length); setFade(true) }, 250)
+    }, 6000)
+    return () => clearInterval(t)
+  }, [insights.length])
+  return (
+    <div style={{ background: 'linear-gradient(135deg, rgba(139,127,255,0.1), rgba(99,179,255,0.06))', border: '1px solid rgba(139,127,255,0.25)', borderRadius: 16, padding: '14px 16px', marginBottom: 14, overflow: 'hidden' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+        <div style={{ fontSize: 10, color: '#c4b8ff', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>✦ About {contact.name?.split(' ')[0]}</div>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {insights.map((_, i) => (
+            <div key={i} style={{ width: i === idx ? 16 : 5, height: 5, borderRadius: 3, background: i === idx ? '#c4b8ff' : 'rgba(196,184,255,0.2)', transition: 'all 0.3s' }} />
+          ))}
+        </div>
+      </div>
+      <div style={{ opacity: fade ? 1 : 0, transform: fade ? 'none' : 'translateY(5px)', transition: 'all 0.25s ease', fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.6 }}>
+        {insights[idx]}
+      </div>
+    </div>
+  )
+}
+
 export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule, resume, profileSkills }) {
   const [c, setC] = useState(contact)
-  const [tab, setTab] = useState(!contact.name || contact.name === 'Unknown' || contact.name === 'New Contact' ? 'Edit' : 'Overview')
+  const [tab, setTab] = useState('Overview')
+  const [notesSummary, setNotesSummary] = useState(contact.notesSummary || '')
+  const [summaryLoading, setSummaryLoading] = useState(false)
   const [linkedinUrl, setLinkedinUrl] = useState(contact.linkedinUrl || '')
   const [parsing, setParsing] = useState(false)
   const [parsed, setParsed] = useState(contact.parsedProfile || null)
@@ -253,9 +317,26 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
 
   const upd = (k, v) => setC(p => ({ ...p, [k]: v }))
   function saveAll(overrides = {}, close = false) {
-    const updated = { ...c, linkedinUrl, parsedProfile: parsed, brief, followUpText: fuText, pdfName, pastRoles, ...overrides }
+    const updated = { ...c, linkedinUrl, parsedProfile: parsed, brief, followUpText: fuText, pdfName, pastRoles, notesSummary, ...overrides }
     onUpdate(updated)
     if (close) onClose()
+  }
+
+  async function generateNotesSummary() {
+    const raw = c.notes?.replace(/<[^>]+>/g, '').trim()
+    if (!raw) return
+    setSummaryLoading(true)
+    try {
+      const result = await callClaude(
+        `You are summarizing networking notes. Return a concise 2-3 sentence summary of the key points from this person's notes. Focus on: who they are, what was discussed, and any action items or follow-up context. Be specific and useful.`,
+        `Contact: ${c.name} (${[c.role, c.company].filter(Boolean).join(' at ')})\n\nNotes:\n${raw}`
+      )
+      const summary = result.replace(/^(Summary:|Here's a summary:|Here is a summary:)/i, '').trim()
+      setNotesSummary(summary)
+      const updated = { ...c, linkedinUrl, parsedProfile: parsed, brief, followUpText: fuText, pdfName, pastRoles, notesSummary: summary }
+      onUpdate(updated)
+    } catch (e) { console.error(e) }
+    setSummaryLoading(false)
   }
 
   function savePastRole() {
@@ -401,11 +482,14 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
         </div>
       </div>
 
-      <Tabs tabs={['Overview', 'Edit', 'LinkedIn', 'Prep Brief', 'Follow-up']} active={tab} onChange={setTab} />
+      <Tabs tabs={['Overview', 'Notes', 'LinkedIn', 'Prep Brief']} active={tab} onChange={setTab} />
 
       {/* ── OVERVIEW ── */}
       {tab === 'Overview' && (
         <div>
+          {/* Rotating insight card */}
+          <InsightCard contact={c} parsed={parsed} />
+
           {/* Quick info cards */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
             <div style={{ background: 'linear-gradient(135deg, rgba(139,127,255,0.1), rgba(139,127,255,0.03))', border: '1px solid rgba(139,127,255,0.25)', borderRadius: 14, padding: '14px 16px' }}>
@@ -417,6 +501,33 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
               <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6ee7b7', marginBottom: 8 }}>📊 Status</div>
               <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', textTransform: 'capitalize' }}>{c.status}</div>
               <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>{c.chatDate ? `Chat: ${new Date(c.chatDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : 'No date set'}</div>
+            </div>
+          </div>
+
+          {/* What's next */}
+          <div style={{ marginBottom: 16, background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 16px' }}>
+            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)', marginBottom: 10 }}>🔮 What's next?</div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {[
+                { key: 'follow-up', icon: '🔄', label: 'Follow Up', sub: 'Send a follow-up soon', color: '#a78bfa' },
+                { key: 'circle-back', icon: '📅', label: 'Circle Back', sub: 'Reconnect in 60-90 days', color: '#60a5fa' },
+                { key: 'one-time', icon: '✅', label: 'One & Done', sub: 'No action needed', color: '#34d399' },
+              ].map(opt => (
+                <button key={opt.key} onClick={() => {
+                  const updates = { nextAction: opt.key }
+                  if (opt.key === 'follow-up') { const d = new Date(); d.setDate(d.getDate() + 30); updates.followUpDate = d.toISOString().split('T')[0]; updates.status = 'followed up' }
+                  if (opt.key === 'circle-back') { const d = new Date(); d.setDate(d.getDate() + 90); updates.followUpDate = d.toISOString().split('T')[0] }
+                  const updated = { ...c, ...updates }; setC(updated); saveAll(updates)
+                }} style={{
+                  flex: 1, minWidth: 90, background: c.nextAction === opt.key ? `${opt.color}22` : 'var(--surface-2)',
+                  border: `1.5px solid ${c.nextAction === opt.key ? opt.color : 'var(--border)'}`,
+                  borderRadius: 12, padding: '10px 8px', cursor: 'pointer', textAlign: 'center', transition: 'all 0.15s',
+                }}>
+                  <div style={{ fontSize: 18, marginBottom: 3 }}>{opt.icon}</div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: c.nextAction === opt.key ? opt.color : 'var(--text-primary)' }}>{opt.label}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-tertiary)', marginTop: 1 }}>{opt.sub}</div>
+                </button>
+              ))}
             </div>
           </div>
 
@@ -497,11 +608,31 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
             )
           })()}
 
-          {/* Schedule section */}
-          <div style={{ background: 'linear-gradient(135deg, rgba(99,179,255,0.08), rgba(99,179,255,0.03))', border: '1px solid rgba(99,179,255,0.2)', borderRadius: 14, padding: '16px', marginBottom: 16 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#93c5fd', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span>📅</span> Schedule Coffee Chat
+          {/* Follow-up section */}
+          <div style={{ background: 'linear-gradient(135deg, rgba(244,114,182,0.06), rgba(139,127,255,0.04))', border: '1px solid rgba(244,114,182,0.18)', borderRadius: 14, padding: '16px', marginBottom: 16 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#f9a8d4', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span>✉️ Follow-up</span>
+              <Button variant="primary" size="sm" onClick={handleGenerateFollowUp} disabled={fuLoading}>
+                {fuLoading ? <><Spinner />Writing...</> : fuText ? 'Regenerate' : 'Generate message'}
+              </Button>
             </div>
+            {fuText ? (
+              <>
+                <textarea value={fuText} onChange={e => setFuText(e.target.value)} style={{ width: '100%', minHeight: 100, background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 10, padding: '10px 12px', fontSize: 13, resize: 'vertical', fontFamily: 'var(--font-sans)', lineHeight: 1.7, outline: 'none', boxSizing: 'border-box', marginBottom: 8 }} />
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <button onClick={() => navigator.clipboard.writeText(fuText)} style={{ fontSize: 12, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>📋 Copy</button>
+                  {c.email && <a href={`mailto:${c.email}?subject=${encodeURIComponent('Following up!')}&body=${encodeURIComponent(fuText)}`} style={{ fontSize: 12, color: '#93c5fd', background: 'rgba(99,179,255,0.1)', border: '1px solid rgba(99,179,255,0.25)', borderRadius: 8, padding: '3px 10px', textDecoration: 'none' }}>✉ Email</a>}
+                  <Button size="sm" variant="primary" onClick={() => saveAll({ followUpText: fuText })}>Save</Button>
+                </div>
+              </>
+            ) : (
+              <div style={{ fontSize: 13, color: 'var(--text-tertiary)' }}>{c.notes ? 'Ready to generate based on your notes.' : 'Add notes first for a personalized message.'}</div>
+            )}
+          </div>
+
+          {/* Schedule */}
+          <div style={{ background: 'linear-gradient(135deg, rgba(99,179,255,0.08), rgba(99,179,255,0.03))', border: '1px solid rgba(99,179,255,0.2)', borderRadius: 14, padding: '16px', marginBottom: 16 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#93c5fd', marginBottom: 12 }}>📅 Schedule Coffee Chat</div>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
               <div style={{ flex: 1, minWidth: 130 }}><Input label="Date" type="date" value={c.chatDate} onChange={v => upd('chatDate', v)} /></div>
               <div style={{ flex: 1, minWidth: 130 }}><Input label="Time" type="time" value={chatTime} onChange={setChatTime} /></div>
@@ -510,14 +641,6 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
               {calLoading ? <><Spinner />Scheduling...</> : 'Schedule + add to calendar'}
             </Button>
             {calMsg && <Notice variant="green" style={{ marginTop: 8 }}>{calMsg}</Notice>}
-          </div>
-
-          {/* Notes */}
-          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px', marginBottom: 16 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span>📝</span> Notes from Chat
-            </div>
-            <RichNotes value={c.notes} onChange={v => upd('notes', v)} placeholder="Key takeaways, action items, things they mentioned..." minHeight={100} />
           </div>
 
           {/* Actions */}
@@ -531,52 +654,39 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
         </div>
       )}
 
-      {/* ── EDIT ── */}
-      {tab === 'Edit' && (() => {
-        const iStyle = { width: '100%', background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 10, padding: '10px 13px', fontSize: 14, outline: 'none', fontFamily: 'var(--font-sans)', boxSizing: 'border-box' }
-        return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, paddingTop: 4 }}>
-            <div>
-              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>Name</label>
-              <input value={editName} onChange={e => setEditName(e.target.value)} placeholder="Full name" style={iStyle} />
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <div>
-                <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>Role</label>
-                <input value={editRole} onChange={e => setEditRole(e.target.value)} placeholder="e.g. Recruiter" style={iStyle} />
+      {/* ── NOTES ── */}
+      {tab === 'Notes' && (
+        <div>
+          {/* AI Summary */}
+          {(notesSummary || c.notes) && (
+            <div style={{ background: 'linear-gradient(135deg, rgba(139,127,255,0.08), rgba(99,179,255,0.05))', border: '1px solid rgba(139,127,255,0.2)', borderRadius: 14, padding: '14px 16px', marginBottom: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: notesSummary ? 10 : 0 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#c4b8ff' }}>✦ AI Summary</div>
+                <Button size="sm" onClick={generateNotesSummary} disabled={summaryLoading}>
+                  {summaryLoading ? <><Spinner />Generating...</> : notesSummary ? 'Regenerate' : 'Generate Summary'}
+                </Button>
               </div>
-              <div>
-                <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>Company</label>
-                <input value={editCompany} onChange={e => setEditCompany(e.target.value)} placeholder="e.g. Google" style={iStyle} />
-              </div>
+              {notesSummary && (
+                <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.7 }}>{notesSummary}</div>
+              )}
+              {!notesSummary && !summaryLoading && (
+                <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 6 }}>Generate a persistent summary of your notes with one click.</div>
+              )}
             </div>
-            <div>
-              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>Notes</label>
-              <textarea
-                value={c.notes || ''}
-                onChange={e => upd('notes', e.target.value)}
-                placeholder="How you met, what you talked about..."
-                rows={4}
-                style={{ ...iStyle, resize: 'none', lineHeight: 1.6 }}
-              />
-            </div>
-            <div>
-              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>Email</label>
-              <input value={c.email || ''} onChange={e => upd('email', e.target.value)} placeholder="email@company.com" style={iStyle} />
-            </div>
-            <button
-              onClick={() => {
-                const updated = { ...c, name: editName.trim() || c.name, role: editRole.trim(), company: editCompany.trim() }
-                setC(updated)
-                onUpdate({ ...updated, linkedinUrl, parsedProfile: parsed, brief, followUpText: fuText, pdfName, pastRoles })
-                setTab('Overview')
-              }}
-              style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 10, padding: '13px', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)', marginTop: 4 }}>
-              Save Changes
-            </button>
+          )}
+
+          {/* Raw notes */}
+          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px', marginBottom: 16 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)', marginBottom: 10 }}>📝 Notes</div>
+            <RichNotes value={c.notes} onChange={v => upd('notes', v)} placeholder="Key takeaways, action items, things they mentioned..." minHeight={160} />
           </div>
-        )
-      })()}
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+            <Button size="sm" onClick={onClose}>Close</Button>
+            <Button variant="primary" size="sm" onClick={() => saveAll({}, true)}>Save</Button>
+          </div>
+        </div>
+      )}
 
       {/* ── LINKEDIN ── */}
       {tab === 'LinkedIn' && (
@@ -789,87 +899,6 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
         </div>
       )}
 
-      {/* ── FOLLOW-UP ── */}
-      {tab === 'Follow-up' && (
-        <div>
-          {/* Status banner */}
-          <div style={{ background: c.notes ? 'linear-gradient(135deg, rgba(74,222,128,0.1), rgba(74,222,128,0.03))' : 'linear-gradient(135deg, rgba(251,191,36,0.1), rgba(251,191,36,0.03))', border: `1px solid ${c.notes ? 'rgba(74,222,128,0.25)' : 'rgba(251,191,36,0.25)'}`, borderRadius: 14, padding: '14px 16px', marginBottom: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontSize: 20 }}>{c.notes ? '✅' : '⚠️'}</span>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: c.notes ? '#6ee7b7' : '#fcd34d' }}>{c.notes ? 'Ready to generate!' : 'Add chat notes first'}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>{c.notes ? 'Your notes will personalize the follow-up message.' : 'Add chat notes first for a more personalized follow-up message.'}</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Generate button */}
-          <div style={{ background: 'linear-gradient(135deg, rgba(244,114,182,0.08), rgba(139,127,255,0.05))', border: '1px solid rgba(244,114,182,0.2)', borderRadius: 14, padding: '20px', textAlign: 'center', marginBottom: 16 }}>
-            <div style={{ fontSize: 28, marginBottom: 8 }}>✉️</div>
-            <div style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-display)', marginBottom: 6 }}>Follow-up Message</div>
-            <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.6 }}>Generate a warm, personalized follow-up based on your chat notes.</div>
-            <Button variant="primary" onClick={handleGenerateFollowUp} disabled={fuLoading}>
-              {fuLoading ? <><Spinner />Writing...</> : fuText ? 'Regenerate message ↗' : 'Write follow-up ↗'}
-            </Button>
-          </div>
-
-          {fuText && (
-            <>
-              <div style={{ background: 'linear-gradient(135deg, rgba(139,127,255,0.06), rgba(99,179,255,0.04))', border: '1px solid rgba(139,127,255,0.2)', borderRadius: 14, padding: '16px', marginBottom: 12 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#c4b8ff', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span>💌</span> Your Message
-                </div>
-                <textarea value={fuText} onChange={e => setFuText(e.target.value)} style={{ width: '100%', minHeight: 120, background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 'var(--radius-md)', padding: '12px 14px', fontSize: 13, resize: 'vertical', fontFamily: 'var(--font-sans)', lineHeight: 1.7, outline: 'none' }} />
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <button onClick={() => { navigator.clipboard.writeText(fuText) }} style={{ fontSize: 12, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', gap: 4 }}>📋 Copy</button>
-                  {c.email && (
-                    <a href={`mailto:${c.email}?subject=${encodeURIComponent(`Following up — great chatting!`)}&body=${encodeURIComponent(fuText)}`}
-                      style={{ fontSize: 12, color: '#93c5fd', background: 'rgba(99,179,255,0.1)', border: '1px solid rgba(99,179,255,0.25)', borderRadius: 8, padding: '4px 10px', cursor: 'pointer', fontFamily: 'var(--font-sans)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                      ✉ Email {c.name.split(' ')[0]}
-                    </a>
-                  )}
-                </div>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <ExportButton text={fuText} contactName={c.name} />
-                  <Button variant="primary" size="sm" onClick={() => { saveAll({ followUpText: fuText }); setFuSaved(true); setTimeout(() => setFuSaved(false), 2000) }}>{fuSaved ? '✓ Saved' : 'Save'}</Button>
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* Schedule next follow-up */}
-          <div style={{ background: 'linear-gradient(135deg, rgba(99,179,255,0.08), rgba(52,211,153,0.05))', border: '1px solid rgba(99,179,255,0.2)', borderRadius: 14, padding: '16px' }}>
-            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#93c5fd', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span>🔄</span> Schedule Next Follow-up
-            </div>
-            <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 12, lineHeight: 1.6 }}>Set a reminder to reconnect with {c.name}.</div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
-              {[30, 60, 90].map(days => {
-                const target = new Date(); target.setDate(target.getDate() + days)
-                const dateStr = target.toISOString().split('T')[0]
-                const label = target.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                return (
-                  <button key={days} onClick={() => upd('followUpDate', dateStr)}
-                    style={{ background: c.followUpDate === dateStr ? 'var(--accent)' : 'var(--surface-3)', color: c.followUpDate === dateStr ? '#fff' : 'var(--text-secondary)', border: `1px solid ${c.followUpDate === dateStr ? 'var(--accent)' : 'var(--border-strong)'}`, borderRadius: 10, padding: '8px 16px', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-sans)', fontWeight: 500, transition: 'all 0.15s' }}>
-                    {days} days <span style={{ fontSize: 11, opacity: 0.7 }}>({label})</span>
-                  </button>
-                )
-              })}
-            </div>
-            <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 10 }}>
-              <input type="date" value={c.followUpDate || ''} onChange={e => upd('followUpDate', e.target.value)}
-                style={{ flex: 1, background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 'var(--radius-md)', padding: '8px 12px', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)' }} />
-              <Button variant="primary" size="sm" onClick={() => { if (c.followUpDate) saveAll({ followUpDate: c.followUpDate, followUpNote: c.followUpNote }) }}>Set reminder</Button>
-            </div>
-            <textarea value={c.followUpNote || ''} onChange={e => upd('followUpNote', e.target.value)}
-              placeholder="Any notes for this follow-up? (shows up in your reminders)"
-              rows={2}
-              style={{ width: '100%', background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 'var(--radius-md)', padding: '8px 12px', fontSize: 13, resize: 'none', outline: 'none', fontFamily: 'var(--font-sans)', lineHeight: 1.6, boxSizing: 'border-box' }} />
-          </div>
-        </div>
-      )}
     </div>
   )
 }
