@@ -305,6 +305,8 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
   const [tab, setTab] = useState('Overview')
   const [notesSummary, setNotesSummary] = useState(contact.notesSummary || '')
   const [summaryLoading, setSummaryLoading] = useState(false)
+  const [notesSubTab, setNotesSubTab] = useState('my-notes')
+  const [meetingNotes, setMeetingNotes] = useState(contact.meetingNotes || '')
   const [linkedinUrl, setLinkedinUrl] = useState(contact.linkedinUrl || '')
   const [parsing, setParsing] = useState(false)
   const [parsed, setParsed] = useState(contact.parsedProfile || null)
@@ -337,6 +339,15 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
     notesSaveTimer.current = setTimeout(() => saveAll(), 1000)
     return () => clearTimeout(notesSaveTimer.current)
   }, [c.notes]) // eslint-disable-line
+
+  const meetingNotesSaveTimer = useRef(null)
+  const meetingNotesMounted = useRef(false)
+  useEffect(() => {
+    if (!meetingNotesMounted.current) { meetingNotesMounted.current = true; return }
+    clearTimeout(meetingNotesSaveTimer.current)
+    meetingNotesSaveTimer.current = setTimeout(() => saveAll(), 1000)
+    return () => clearTimeout(meetingNotesSaveTimer.current)
+  }, [meetingNotes]) // eslint-disable-line
   const fileInputRef = useRef(null)
 
   // Chatbot state
@@ -347,7 +358,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
 
   const upd = (k, v) => setC(p => ({ ...p, [k]: v }))
   function saveAll(overrides = {}, close = false) {
-    const updated = { ...c, linkedinUrl, parsedProfile: parsed, brief, followUpText: fuText, pdfName, pastRoles, notesSummary, ...overrides }
+    const updated = { ...c, linkedinUrl, parsedProfile: parsed, brief, followUpText: fuText, pdfName, pastRoles, notesSummary, meetingNotes, ...overrides }
     onUpdate(updated)
     if (close) onClose()
   }
@@ -687,29 +698,58 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
       {/* ── NOTES ── */}
       {tab === 'Notes' && (
         <div>
-          {/* AI Summary */}
-          {(notesSummary || c.notes) && (
-            <div style={{ background: 'linear-gradient(135deg, rgba(139,127,255,0.08), rgba(99,179,255,0.05))', border: '1px solid rgba(139,127,255,0.2)', borderRadius: 14, padding: '14px 16px', marginBottom: 16 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: notesSummary ? 10 : 0 }}>
-                <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#c4b8ff' }}>✦ AI Summary</div>
-                <Button size="sm" onClick={generateNotesSummary} disabled={summaryLoading}>
-                  {summaryLoading ? <><Spinner />Generating...</> : notesSummary ? 'Regenerate' : 'Generate Summary'}
-                </Button>
-              </div>
-              {notesSummary && (
-                <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.7 }}>{notesSummary}</div>
+          {/* Sub-tab toggle */}
+          <div style={{ display: 'flex', gap: 4, marginBottom: 14, background: 'var(--surface-3)', borderRadius: 10, padding: 4 }}>
+            {[['my-notes', '📝 My Notes'], ['meeting-notes', '🤖 Meeting Notes']].map(([key, label]) => (
+              <button key={key} onClick={() => setNotesSubTab(key)} style={{ flex: 1, padding: '7px 0', borderRadius: 7, border: 'none', background: notesSubTab === key ? 'var(--surface-2)' : 'transparent', color: notesSubTab === key ? 'var(--text-primary)' : 'var(--text-tertiary)', fontWeight: notesSubTab === key ? 600 : 400, fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {notesSubTab === 'my-notes' && (
+            <>
+              {/* AI Summary */}
+              {(notesSummary || c.notes) && (
+                <div style={{ background: 'linear-gradient(135deg, rgba(139,127,255,0.08), rgba(99,179,255,0.05))', border: '1px solid rgba(139,127,255,0.2)', borderRadius: 14, padding: '14px 16px', marginBottom: 16 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: notesSummary ? 10 : 0 }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#c4b8ff' }}>✦ AI Summary</div>
+                    <Button size="sm" onClick={generateNotesSummary} disabled={summaryLoading}>
+                      {summaryLoading ? <><Spinner />Generating...</> : notesSummary ? 'Regenerate' : 'Generate Summary'}
+                    </Button>
+                  </div>
+                  {notesSummary && <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.7 }}>{notesSummary}</div>}
+                  {!notesSummary && !summaryLoading && <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 6 }}>Generate a persistent summary of your notes with one click.</div>}
+                </div>
               )}
-              {!notesSummary && !summaryLoading && (
-                <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 6 }}>Generate a persistent summary of your notes with one click.</div>
+              <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px', marginBottom: 16 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)', marginBottom: 10 }}>📝 Notes <span style={{ fontSize: 9, opacity: 0.5, fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>· auto-saves</span></div>
+                <RichNotes value={c.notes} onChange={v => upd('notes', v)} placeholder="Key takeaways, action items, things they mentioned..." minHeight={160} />
+              </div>
+            </>
+          )}
+
+          {notesSubTab === 'meeting-notes' && (
+            <div>
+              <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px', marginBottom: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)' }}>🤖 AI Meeting Notes <span style={{ fontSize: 9, opacity: 0.5, fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>· auto-saves</span></div>
+                </div>
+                <textarea
+                  value={meetingNotes}
+                  onChange={e => setMeetingNotes(e.target.value)}
+                  placeholder={`Paste your AI meeting notes here — Notion AI, Otter.ai transcripts, or any structured notes from your conversation with ${c.name}...`}
+                  rows={16}
+                  style={{ width: '100%', background: 'transparent', color: 'var(--text-primary)', border: 'none', outline: 'none', fontSize: 13, lineHeight: 1.7, resize: 'none', fontFamily: 'var(--font-sans)', boxSizing: 'border-box' }}
+                />
+              </div>
+              {!meetingNotes && (
+                <div style={{ fontSize: 12, color: 'var(--text-tertiary)', textAlign: 'center', padding: '8px 0' }}>
+                  Paste meeting notes here. They'll be included when generating AI summaries and personalized insights.
+                </div>
               )}
             </div>
           )}
-
-          {/* Raw notes */}
-          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px', marginBottom: 16 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)', marginBottom: 10 }}>📝 Notes</div>
-            <RichNotes value={c.notes} onChange={v => upd('notes', v)} placeholder="Key takeaways, action items, things they mentioned..." minHeight={160} />
-          </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
             <Button size="sm" onClick={onClose}>Close</Button>

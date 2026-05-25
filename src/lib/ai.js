@@ -187,6 +187,22 @@ Be specific and honest. Reference actual content from their resume, not generic 
   )
 }
 
+export async function extractInsights(contact) {
+  const notes = (contact.notes || '').replace(/<[^>]+>/g, '').trim()
+  const meeting = (contact.meetingNotes || '').trim()
+  const combined = [notes, meeting].filter(Boolean).join('\n\n---\n\n')
+  if (!combined) return []
+  const raw = await callClaude(
+    `Extract 3-5 memorable, specific insights or pieces of advice that ${contact.name} shared. These should be things they actually said — specific, quotable, useful. Return ONLY a JSON array of short strings (max 120 chars each). No generic tips — only things directly from their words. Example: ["Figure out where you want to go", "The foundation comes before anything", "Executives love sharing wisdom — let them cook"]`,
+    `Contact: ${contact.name}${contact.role ? `, ${contact.role}` : ''}${contact.company ? ` at ${contact.company}` : ''}\n\nNotes:\n${combined.slice(0, 4000)}`,
+    600
+  )
+  try {
+    const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim())
+    return Array.isArray(parsed) ? parsed.slice(0, 5) : []
+  } catch { return [] }
+}
+
 export async function generateJobRecs(profile, resume, skills) {
   const resumeCtx = resume?.parsed && !resume.parsed.error
     ? `Resume: ${resume.parsed.summary}. Skills from resume: ${(resume.parsed.skills || []).join(', ')}. Experience: ${(resume.parsed.experience || []).slice(0, 2).join('; ')}.`

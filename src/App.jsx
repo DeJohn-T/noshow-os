@@ -1,12 +1,12 @@
 // App.jsx
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { ContactList, UpcomingList, MonthCalendar } from './components/ContactList'
 import { ContactDetail } from './components/ContactDetail'
 import { Onboarding } from './components/Onboarding'
 import { JobSearch } from './components/JobSearch'
 import { Avatar, StatusBadge, GlobalStyles, Spinner } from './components/UI'
 import { loadContacts, saveContacts, loadProfile, saveProfile, loadQuotes, saveQuotes, loadTodos, saveTodos, loadBrainDump, saveBrainDump, loadUsers, saveUsers, getCurrentUser, setCurrentUser, clearCurrentUser, loadScheduledTasks, saveScheduledTasks, loadJobRecs, saveJobRecs, exportBackup, importBackup } from './lib/storage'
-import { generateQuotes, analyzeResume, generateJobRecs } from './lib/ai'
+import { generateQuotes, analyzeResume, generateJobRecs, extractInsights } from './lib/ai'
 import { extractTextFromPDF } from './lib/pdfParser'
 import { parseResumePDF } from './lib/ai'
 import { formatDate } from './lib/utils'
@@ -1120,6 +1120,31 @@ export default function App() {
   const [scheduledTasks, setScheduledTasks] = useState([])
   const [jobRecs, setJobRecs] = useState([])
   const [jobRecsLoading, setJobRecsLoading] = useState(false)
+  const [generatingInsights, setGeneratingInsights] = useState(false)
+  const [insightsProgress, setInsightsProgress] = useState({ done: 0, total: 0 })
+  const [insightIdx, setInsightIdx] = useState(0)
+  const [insightFade, setInsightFade] = useState(true)
+
+  const allInsights = useMemo(() => {
+    const items = []
+    for (const c of contacts) {
+      if (c.insights?.length) {
+        for (const text of c.insights) {
+          items.push({ text, name: c.name, id: c.id })
+        }
+      }
+    }
+    return items.sort(() => 0.5 - Math.random())
+  }, [contacts.map(c => c.insights?.length).join(',')])
+
+  useEffect(() => {
+    if (allInsights.length <= 1) return
+    const t = setInterval(() => {
+      setInsightFade(false)
+      setTimeout(() => { setInsightIdx(i => (i + 1) % allInsights.length); setInsightFade(true) }, 250)
+    }, 8000)
+    return () => clearInterval(t)
+  }, [allInsights.length])
 
   // ─── Supabase auth ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -1180,6 +1205,25 @@ export default function App() {
   }
 
   function handleLogin(userId) { setUser(userId); setProfileLoaded(false) }
+  async function generateAllInsights() {
+    const toProcess = contacts.filter(c => (c.notes || c.meetingNotes) && !c.insights?.length)
+    if (!toProcess.length) return
+    setGeneratingInsights(true)
+    setInsightsProgress({ done: 0, total: toProcess.length })
+    let updated = [...contacts]
+    for (let i = 0; i < toProcess.length; i++) {
+      try {
+        const insights = await extractInsights(toProcess[i])
+        if (insights.length) {
+          updated = updated.map(c => c.id === toProcess[i].id ? { ...c, insights } : c)
+        }
+      } catch (e) { console.error(e) }
+      setInsightsProgress({ done: i + 1, total: toProcess.length })
+    }
+    persist(updated)
+    setGeneratingInsights(false)
+  }
+
   function handleLogout() {
     clearCurrentUser()
     setUser(null); setProfile(null); setProfileLoaded(false); setContacts([]); setJobRecs([])
@@ -1686,6 +1730,53 @@ export default function App() {
       {/* ── CONTACTS ─────────────────────────────────────────────────────────────── */}
       {tab === 'contacts' && (
         <div style={{ maxWidth: 760, margin: '0 auto', padding: isMobile ? '1rem' : '1.5rem 1.5rem' }}>
+
+          {/* Personalized Tips */}
+          <div style={{ background: 'linear-gradient(135deg, rgba(139,127,255,0.12), rgba(74,222,128,0.06))', border: '1px solid rgba(139,127,255,0.3)', borderRadius: 20, padding: '1.25rem 1.5rem', marginBottom: '1rem', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: -30, right: -30, width: 130, height: 130, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,127,255,0.15) 0%, transparent 70%)', pointerEvents: 'none' }} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: allInsights.length ? 12 : 8 }}>
+              <div style={{ fontSize: 12, color: '#a78bfa', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span>✦</span> Wisdom from your network
+              </div>
+              {allInsights.length > 1 && (
+                <div style={{ display: 'flex', gap: 4 }}>
+                  {Array.from({ length: Math.min(allInsights.length, 6) }).map((_, i) => (
+                    <div key={i} style={{ width: i === insightIdx % Math.min(allInsights.length, 6) ? 16 : 5, height: 5, borderRadius: 3, background: i === insightIdx % Math.min(allInsights.length, 6) ? '#a78bfa' : 'rgba(167,139,250,0.2)', transition: 'all 0.3s' }} />
+                  ))}
+                </div>
+              )}
+            </div>
+            {allInsights.length > 0 ? (
+              <div style={{ opacity: insightFade ? 1 : 0, transform: insightFade ? 'none' : 'translateY(6px)', transition: 'all 0.25s ease' }}>
+                <div style={{ fontSize: 16, color: 'var(--text-primary)', lineHeight: 1.7, fontWeight: 500, marginBottom: 6 }}>
+                  "{allInsights[insightIdx % allInsights.length]?.text}"
+                </div>
+                <div style={{ fontSize: 13, color: '#a78bfa', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  — {allInsights[insightIdx % allInsights.length]?.name}
+                  {contacts.filter(c => (c.notes || c.meetingNotes) && !c.insights?.length).length > 0 && (
+                    <button onClick={generateAllInsights} disabled={generatingInsights} style={{ background: 'none', border: 'none', fontSize: 11, color: 'rgba(167,139,250,0.5)', cursor: 'pointer', fontFamily: 'var(--font-sans)', padding: 0 }}>
+                      {generatingInsights ? `processing ${insightsProgress.done}/${insightsProgress.total}...` : '+ add more'}
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 12, lineHeight: 1.6 }}>
+                  Generate insights pulled directly from your meeting notes — attributed to the person who said them.
+                </div>
+                <button onClick={generateAllInsights} disabled={generatingInsights || !contacts.some(c => c.notes || c.meetingNotes)}
+                  style={{ background: '#7c6fff', color: '#fff', border: 'none', borderRadius: 10, padding: '9px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)', opacity: generatingInsights || !contacts.some(c => c.notes || c.meetingNotes) ? 0.6 : 1 }}>
+                  {generatingInsights
+                    ? `Generating insights ${insightsProgress.done}/${insightsProgress.total}...`
+                    : contacts.some(c => c.notes || c.meetingNotes)
+                      ? '✦ Generate Insights'
+                      : 'Add notes to contacts first'}
+                </button>
+              </div>
+            )}
+          </div>
+
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: '1rem' }}>
             {[['All', stats.total, '#917aff', 'all'], ['Scheduled', stats.scheduled, '#4ade80', 'scheduled'], ['Completed', stats.completed, '#fbbf24', 'completed'], ['Followed up', stats.followedUp, '#f472b6', 'followed up']].map(([l, v, color, filter]) => (
               <div key={l} onClick={() => setContactFilter(contactFilter === filter ? 'all' : filter)}
