@@ -22,6 +22,7 @@ Approved direction:
 - Preserve every current feature while improving layout, hierarchy, density, and polish.
 - Make the generated prep brief feel like a designed artifact worth showing in a portfolio case study.
 - Keep the dark NoShow OS mood, but make it richer, more structured, and more intentional.
+- Treat mobile as a first-class surface because Deej actively uses NoShow OS on his phone.
 - Remove emojis from all visible UI and copy.
 - Use lucide-react for all icons.
 
@@ -155,7 +156,7 @@ Existing failure behavior can be restyled and clarified, but not expanded into n
 
 ## Responsive Behavior
 
-Desktop should use the full Brief Desk composition. Tablet can collapse the left rail into a compact nav and stack the right orbit beneath or beside the center depending on available width. Mobile should become a single-column, task-first flow:
+Desktop should use the full Brief Desk composition. Tablet can collapse the left rail into a compact nav and stack the right orbit beneath or beside the center depending on available width. Mobile is a first-class target, not an afterthought, because this app is used before and around real coffee chats. Mobile should become a single-column, task-first flow:
 
 - Top brand and primary action.
 - Today or next meeting module.
@@ -164,6 +165,8 @@ Desktop should use the full Brief Desk composition. Tablet can collapse the left
 - Navigation available through compact tabs or a drawer-like control.
 
 Text must fit in its containers on mobile and desktop. Fixed-format UI elements such as rails, list rows, counters, and toolbar controls need stable dimensions so hover and dynamic states do not shift layout.
+
+Mobile verification should happen in the same implementation pass as desktop verification. The redesign is not complete if the desktop app is polished but the phone layout feels like a compressed fallback.
 
 ## Motion
 
