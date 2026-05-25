@@ -1909,7 +1909,6 @@ export default function App() {
 
       {showNotionImport && (
         <NotionImport
-          apiKey={profile?.apiKey || import.meta.env.VITE_ANTHROPIC_API_KEY}
           endpoint={import.meta.env.DEV ? '/api/anthropic/v1/messages' : '/api/anthropic'}
           onImport={(imported) => {
             const merged = [...imported, ...contacts]

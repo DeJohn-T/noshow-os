@@ -18,7 +18,7 @@ Rules:
 - If you can't find a real person (e.g. it's just generic text), return []
 - Do not include yourself/the narrator as a contact`
 
-export default function NotionImport({ onImport, onClose, apiKey, endpoint }) {
+export default function NotionImport({ onImport, onClose, endpoint }) {
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -26,12 +26,11 @@ export default function NotionImport({ onImport, onClose, apiKey, endpoint }) {
 
   const extract = async () => {
     if (!text.trim()) { setError('Paste some notes first.'); return }
-    if (!apiKey) { setError('No API key set. Add one in Settings.'); return }
     setLoading(true); setError('')
     try {
       const res = await fetch(endpoint, {
         method: 'POST',
-        headers: { 'content-type': 'application/json', 'x-forwarded-api-key': apiKey },
+        headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 2048,
