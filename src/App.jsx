@@ -31,6 +31,104 @@ const PRO_TIPS = [
   { icon: '⚡', text: 'Add your skills and resume to get better, more personalized prep briefs and job matches.' },
 ]
 
+function HighlightsBox({ highlights, onAdd, onRemove }) {
+  const [idx, setIdx] = useState(0)
+  const [fade, setFade] = useState(true)
+  const [input, setInput] = useState('')
+  const [managing, setManaging] = useState(false)
+
+  useEffect(() => {
+    if (highlights.length <= 1) return
+    const t = setInterval(() => {
+      setFade(false)
+      setTimeout(() => { setIdx(i => (i + 1) % highlights.length); setFade(true) }, 300)
+    }, 60000)
+    return () => clearInterval(t)
+  }, [highlights.length])
+
+  function navigate(dir) {
+    setFade(false)
+    setTimeout(() => { setIdx(i => (i + dir + highlights.length) % highlights.length); setFade(true) }, 200)
+  }
+
+  function add() {
+    const t = input.trim()
+    if (t) { onAdd(t); setInput('') }
+  }
+
+  const current = highlights[idx % Math.max(highlights.length, 1)]
+
+  return (
+    <div style={{ background: 'linear-gradient(135deg, rgba(251,191,36,0.08), rgba(244,114,182,0.05))', border: '1px solid rgba(251,191,36,0.2)', borderRadius: 20, padding: '1.25rem 1.5rem', marginBottom: '1.5rem', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: 'radial-gradient(circle, rgba(251,191,36,0.15) 0%, transparent 70%)', pointerEvents: 'none' }} />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: highlights.length ? 12 : 8 }}>
+        <div style={{ fontSize: 12, color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span>★</span> My Highlights
+        </div>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {highlights.length > 1 && (
+            <div style={{ display: 'flex', gap: 3 }}>
+              {highlights.map((_, i) => (
+                <div key={i} onClick={() => { setFade(false); setTimeout(() => { setIdx(i); setFade(true) }, 200) }}
+                  style={{ width: i === idx ? 16 : 5, height: 5, borderRadius: 3, background: i === idx ? '#fbbf24' : 'rgba(251,191,36,0.25)', transition: 'all 0.3s', cursor: 'pointer' }} />
+              ))}
+            </div>
+          )}
+          <button onClick={() => setManaging(m => !m)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(251,191,36,0.5)', fontSize: 12, fontFamily: 'var(--font-sans)', padding: 0 }}>
+            {managing ? 'done' : 'manage'}
+          </button>
+        </div>
+      </div>
+
+      {highlights.length > 0 ? (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+            {highlights.length > 1 && (
+              <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: 'rgba(251,191,36,0.6)', cursor: 'pointer', fontSize: 20, lineHeight: 1, padding: '0 2px', flexShrink: 0 }}>‹</button>
+            )}
+            <div style={{ flex: 1, opacity: fade ? 1 : 0, transform: fade ? 'none' : 'translateY(5px)', transition: 'all 0.3s ease', fontSize: 15, color: 'var(--text-primary)', lineHeight: 1.7, fontWeight: 500 }}>
+              {current}
+            </div>
+            {highlights.length > 1 && (
+              <button onClick={() => navigate(1)} style={{ background: 'none', border: 'none', color: 'rgba(251,191,36,0.6)', cursor: 'pointer', fontSize: 20, lineHeight: 1, padding: '0 2px', flexShrink: 0 }}>›</button>
+            )}
+          </div>
+          {highlights.length > 1 && (
+            <div style={{ fontSize: 10, color: 'rgba(251,191,36,0.4)', marginBottom: 10 }}>{idx + 1} / {highlights.length} · cycles every minute</div>
+          )}
+        </>
+      ) : (
+        <div style={{ fontSize: 13, color: 'var(--text-tertiary)', marginBottom: 10 }}>Add advice, rules, or anything you want to remember. It'll cycle through here.</div>
+      )}
+
+      {managing && highlights.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12, maxHeight: 180, overflowY: 'auto' }}>
+          {highlights.map((h, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, background: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: '7px 10px' }}>
+              <span style={{ flex: 1, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{h}</span>
+              <button onClick={() => { onRemove(i); if (idx >= highlights.length - 1) setIdx(Math.max(0, highlights.length - 2)) }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 16, lineHeight: 1, padding: '0 2px', flexShrink: 0 }}>×</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div style={{ borderTop: '1px solid rgba(251,191,36,0.15)', paddingTop: 10, display: 'flex', gap: 8 }}>
+        <input
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && add()}
+          placeholder="Add a rule or piece of advice... press Enter"
+          style={{ flex: 1, background: 'transparent', color: 'var(--text-primary)', border: 'none', outline: 'none', fontSize: 13, fontFamily: 'var(--font-sans)' }}
+        />
+        {input.trim() && (
+          <button onClick={add} style={{ background: 'rgba(251,191,36,0.2)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 8, padding: '5px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Add</button>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function ProTipBox() {
   const [idx, setIdx] = useState(0)
   const [fade, setFade] = useState(true)
@@ -1106,6 +1204,7 @@ export default function App() {
   const [showSchedule, setShowSchedule] = useState(false)
   const [detail, setDetail] = useState(null)
   const [quotes, setQuotes] = useState([])
+  const [highlights, setHighlights] = useState(() => loadProfile(currentUser)?.highlights || [])
   const [quoteIdx, setQuoteIdx] = useState(0)
   const [quoteFade, setQuoteFade] = useState(true)
   const [quoteLoading, setQuoteLoading] = useState(false)
@@ -1205,6 +1304,19 @@ export default function App() {
   }
 
   function handleLogin(userId) { setUser(userId); setProfileLoaded(false) }
+  function addHighlight(text) {
+    const updated = [...highlights, text]
+    setHighlights(updated)
+    const p = { ...profile, highlights: updated }
+    setProfile(p); saveProfile(currentUser, p)
+  }
+  function removeHighlight(i) {
+    const updated = highlights.filter((_, idx) => idx !== i)
+    setHighlights(updated)
+    const p = { ...profile, highlights: updated }
+    setProfile(p); saveProfile(currentUser, p)
+  }
+
   async function generateAllInsights() {
     const toProcess = contacts.filter(c => (c.notes || c.meetingNotes) && !c.insights?.length)
     if (!toProcess.length) return
@@ -1461,6 +1573,9 @@ export default function App() {
                   : <div style={{ fontSize: 14, color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: 1.7, opacity: quoteFade ? 1 : 0, transform: quoteFade ? 'translateY(0)' : 'translateY(4px)', transition: 'opacity 0.3s ease, transform 0.3s ease' }}>"{quotes[quoteIdx] || ''}"</div>}
               </div>
             </div>
+
+            {/* ── Highlights ─── */}
+            <HighlightsBox highlights={highlights} onAdd={addHighlight} onRemove={removeHighlight} />
 
             {/* ── Prep brief reminder ─── */}
             {soonChats.length > 0 && (
