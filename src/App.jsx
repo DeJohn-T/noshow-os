@@ -1,10 +1,31 @@
 // App.jsx
 import React, { useState, useEffect, useRef, useMemo } from 'react'
+import {
+  Bell,
+  CalendarDays,
+  CheckCircle2,
+  Clock3,
+  Contact as ContactIcon,
+  FileText,
+  Flame,
+  FolderInput,
+  Lightbulb,
+  ListChecks,
+  MessageSquareText,
+  Network as NetworkIcon,
+  NotebookText,
+  Search,
+  Settings2,
+  Sparkles,
+  Target,
+  Zap,
+} from 'lucide-react'
 import { ContactList, UpcomingList, MonthCalendar } from './components/ContactList'
 import { ContactDetail } from './components/ContactDetail'
 import { Onboarding } from './components/Onboarding'
 import { JobSearch } from './components/JobSearch'
-import { Avatar, StatusBadge, GlobalStyles, Spinner } from './components/UI'
+import { AppShell, MetricTile, OrbitPanel, RightOrbit, TodayDesk } from './components/Layout'
+import { Avatar, StatusBadge, GlobalStyles, Spinner, Button } from './components/UI'
 import { loadContacts, saveContacts, loadProfile, saveProfile, loadQuotes, saveQuotes, loadTodos, saveTodos, loadBrainDump, saveBrainDump, loadUsers, saveUsers, getCurrentUser, setCurrentUser, clearCurrentUser, loadScheduledTasks, saveScheduledTasks, loadJobRecs, saveJobRecs, exportBackup, importBackup } from './lib/storage'
 import { generateQuotes, analyzeResume, generateJobRecs, extractInsights } from './lib/ai'
 import { extractTextFromPDF } from './lib/pdfParser'
@@ -1583,81 +1604,221 @@ export default function App() {
   const resume = profile?.resumeText ? { text: profile.resumeText, parsed: profile.resumeParsed } : null
   const skills = profile?.skills || []
 
-  const greeting = getGreeting(profile.name)
-  const tabs = ['home', 'contacts', 'upcoming', 'jobs', 'resume', 'network']
-  const tabLabels = { home: 'Home', contacts: 'Contacts', upcoming: 'Upcoming', jobs: 'Jobs', resume: 'Resume', network: '🕸 Network' }
-  const needsScheduling = contacts.filter(x => x.chatDate && x.status === 'scheduled' && x.chatDate >= todayStr)
-
   const tomorrowStr = new Date(Date.now() + 86400000).toISOString().split('T')[0]
   const soonChats = upcoming.filter(c => c.chatDate === todayStr || c.chatDate === tomorrowStr)
   const streak = calcStreak(contacts)
   const networkScore = calcNetworkScore(contacts)
+  const todayDeskContact = upcoming[0] || contacts.find(c => c.parsedProfile && !c.parsedProfile.error && !c.brief) || contacts[0] || null
 
   const filteredContacts = contactSearch.trim()
     ? contacts.filter(c => [c.name, c.role, c.company].filter(Boolean).join(' ').toLowerCase().includes(contactSearch.toLowerCase()))
     : contacts
 
-  const STAT_CARDS = [
-    { label: 'Total', value: stats.total, icon: '🤝', accent: '#7c6fff', onClick: () => setTab('contacts'), contactList: contacts },
-    { label: 'Scheduled', value: stats.scheduled, icon: '📅', accent: '#4ade80', onClick: () => setTab('upcoming'), badge: upcoming.length > 0 ? { text: `${upcoming.length} upcoming`, color: '#4ade80' } : null, contactList: contacts.filter(x => x.status === 'scheduled') },
-    { label: 'Completed', value: stats.completed, icon: '✓', accent: '#fbbf24', onClick: () => setTab('contacts'), contactList: contacts.filter(x => x.status === 'completed') },
-    { label: 'Followed Up', value: stats.followedUp, icon: '✉', accent: '#f472b6', onClick: () => setTab('contacts'), contactList: contacts.filter(x => x.status === 'followed up') },
+  const HOME_METRICS = [
+    { label: 'Contacts', value: stats.total, icon: ContactIcon, accent: 'var(--cyan)', onClick: () => setTab('contacts') },
+    { label: 'Scheduled', value: stats.scheduled, icon: CalendarDays, accent: 'var(--green-text)', onClick: () => setTab('upcoming') },
+    { label: 'Completed', value: stats.completed, icon: CheckCircle2, accent: 'var(--amber)', onClick: () => setTab('contacts') },
+    { label: 'Followed Up', value: stats.followedUp, icon: MessageSquareText, accent: 'var(--rose)', onClick: () => setTab('contacts') },
   ]
 
   const modalBg = { position: 'fixed', inset: 0, background: 'rgba(8,16,24,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', zIndex: 100, backdropFilter: 'blur(12px)' }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+    <AppShell activeTab={tab} onTabChange={setTab} onAddContact={() => setShowAdd(true)} onEditProfile={() => setShowEdit(true)} profile={profile}>
       <GlobalStyles />
 
-      {/* Nav */}
-      <div style={{ background: 'rgba(15,25,35,0.92)', backdropFilter: 'blur(16px)', borderBottom: '1px solid var(--border)', padding: isMobile ? '0 1rem' : '0 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 56, position: 'sticky', top: 0, zIndex: 50 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 18 }}>☕</span>
-          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
-            <span style={{ fontWeight: 800, fontSize: isMobile ? 13 : 15, letterSpacing: '-0.01em', fontFamily: 'var(--font-display)' }}>NoShow OS</span>
-            {!isMobile && <span style={{ fontSize: 10, color: 'var(--text-tertiary)', marginTop: 2, letterSpacing: '0.02em' }}>Show up prepared. Every time.</span>}
-          </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          {!isMobile && (
-            <button onClick={() => window.open('https://calendar.google.com', '_blank')} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 12px', fontSize: 12, color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', gap: 6 }}>
-              📅 Calendar
-            </button>
-          )}
-          <button onClick={() => setShowEdit(true)} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 10px', fontSize: 12, color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
-            {isMobile ? '⚙️' : `${profile.name?.split(' ')[0]} · edit`}
+      {!isMobile && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginBottom: 14 }}>
+          <button onClick={() => window.open('https://calendar.google.com', '_blank')} style={{ background: 'rgba(244,247,249,0.04)', border: '1px solid var(--border)', borderRadius: 8, padding: '7px 12px', fontSize: 12, color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', gap: 7 }}>
+            <CalendarDays size={14} strokeWidth={1.8} aria-hidden="true" />
+            Google Calendar
           </button>
-          {!isMobile && (
-            <button onClick={() => exportBackup(currentUser)} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 12px', fontSize: 12, color: 'var(--text-tertiary)', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
-              Export backup
-            </button>
-          )}
-          {!isMobile && (
-            <button onClick={handleLogout} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 12px', fontSize: 12, color: 'var(--text-tertiary)', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
-              Log out
-            </button>
-          )}
-          <button onClick={() => setShowAdd(true)} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: isMobile ? '8px 12px' : '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>
-            {isMobile ? '+' : '+ Add contact'}
+          <button onClick={() => exportBackup(currentUser)} style={{ background: 'rgba(244,247,249,0.04)', border: '1px solid var(--border)', borderRadius: 8, padding: '7px 12px', fontSize: 12, color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', gap: 7 }}>
+            <FolderInput size={14} strokeWidth={1.8} aria-hidden="true" />
+            Export backup
+          </button>
+          <button onClick={handleLogout} style={{ background: 'rgba(244,247,249,0.04)', border: '1px solid var(--border)', borderRadius: 8, padding: '7px 12px', fontSize: 12, color: 'var(--text-tertiary)', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
+            Log out
           </button>
         </div>
-      </div>
+      )}
 
-      {/* Tab bar */}
-      <div style={{ background: 'rgba(15,25,35,0.8)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)', display: 'flex', padding: isMobile ? '0 0.5rem' : '0 1.5rem', position: 'sticky', top: 56, zIndex: 40, overflowX: 'auto', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
-        {tabs.map(t => (
-          <button key={t} onClick={() => setTab(t)} style={{ fontSize: isMobile ? 11 : 13, fontWeight: 500, padding: isMobile ? '11px 12px' : '12px 18px', background: 'transparent', border: 'none', borderBottom: tab === t ? '2px solid var(--accent)' : '2px solid transparent', color: tab === t ? 'var(--text-primary)' : 'var(--text-tertiary)', cursor: 'pointer', marginBottom: -1, transition: 'color 0.15s', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap', flexShrink: 0 }}>
-            {tabLabels[t]}
-            {t === 'upcoming' && upcoming.length > 0 && <span style={{ marginLeft: 5, background: 'var(--accent)', color: '#fff', borderRadius: 100, fontSize: 9, padding: '1px 5px', fontWeight: 700 }}>{upcoming.length}</span>}
-          </button>
-        ))}
-      </div>
-
-      {/* Backup reminder banner */}
-
-      {/* ── HOME ─────────────────────────────────────────────────────────────────── */}
       {tab === 'home' && (
+        <div className="brief-desk-grid">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <TodayDesk contact={todayDeskContact} stats={stats} onOpenContact={setDetail} />
+
+            {homeConfig.statCards && (
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, minmax(0, 1fr))', gap: 12 }}>
+                {HOME_METRICS.map(metric => (
+                  <MetricTile key={metric.label} {...metric} />
+                ))}
+              </div>
+            )}
+
+            {(homeConfig.streak || homeConfig.networkScore) && (
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
+                {homeConfig.streak && (
+                  <OrbitPanel title="Conversation streak" icon={Flame} accent="var(--amber)">
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
+                      <div style={{ fontFamily: 'var(--font-display)', fontSize: 42, fontWeight: 800, lineHeight: 1, color: 'var(--amber)' }}>{streak}</div>
+                      <div style={{ color: 'var(--text-secondary)', fontSize: 13, paddingBottom: 4 }}>week{streak !== 1 ? 's' : ''}</div>
+                    </div>
+                    <div style={{ color: 'var(--text-tertiary)', fontSize: 12, marginTop: 8 }}>
+                      {streak === 0 ? 'Complete a chat to start the streak.' : streak >= 4 ? 'Strong rhythm. Keep the loop warm.' : 'Momentum is building.'}
+                    </div>
+                  </OrbitPanel>
+                )}
+                {homeConfig.networkScore && (
+                  <OrbitPanel title="Network score" icon={Zap} accent="var(--cyan)">
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
+                      <div style={{ fontFamily: 'var(--font-display)', fontSize: 42, fontWeight: 800, lineHeight: 1, color: 'var(--cyan)' }}>{networkScore}</div>
+                      <div style={{ color: 'var(--text-secondary)', fontSize: 13, paddingBottom: 4 }}>points</div>
+                    </div>
+                    <div style={{ color: 'var(--text-tertiary)', fontSize: 12, marginTop: 8 }}>
+                      {networkScore < 50 ? 'Early map, useful signal.' : networkScore < 150 ? 'Useful momentum across the room.' : networkScore < 300 ? 'The network has shape now.' : 'Deep bench, real coverage.'}
+                    </div>
+                  </OrbitPanel>
+                )}
+              </div>
+            )}
+
+            {homeConfig.highlights && <HighlightsBox highlights={highlights} onAdd={addHighlight} onRemove={removeHighlight} onReorder={reorderHighlights} />}
+
+            {(homeConfig.upcoming || homeConfig.followUp) && (
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1fr) minmax(0, 1fr)', gap: 12 }}>
+                {homeConfig.upcoming && (
+                  <OrbitPanel title="Upcoming" icon={CalendarDays} accent="var(--green-text)" action={<button onClick={() => setTab('upcoming')} style={{ background: 'transparent', border: 'none', color: 'var(--green-text)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>View all</button>}>
+                    {upcoming.length === 0 ? (
+                      <div style={{ color: 'var(--text-tertiary)', fontSize: 13, padding: '16px 0' }}>No scheduled meetings yet.</div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        {upcoming.slice(0, 4).map(c => (
+                          <button key={c.id} onClick={() => setDetail(c)} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 0', background: 'transparent', border: 'none', borderTop: '1px solid var(--border)', color: 'var(--text-primary)', textAlign: 'left', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
+                            <Avatar name={c.name} company={c.company} size={32} />
+                            <span style={{ flex: 1, minWidth: 0 }}>
+                              <span style={{ display: 'block', fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</span>
+                              <span style={{ display: 'block', color: 'var(--text-tertiary)', fontSize: 11, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{[c.role, c.company].filter(Boolean).join(' at ') || 'No role set'}</span>
+                            </span>
+                            <span style={{ color: 'var(--text-secondary)', fontSize: 11, textAlign: 'right' }}>{formatDate(c.chatDate)}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </OrbitPanel>
+                )}
+
+                {homeConfig.followUp && (
+                  <OrbitPanel title="Follow-ups" icon={Bell} accent="var(--rose)">
+                    {needsFollowUp.length === 0 ? (
+                      <div style={{ color: 'var(--text-tertiary)', fontSize: 13, padding: '16px 0' }}>All caught up.</div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        {needsFollowUp.slice(0, 4).map(c => (
+                          <button key={c.id} onClick={() => setDetail(c)} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 0', background: 'transparent', border: 'none', borderTop: '1px solid var(--border)', color: 'var(--text-primary)', textAlign: 'left', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
+                            <MessageSquareText size={16} color="var(--rose)" strokeWidth={1.8} aria-hidden="true" />
+                            <span style={{ flex: 1, minWidth: 0 }}>
+                              <span style={{ display: 'block', fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</span>
+                              <span style={{ display: 'block', color: 'var(--text-tertiary)', fontSize: 11 }}>Needs follow-up</span>
+                            </span>
+                            <span style={{ color: 'var(--rose)', fontSize: 11 }}>Write</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </OrbitPanel>
+                )}
+              </div>
+            )}
+
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1fr) minmax(0, 1fr)', gap: 12 }}>
+              <OrbitPanel title="To-do list" icon={ListChecks} accent="var(--accent)">
+                <TodoInput onAdd={addTodo} />
+                <div style={{ marginTop: 14 }}>
+                  <TodoList todos={todos} onToggle={toggleTodo} onDelete={deleteTodo} />
+                </div>
+              </OrbitPanel>
+
+              <OrbitPanel title="Recent contacts" icon={NotebookText} accent="var(--cyan)">
+                {recent.length === 0 ? (
+                  <div style={{ color: 'var(--text-tertiary)', fontSize: 13, padding: '16px 0' }}>No contacts yet.</div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {recent.map(c => (
+                      <button key={c.id} onClick={() => setDetail(c)} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 0', background: 'transparent', border: 'none', borderTop: '1px solid var(--border)', color: 'var(--text-primary)', textAlign: 'left', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
+                        <Avatar name={c.name} company={c.company} size={32} />
+                        <span style={{ flex: 1, minWidth: 0 }}>
+                          <span style={{ display: 'block', fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</span>
+                          <span style={{ display: 'block', color: 'var(--text-tertiary)', fontSize: 11, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{[c.role, c.company].filter(Boolean).join(' at ') || 'No role set'}</span>
+                        </span>
+                        <StatusBadge status={c.status} />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </OrbitPanel>
+            </div>
+          </div>
+
+          <RightOrbit>
+            <OrbitPanel title="Field note" icon={Sparkles} accent="var(--accent)">
+              {quoteLoading ? (
+                <div style={{ color: 'var(--text-tertiary)', display: 'flex', gap: 8, alignItems: 'center', fontSize: 13 }}><Spinner /> Generating quote</div>
+              ) : (
+                <div style={{ fontFamily: 'Georgia, serif', color: 'var(--text-secondary)', lineHeight: 1.7, fontSize: 15 }}>"{quotes[quoteIdx] || 'Every connection is a door you did not know was there.'}"</div>
+              )}
+            </OrbitPanel>
+
+            {soonChats.length > 0 && (
+              <OrbitPanel title="Next call" icon={Clock3} accent="var(--green-text)">
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                  <Avatar name={soonChats[0].name} company={soonChats[0].company} size={36} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 800, fontSize: 14, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{soonChats[0].name}</div>
+                    <div style={{ color: 'var(--text-tertiary)', fontSize: 12 }}>{soonChats[0].chatDate === todayStr ? 'Today' : 'Tomorrow'}{soonChats[0].chatTime ? ` at ${soonChats[0].chatTime}` : ''}</div>
+                  </div>
+                </div>
+                <Button variant="primary" onClick={() => setDetail(soonChats[0])} style={{ width: '100%', marginTop: 12 }}>Open brief</Button>
+              </OrbitPanel>
+            )}
+
+            <OrbitPanel title="Desk modules" icon={Settings2} accent="var(--cyan)" action={<button onClick={() => setShowHomeCustomize(v => !v)} style={{ background: 'transparent', border: 'none', color: 'var(--cyan)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>{showHomeCustomize ? 'Done' : 'Customize'}</button>}>
+              {showHomeCustomize ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {[['statCards','Metrics'], ['streak','Streak'], ['networkScore','Score'], ['highlights','Highlights'], ['upcoming','Upcoming'], ['followUp','Follow-ups'], ['tips','Tips']].map(([key, label]) => (
+                    <button key={key} onClick={() => toggleHomeSection(key)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: '8px 0', background: 'transparent', border: 'none', borderTop: '1px solid var(--border)', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: 13 }}>
+                      <span>{label}</span>
+                      <span style={{ color: homeConfig[key] ? 'var(--accent)' : 'var(--text-tertiary)', fontFamily: 'var(--font-mono)', fontSize: 10 }}>{homeConfig[key] ? 'On' : 'Off'}</span>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ color: 'var(--text-tertiary)', fontSize: 13, lineHeight: 1.7 }}>Tune what shows up on the desk without changing the core workflow.</div>
+              )}
+            </OrbitPanel>
+
+            <OrbitPanel title="Profile signal" icon={Target} accent="var(--amber)">
+              {profile.goals ? (
+                <div style={{ color: 'var(--text-secondary)', lineHeight: 1.65, fontSize: 13, marginBottom: 12 }}>{profile.goals}</div>
+              ) : (
+                <div style={{ color: 'var(--text-tertiary)', lineHeight: 1.65, fontSize: 13, marginBottom: 12 }}>Add a goal to sharpen brief generation.</div>
+              )}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
+                {skills.slice(0, 7).map(skill => (
+                  <span key={skill} style={{ border: '1px solid var(--border)', borderRadius: 999, padding: '4px 8px', color: 'var(--text-secondary)', fontSize: 11 }}>{skill}</span>
+                ))}
+                {skills.length > 7 && <span style={{ color: 'var(--text-tertiary)', fontSize: 11, padding: '4px 0' }}>+{skills.length - 7} more</span>}
+              </div>
+              <button onClick={() => setShowEdit(true)} style={{ background: 'rgba(240,186,77,0.12)', border: '1px solid rgba(240,186,77,0.28)', color: 'var(--amber)', borderRadius: 8, padding: '8px 10px', cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: 12, width: '100%' }}>
+                Edit profile
+              </button>
+            </OrbitPanel>
+          </RightOrbit>
+        </div>
+      )}
+
+      {/* Legacy home kept off while the Brief Desk redesign rolls forward. */}
+      {false && tab === 'home' && (
         <div style={{ position: 'relative', overflow: 'hidden' }}>
           {/* Ambient glows */}
           <div style={{ position: 'fixed', top: 80, left: '40%', width: 700, height: 500, borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(124,140,248,0.06) 0%, transparent 65%)', pointerEvents: 'none', zIndex: 0 }} />
@@ -2469,6 +2630,6 @@ export default function App() {
           onClose={() => setShowNotionImport(false)}
         />
       )}
-    </div>
+    </AppShell>
   )
 }

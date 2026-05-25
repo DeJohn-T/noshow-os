@@ -16,7 +16,7 @@ const NAV_ITEMS = [
   { key: 'home', label: 'Home', icon: Home },
   { key: 'contacts', label: 'Contacts', icon: Contact },
   { key: 'upcoming', label: 'Calendar', icon: CalendarDays },
-  { key: 'map', label: 'Network', icon: Network },
+  { key: 'network', label: 'Network', icon: Network },
   { key: 'resume', label: 'Resume', icon: FileText },
   { key: 'jobs', label: 'Jobs', icon: BriefcaseBusiness },
 ]
