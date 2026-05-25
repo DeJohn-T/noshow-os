@@ -127,7 +127,7 @@ export default function NotionImport({ onImport, onClose, endpoint }) {
         {/* Tab bar */}
         <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: 'var(--surface-3)', borderRadius: 10, padding: 4 }}>
           <button style={tabStyle('paste')} onClick={() => setTab('paste')}>📝 Paste Notes</button>
-          <button style={tabStyle('manual')} onClick={() => setTab('manual')}>✏️ Quick Add</button>
+          <button style={tabStyle('manual')} onClick={() => setTab('manual')}>+ Quick Add</button>
         </div>
 
         {/* ── PASTE NOTES TAB ── */}

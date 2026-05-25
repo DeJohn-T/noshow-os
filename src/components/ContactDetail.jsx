@@ -528,7 +528,10 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <div style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-display)' }}>{c.name}</div>
-                <button onClick={() => { setEditName(c.name); setEditRole(c.role || ''); setEditCompany(c.company || ''); setEditingInfo(true) }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 13, padding: 2, lineHeight: 1 }} title="Edit">✏️</button>
+                <button onClick={() => { setEditName(c.name); setEditRole(c.role || ''); setEditCompany(c.company || ''); setEditingInfo(true); setTab('Edit') }}
+                  style={{ background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 6, cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 11, padding: '2px 8px', lineHeight: 1.6, fontFamily: 'var(--font-sans)', fontWeight: 500 }}>
+                  Edit
+                </button>
               </div>
               <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 2 }}>{[c.role, c.company].filter(Boolean).join(' · ') || 'No role set'}</div>
               {c.email && (
@@ -756,7 +759,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
                             <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{fmtD(a.date)}</span>
                             {a.type === 'connected' && (
                               <button onClick={() => { setConnectedDateInput(a.date); setEditingConnectedDate(true) }}
-                                style={{ background: 'none', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer', fontSize: 11, padding: 0, opacity: 0.6 }}>✏️</button>
+                                style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 5, color: 'var(--text-tertiary)', cursor: 'pointer', fontSize: 10, padding: '1px 6px', fontFamily: 'var(--font-sans)' }}>Edit</button>
                             )}
                           </div>
                         )}
