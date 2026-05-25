@@ -1792,7 +1792,9 @@ export default function App() {
           {(() => {
             const today = new Date().toISOString().split('T')[0]
             const due = contacts.filter(c =>
-              c.nextAction !== 'one-time' && (
+              c.nextAction !== 'one-time' &&
+              c.nextAction !== 'done' &&
+              c.status !== 'followed up' && (
                 c.nextAction === 'follow-up' ||
                 (c.followUpDate && c.followUpDate <= today) ||
                 (c.status === 'completed' && !c.followUpText && !c.nextAction)
