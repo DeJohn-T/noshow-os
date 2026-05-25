@@ -8,7 +8,7 @@ Return ONLY a valid JSON array, no other text:
     "name": "Full Name",
     "role": "Job title or role (empty string if unknown)",
     "company": "Company or organization (empty string if unknown)",
-    "notes": "A concise summary of everything relevant — background, what was discussed, any context",
+    "notes": "A concise summary of everything relevant - background, what was discussed, any context",
     "meetingType": "coffee chat"
   }
 ]
@@ -17,7 +17,7 @@ Rules:
 - notes should capture the most useful info for a future coffee chat
 - If you truly cannot identify the person's name, use their most distinguishing characteristic as a name placeholder
 - Do not include yourself/the narrator as a contact
-- Do not return "Unknown" as a name — use something descriptive if the name is not clear`
+- Do not return "Unknown" as a name - use something descriptive if the name is not clear`
 
 export default function NotionImport({ onImport, onClose, endpoint }) {
   const [tab, setTab] = useState('paste')
@@ -126,7 +126,7 @@ export default function NotionImport({ onImport, onClose, endpoint }) {
 
         {/* Tab bar */}
         <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: 'var(--surface-3)', borderRadius: 10, padding: 4 }}>
-          <button style={tabStyle('paste')} onClick={() => setTab('paste')}>📝 Paste Notes</button>
+          <button style={tabStyle('paste')} onClick={() => setTab('paste')}> Paste Notes</button>
           <button style={tabStyle('manual')} onClick={() => setTab('manual')}>+ Quick Add</button>
         </div>
 
@@ -136,7 +136,7 @@ export default function NotionImport({ onImport, onClose, endpoint }) {
             <textarea
               value={text}
               onChange={e => setText(e.target.value)}
-              placeholder="Paste your Notion notes here — meeting notes, background on people, AI summaries from calls, anything..."
+              placeholder="Paste your Notion notes here - meeting notes, background on people, AI summaries from calls, anything..."
               rows={10}
               style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 12, borderRadius: 12, padding: '12px 14px', fontSize: 13 }}
             />

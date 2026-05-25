@@ -1,18 +1,35 @@
 // components/ContactDetail.jsx
 import React, { useState, useRef, useEffect, useMemo } from 'react'
+import {
+  BookOpen,
+  BriefcaseBusiness,
+  Bell,
+  CheckCircle2,
+  CircleQuestionMark,
+  Download,
+  FileText,
+  Lightbulb,
+  Link2,
+  MessageCircle,
+  School,
+  Sparkles,
+  Target,
+  Upload,
+  Users,
+} from 'lucide-react'
 import { Avatar, StatusBadge, Button, Input, Textarea, RichNotes, Tabs, Notice, Spinner, AIOutput, SectionLabel, Chip, CompanyLogo } from './UI'
 import { parseLinkedInPDF, generateBrief, generateFollowUp, callClaude, callClaudeChat } from '../lib/ai'
 import { extractTextFromPDF } from '../lib/pdfParser'
 import { addDays } from '../lib/utils'
 
 const BRIEF_SECTIONS = [
-  { key: 'BACKGROUND', icon: '👤', gradient: 'linear-gradient(135deg, rgba(139,127,255,0.1), rgba(139,127,255,0.03))', border: 'rgba(139,127,255,0.3)', accent: '#c4b8ff' },
-  { key: 'MUTUAL GROUND', icon: '🤝', gradient: 'linear-gradient(135deg, rgba(74,222,128,0.1), rgba(74,222,128,0.03))', border: 'rgba(74,222,128,0.3)', accent: '#6ee7b7' },
-  { key: 'THEIR CAREER STORY', icon: '📈', gradient: 'linear-gradient(135deg, rgba(251,191,36,0.1), rgba(251,191,36,0.03))', border: 'rgba(251,191,36,0.3)', accent: '#fcd34d' },
-  { key: 'GOALS for THIS CHAT', alt: 'GOALS FOR THIS CHAT', icon: '🎯', gradient: 'linear-gradient(135deg, rgba(244,114,182,0.1), rgba(244,114,182,0.03))', border: 'rgba(244,114,182,0.3)', accent: '#f9a8d4' },
-  { key: 'QUESTIONS TO ASK', icon: '❓', gradient: 'linear-gradient(135deg, rgba(99,179,255,0.1), rgba(99,179,255,0.03))', border: 'rgba(99,179,255,0.3)', accent: '#93c5fd' },
-  { key: 'WHAT TO HIGHLIGHT ABOUT YOU', icon: '✦', gradient: 'linear-gradient(135deg, rgba(52,211,153,0.1), rgba(52,211,153,0.03))', border: 'rgba(52,211,153,0.3)', accent: '#6ee7b7' },
-  { key: 'CONVERSATION STARTERS', icon: '💬', gradient: 'linear-gradient(135deg, rgba(251,146,60,0.1), rgba(251,146,60,0.03))', border: 'rgba(251,146,60,0.3)', accent: '#fdba74' },
+  { key: 'BACKGROUND', icon: BookOpen, gradient: 'linear-gradient(135deg, rgba(139,127,255,0.1), rgba(139,127,255,0.03))', border: 'rgba(139,127,255,0.3)', accent: '#c4b8ff' },
+  { key: 'MUTUAL GROUND', icon: Users, gradient: 'linear-gradient(135deg, rgba(74,222,128,0.1), rgba(74,222,128,0.03))', border: 'rgba(74,222,128,0.3)', accent: '#6ee7b7' },
+  { key: 'THEIR CAREER STORY', icon: BriefcaseBusiness, gradient: 'linear-gradient(135deg, rgba(251,191,36,0.1), rgba(251,191,36,0.03))', border: 'rgba(251,191,36,0.3)', accent: '#fcd34d' },
+  { key: 'GOALS for THIS CHAT', alt: 'GOALS FOR THIS CHAT', icon: Target, gradient: 'linear-gradient(135deg, rgba(244,114,182,0.1), rgba(244,114,182,0.03))', border: 'rgba(244,114,182,0.3)', accent: '#f9a8d4' },
+  { key: 'QUESTIONS TO ASK', icon: CircleQuestionMark, gradient: 'linear-gradient(135deg, rgba(99,179,255,0.1), rgba(99,179,255,0.03))', border: 'rgba(99,179,255,0.3)', accent: '#93c5fd' },
+  { key: 'WHAT TO HIGHLIGHT ABOUT YOU', icon: Sparkles, gradient: 'linear-gradient(135deg, rgba(52,211,153,0.1), rgba(52,211,153,0.03))', border: 'rgba(52,211,153,0.3)', accent: '#6ee7b7' },
+  { key: 'CONVERSATION STARTERS', icon: MessageCircle, gradient: 'linear-gradient(135deg, rgba(251,146,60,0.1), rgba(251,146,60,0.03))', border: 'rgba(251,146,60,0.3)', accent: '#fdba74' },
 ]
 
 function BriefDisplay({ brief }) {
@@ -42,7 +59,7 @@ function BriefDisplay({ brief }) {
         <div key={i} style={{ background: s.gradient, border: `1px solid ${s.border}`, borderRadius: 14, padding: '14px 16px', position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: -15, right: -15, width: 70, height: 70, borderRadius: '50%', background: `radial-gradient(circle, ${s.border} 0%, transparent 70%)`, opacity: 0.3, pointerEvents: 'none' }} />
           <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: s.accent, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span>{s.icon}</span> {s.key}
+            {s.icon && <s.icon size={14} strokeWidth={1.8} aria-hidden="true" />} {s.key}
           </div>
           <div style={{ fontSize: 13, lineHeight: 1.75, color: 'var(--text-primary)' }}>
             {s.content.map((line, j) => (
@@ -96,20 +113,21 @@ function ExportButton({ text, contactName, label = 'follow-up' }) {
   return (
     <div>
       <button onClick={() => setOpen(!open)} style={{ fontSize: 12, color: 'var(--text-secondary)', background: 'var(--surface-3)', border: '1px solid var(--border-strong)', borderRadius: 'var(--radius-md)', padding: '5px 12px', cursor: 'pointer', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', gap: 4 }}>
-        📤 Export {open ? '▾' : '▸'}
+        <Download size={13} strokeWidth={1.8} aria-hidden="true" />
+        Export {open ? '▾' : '▸'}
       </button>
       {open && (
         <div style={{ marginTop: 6, background: 'var(--surface-3)', border: '1px solid var(--border-strong)', borderRadius: 12, padding: 6 }}>
           {[
-            { label: 'Google Docs', icon: '📝', desc: 'Opens new doc + copies text to clipboard', fn: exportToGoogleDocs },
-            { label: 'Notion', icon: '📓', desc: 'Opens Notion with content pre-filled', fn: exportToNotion },
-            { label: 'Word (.doc)', icon: '📄', desc: 'Downloads as a Word document', fn: exportAsDoc },
-            { label: 'Text (.txt)', icon: '📃', desc: 'Downloads as plain text file', fn: exportAsText },
+            { label: 'Google Docs', icon: FileText, desc: 'Opens new doc + copies text to clipboard', fn: exportToGoogleDocs },
+            { label: 'Notion', icon: FileText, desc: 'Opens Notion with content pre-filled', fn: exportToNotion },
+            { label: 'Word (.doc)', icon: Download, desc: 'Downloads as a Word document', fn: exportAsDoc },
+            { label: 'Text (.txt)', icon: FileText, desc: 'Downloads as plain text file', fn: exportAsText },
           ].map(opt => (
             <button key={opt.label} onClick={opt.fn} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '8px 10px', background: 'transparent', border: 'none', borderRadius: 8, cursor: 'pointer', color: 'var(--text-primary)', fontFamily: 'var(--font-sans)', fontSize: 13, textAlign: 'left', transition: 'background 0.1s' }}
               onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-2)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-              <span style={{ fontSize: 16 }}>{opt.icon}</span>
+              <opt.icon size={16} strokeWidth={1.8} color="var(--text-secondary)" aria-hidden="true" />
               <div>
                 <div style={{ fontWeight: 500 }}>{opt.label}</div>
                 <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{opt.desc}</div>
@@ -126,7 +144,7 @@ function MutualSection({ parsed, resume, profileSkills }) {
   if (!parsed || parsed.error) return null
   const mutuals = []
 
-  // Check shared schools — find the best matching school name (not individual words)
+  // Check shared schools - find the best matching school name (not individual words)
   const userEdu = resume?.parsed?.education || []
   const contactEdu = parsed.education || []
   const addedSchools = new Set()
@@ -142,7 +160,7 @@ function MutualSection({ parsed, resume, profileSkills }) {
       for (const word of words) {
         if (ceLower.includes(word) && !addedSchools.has(schoolName)) {
           addedSchools.add(schoolName)
-          mutuals.push({ type: 'school', icon: '🎓', label: `You both have ties to "${schoolName}"`, color: '#93c5fd', bg: 'rgba(99,179,255,0.1)', border: 'rgba(99,179,255,0.25)' })
+          mutuals.push({ type: 'school', icon: School, label: `You both have ties to "${schoolName}"`, color: '#93c5fd', bg: 'rgba(99,179,255,0.1)', border: 'rgba(99,179,255,0.25)' })
           break outer
         }
       }
@@ -154,7 +172,7 @@ function MutualSection({ parsed, resume, profileSkills }) {
   const userSkills = (profileSkills || []).map(s => s.toLowerCase())
   const sharedSkills = userSkills.filter(s => contactSkills.some(cs => cs.includes(s) || s.includes(cs)))
   if (sharedSkills.length > 0) {
-    mutuals.push({ type: 'skills', icon: '⚡', label: `Shared skills: ${sharedSkills.slice(0, 3).join(', ')}`, color: '#fcd34d', bg: 'rgba(251,191,36,0.1)', border: 'rgba(251,191,36,0.25)' })
+    mutuals.push({ type: 'skills', icon: Sparkles, label: `Shared skills: ${sharedSkills.slice(0, 3).join(', ')}`, color: '#fcd34d', bg: 'rgba(251,191,36,0.1)', border: 'rgba(251,191,36,0.25)' })
   }
 
   // Check shared interests
@@ -163,7 +181,7 @@ function MutualSection({ parsed, resume, profileSkills }) {
   const userInterestWords = [...userResInterests, ...(profileSkills || [])].map(s => s.toLowerCase())
   const sharedInterests = contactInterests.filter(ci => userInterestWords.some(ui => ci.includes(ui) || ui.includes(ci)))
   if (sharedInterests.length > 0) {
-    mutuals.push({ type: 'interests', icon: '✦', label: `Shared interests: ${sharedInterests.slice(0, 3).join(', ')}`, color: '#f9a8d4', bg: 'rgba(244,114,182,0.1)', border: 'rgba(244,114,182,0.25)' })
+    mutuals.push({ type: 'interests', icon: Lightbulb, label: `Shared interests: ${sharedInterests.slice(0, 3).join(', ')}`, color: '#f9a8d4', bg: 'rgba(244,114,182,0.1)', border: 'rgba(244,114,182,0.25)' })
   }
 
   // Check shared companies
@@ -174,7 +192,7 @@ function MutualSection({ parsed, resume, profileSkills }) {
       const companyWords = cc.split(/[\s,()]+/).filter(w => w.length > 3 && !['senior', 'junior', 'intern', 'manager', 'engineer', 'lead', 'staff', 'present', 'associate'].includes(w))
       for (const word of companyWords) {
         if (ue.includes(word)) {
-          mutuals.push({ type: 'company', icon: '💼', label: `You may share a connection to "${word.charAt(0).toUpperCase() + word.slice(1)}"`, color: '#c4b8ff', bg: 'rgba(139,127,255,0.1)', border: 'rgba(139,127,255,0.25)' })
+          mutuals.push({ type: 'company', icon: Link2, label: `You may share a connection to "${word.charAt(0).toUpperCase() + word.slice(1)}"`, color: '#c4b8ff', bg: 'rgba(139,127,255,0.1)', border: 'rgba(139,127,255,0.25)' })
           break
         }
       }
@@ -187,15 +205,17 @@ function MutualSection({ parsed, resume, profileSkills }) {
     <div style={{ marginTop: 16, marginBottom: 8 }}>
       <div style={{ borderTop: '1px solid var(--border)', margin: '14px 0' }} />
       <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6ee7b7', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span>🔗</span> What you have in common
+        <Users size={14} strokeWidth={1.8} aria-hidden="true" /> What you have in common
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {mutuals.slice(0, 5).map((m, i) => (
+        {mutuals.slice(0, 5).map((m, i) => {
+          const Icon = m.icon
+          return (
           <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, background: m.bg, border: `1px solid ${m.border}`, borderRadius: 10, padding: '9px 14px' }}>
-            <span style={{ fontSize: 16, flexShrink: 0 }}>{m.icon}</span>
+            {Icon && <Icon size={16} strokeWidth={1.8} color={m.color} style={{ flexShrink: 0 }} aria-hidden="true" />}
             <span style={{ fontSize: 13, color: m.color, fontWeight: 500 }}>{m.label}</span>
           </div>
-        ))}
+        )})}
       </div>
     </div>
   )
@@ -221,51 +241,51 @@ const STATUSES = ['new', 'scheduled', 'completed', 'followed up']
 function getInsights(contact, parsed) {
   const name = contact.name?.split(' ')[0] || 'They'
   const facts = []
-  if (parsed?.education?.length) facts.push(`🎓 ${name} studied at ${parsed.education[0].split(',')[0]}`)
+  if (parsed?.education?.length) facts.push(` ${name} studied at ${parsed.education[0].split(',')[0]}`)
   if (parsed?.companies?.length) {
     const co = parsed.companies[0]
-    facts.push(`💼 Background includes ${co.length > 60 ? co.slice(0, 60) + '…' : co}`)
+    facts.push(` Background includes ${co.length > 60 ? co.slice(0, 60) + '...' : co}`)
   }
   if (contact.pastRoles?.length) {
     const r = contact.pastRoles[0]
-    facts.push(`📌 Previously ${r.role ? `${r.role} at ${r.company}` : r.company}${r.period ? ` (${r.period})` : ''}`)
+    facts.push(` Previously ${r.role ? `${r.role} at ${r.company}` : r.company}${r.period ? ` (${r.period})` : ''}`)
   }
-  if (parsed?.locations?.length) facts.push(`📍 ${name} is based in ${parsed.locations[0]}`)
-  if (parsed?.skills?.length > 1) facts.push(`⚡ Skills include ${parsed.skills.slice(0, 3).join(', ')}`)
+  if (parsed?.locations?.length) facts.push(` ${name} is based in ${parsed.locations[0]}`)
+  if (parsed?.skills?.length > 1) facts.push(` Skills include ${parsed.skills.slice(0, 3).join(', ')}`)
   if (contact.notes) {
     const first = contact.notes.replace(/<[^>]+>/g, '').split(/[.!\n]/)[0]?.trim()
-    if (first?.length > 25) facts.push(`📝 From your notes: "${first.slice(0, 90)}${first.length > 90 ? '…' : ''}"`)
+    if (first?.length > 25) facts.push(` From your notes: "${first.slice(0, 90)}${first.length > 90 ? '...' : ''}"`)
   }
   if (contact.followUpDate) {
     const d = new Date(contact.followUpDate + 'T12:00:00')
-    facts.push(`🔔 Follow-up scheduled for ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`)
+    facts.push(` Follow-up scheduled for ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`)
   }
   const tips = [
-    `💡 Follow up within 24 hours — the connection is freshest right after you meet`,
-    `🎯 Warm intros are 5× more likely to get a response than cold outreach`,
-    `✉️ Keep follow-ups under 3 sentences — specific and genuine beats long and generic`,
-    `🤝 Mention one specific thing from your conversation to make your message stand out`,
-    `📈 Reaching out 3× per week to new contacts compounds your network fast`,
-    `☕ Ask for a 15-minute coffee chat — shorter requests get more yes's`,
-    `🔄 Reconnect with dormant contacts by sharing something relevant to them`,
-    `📌 People remember how you made them feel, not everything you said`,
-    `🚀 Your next opportunity is more likely to come from a weak tie than a close friend`,
-    `🧠 Research them on LinkedIn before your chat — it shows you're serious`,
-    `✨ Send a thank-you message after every conversation, no exceptions`,
-    `💬 Ask questions more than you talk — people love feeling heard`,
-    `🔗 Offer value first — share an article, make an intro, give a resource`,
-    `📅 Set a recurring reminder to reach out to your top contacts every 90 days`,
-    `🎯 Be specific about what you're looking for — vague asks get vague help`,
-    `💼 Update your LinkedIn before you start networking hard`,
-    `🌐 Attend events in your target industry even when you don't feel ready`,
-    `📝 Take notes right after every meeting while it's still fresh`,
-    `⚡ The best time to network is before you need something`,
-    `🤝 Introduce two people who should know each other — givers gain`,
-    `📊 Track your outreach — most people need 3-5 touchpoints before responding`,
-    `🎓 Alumni networks are wildly underused — reach out to people from your school`,
-    `🏆 Celebrate their wins publicly — comment on their posts, congratulate milestones`,
-    `💡 Cold DMs work when they're short, personal, and ask for nothing big`,
-    `🔔 Set a calendar reminder to follow up if you haven't heard back in a week`,
+    ` Follow up within 24 hours - the connection is freshest right after you meet`,
+    ` Warm intros are 5× more likely to get a response than cold outreach`,
+    ` Keep follow-ups under 3 sentences - specific and genuine beats long and generic`,
+    ` Mention one specific thing from your conversation to make your message stand out`,
+    ` Reaching out 3× per week to new contacts compounds your network fast`,
+    ` Ask for a 15-minute coffee chat - shorter requests get more yes's`,
+    ` Reconnect with dormant contacts by sharing something relevant to them`,
+    ` People remember how you made them feel, not everything you said`,
+    ` Your next opportunity is more likely to come from a weak tie than a close friend`,
+    ` Research them on LinkedIn before your chat - it shows you're serious`,
+    ` Send a thank-you message after every conversation, no exceptions`,
+    ` Ask questions more than you talk - people love feeling heard`,
+    ` Offer value first - share an article, make an intro, give a resource`,
+    ` Set a recurring reminder to reach out to your top contacts every 90 days`,
+    ` Be specific about what you're looking for - vague asks get vague help`,
+    ` Update your LinkedIn before you start networking hard`,
+    ` Attend events in your target industry even when you don't feel ready`,
+    ` Take notes right after every meeting while it's still fresh`,
+    ` The best time to network is before you need something`,
+    ` Introduce two people who should know each other - givers gain`,
+    ` Track your outreach - most people need 3-5 touchpoints before responding`,
+    ` Alumni networks are wildly underused - reach out to people from your school`,
+    ` Celebrate their wins publicly - comment on their posts, congratulate milestones`,
+    ` Cold DMs work when they're short, personal, and ask for nothing big`,
+    ` Set a calendar reminder to follow up if you haven't heard back in a week`,
   ]
   while (facts.length < 4) facts.push(tips[facts.length % tips.length])
   return facts
@@ -563,7 +583,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
           {/* Quick info cards */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
             <div style={{ background: 'linear-gradient(135deg, rgba(139,127,255,0.1), rgba(139,127,255,0.03))', border: '1px solid rgba(139,127,255,0.25)', borderRadius: 14, padding: '14px 16px' }}>
-              <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#c4b8ff', marginBottom: 8 }}>💼 Role</div>
+              <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#c4b8ff', marginBottom: 8 }}> Role</div>
               <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{c.role || 'Not set'}</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
                 <CompanyLogo company={c.company} size={16} />
@@ -571,12 +591,12 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
               </div>
               {c.howWeMet && (
                 <div style={{ marginTop: 6, fontSize: 11, color: 'var(--text-tertiary)' }}>
-                  🤝 Met via {c.howWeMet}
+                   Met via {c.howWeMet}
                 </div>
               )}
             </div>
             <div style={{ background: 'linear-gradient(135deg, rgba(74,222,128,0.1), rgba(74,222,128,0.03))', border: '1px solid rgba(74,222,128,0.25)', borderRadius: 14, padding: '14px 16px' }}>
-              <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6ee7b7', marginBottom: 8 }}>📊 Status</div>
+              <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6ee7b7', marginBottom: 8 }}> Status</div>
               <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', textTransform: 'capitalize' }}>{c.status}</div>
               <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>{c.chatDate ? `Chat: ${new Date(c.chatDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : 'No date set'}</div>
             </div>
@@ -585,7 +605,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
           {/* What's next */}
           <div style={{ marginBottom: 16, background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 16px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)' }}>🔮 What's next?</div>
+              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)' }}> What's next?</div>
               {(() => {
                 const lastFu = (c.activity || []).filter(a => ['followed_up', 'follow_up_written'].includes(a.type)).slice(-1)[0]
                 if (!lastFu) return null
@@ -595,9 +615,9 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
             </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: (c.nextAction === 'follow-up' || c.nextAction === 'circle-back') ? 14 : 0 }}>
               {[
-                { key: 'follow-up', icon: '🔄', label: 'Follow Up', sub: 'Pick a date below', color: '#a78bfa' },
-                { key: 'circle-back', icon: '📅', label: 'Circle Back', sub: 'Pick a date below', color: '#60a5fa' },
-                { key: 'one-time', icon: '✅', label: 'One & Done', sub: 'No action needed', color: '#34d399' },
+                { key: 'follow-up', icon: Bell, label: 'Follow Up', sub: 'Pick a date below', color: '#a78bfa' },
+                { key: 'circle-back', icon: MessageCircle, label: 'Circle Back', sub: 'Pick a date below', color: '#60a5fa' },
+                { key: 'one-time', icon: CheckCircle2, label: 'One & Done', sub: 'No action needed', color: '#34d399' },
               ].map(opt => (
                 <button key={opt.key} onClick={() => {
                   const updates = { nextAction: opt.key }
@@ -609,19 +629,19 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
                   border: `1.5px solid ${c.nextAction === opt.key ? opt.color : 'var(--border)'}`,
                   borderRadius: 12, padding: '10px 8px', cursor: 'pointer', textAlign: 'center', transition: 'all 0.15s',
                 }}>
-                  <div style={{ fontSize: 18, marginBottom: 3 }}>{opt.icon}</div>
+                  <opt.icon size={18} strokeWidth={1.8} color={c.nextAction === opt.key ? opt.color : 'var(--text-tertiary)'} style={{ marginBottom: 3 }} aria-hidden="true" />
                   <div style={{ fontSize: 12, fontWeight: 600, color: c.nextAction === opt.key ? opt.color : 'var(--text-primary)' }}>{opt.label}</div>
                   <div style={{ fontSize: 10, color: 'var(--text-tertiary)', marginTop: 1 }}>{opt.sub}</div>
                 </button>
               ))}
             </div>
 
-            {/* Date picker — shown when Follow Up or Circle Back selected */}
+            {/* Date picker - shown when Follow Up or Circle Back selected */}
             {(c.nextAction === 'follow-up' || c.nextAction === 'circle-back') && (
               <div style={{ borderTop: '1px solid var(--border)', paddingTop: 12, marginTop: 2 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                   <div style={{ fontSize: 11, color: 'var(--text-tertiary)', fontWeight: 600 }}>
-                    {c.nextAction === 'follow-up' ? '📬 When do you want to follow up?' : '🔄 When do you want to circle back?'}
+                    {c.nextAction === 'follow-up' ? ' When do you want to follow up?' : ' When do you want to circle back?'}
                   </div>
                   <button onClick={() => {
                     const today = new Date().toISOString().split('T')[0]
@@ -644,7 +664,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
                   </button>
                   <button onClick={addToGoogleCalendar} disabled={calLoading2 || calAdded}
                     style={{ background: calAdded ? 'rgba(74,222,128,0.2)' : 'rgba(99,179,255,0.15)', color: calAdded ? '#4ade80' : '#93c5fd', border: `1px solid ${calAdded ? 'rgba(74,222,128,0.3)' : 'rgba(99,179,255,0.3)'}`, borderRadius: 8, padding: '7px 12px', fontSize: 12, cursor: calLoading2 ? 'default' : 'pointer', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}>
-                    {calLoading2 ? <><Spinner />Adding...</> : calAdded ? '✓ Added!' : '📅 Add to Google Calendar'}
+                    {calLoading2 ? <><Spinner />Adding...</> : calAdded ? '✓ Added!' : ' Add to Google Calendar'}
                   </button>
                 </div>
               </div>
@@ -655,7 +675,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
           {(c.role || c.company || pastRoles.length > 0) && (
             <div style={{ marginBottom: 16, background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 16px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)' }}>💼 Career</div>
+                <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)' }}> Career</div>
                 <button onClick={() => setAddingRole(true)} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 6, padding: '3px 10px', fontSize: 11, color: 'var(--text-tertiary)', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>+ Add past role</button>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
@@ -701,7 +721,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
                     <input value={newRoleCompany} onChange={e => setNewRoleCompany(e.target.value)} placeholder="Company"
                       style={{ background: 'var(--surface-2)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 7, padding: '7px 10px', fontSize: 12, outline: 'none', fontFamily: 'var(--font-sans)' }} />
                   </div>
-                  <input value={newRolePeriod} onChange={e => setNewRolePeriod(e.target.value)} placeholder="Period (optional, e.g. 2022–2024)"
+                  <input value={newRolePeriod} onChange={e => setNewRolePeriod(e.target.value)} placeholder="Period (optional, e.g. 2022-2024)"
                     style={{ width: '100%', background: 'var(--surface-2)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 7, padding: '7px 10px', fontSize: 12, outline: 'none', fontFamily: 'var(--font-sans)', boxSizing: 'border-box', marginBottom: 8 }} />
                   <div style={{ display: 'flex', gap: 6 }}>
                     <button onClick={() => { setAddingRole(false); setNewRoleTitle(''); setNewRoleCompany(''); setNewRolePeriod('') }}
@@ -723,11 +743,11 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
 
           {/* Debrief card */}
           {c.debrief && (c.debrief.vibe || c.debrief.note) && (() => {
-            const vibeMap = { great: { label: '🔥 Crushed it', color: '#4ade80' }, okay: { label: '👍 Solid', color: '#fbbf24' }, awkward: { label: '😬 Awkward', color: '#f472b6' } }
+            const vibeMap = { great: { label: ' Crushed it', color: '#4ade80' }, okay: { label: ' Solid', color: '#fbbf24' }, awkward: { label: ' Awkward', color: '#f472b6' } }
             const v = vibeMap[c.debrief.vibe]
             return (
               <div style={{ background: 'linear-gradient(135deg, rgba(139,127,255,0.08), rgba(139,127,255,0.03))', border: '1px solid rgba(139,127,255,0.2)', borderRadius: 14, padding: '14px 16px', marginBottom: 16 }}>
-                <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#c4b8ff', marginBottom: 8 }}>☕ Post-chat debrief</div>
+                <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#c4b8ff', marginBottom: 8 }}> Post-chat debrief</div>
                 {v && <div style={{ fontSize: 13, fontWeight: 600, color: v.color, marginBottom: c.debrief.note ? 6 : 0 }}>{v.label}</div>}
                 {c.debrief.note && <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.6 }}>{c.debrief.note}</div>}
               </div>
@@ -745,12 +765,12 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
             allEvents.push(...activity)
             allEvents.sort((a, b) => a.date.localeCompare(b.date))
             if (!allEvents.length) return null
-            const ICONS = { connected: '🤝', meeting_scheduled: '📅', meeting_completed: '☕', followed_up: '✉', follow_up_written: '✍', status_new: '·' }
+            const ICONS = { connected: '', meeting_scheduled: '', meeting_completed: '', followed_up: '', follow_up_written: '', status_new: '·' }
             const LABELS = { connected: 'Connected', meeting_scheduled: 'Meeting scheduled', meeting_completed: 'Meeting completed', followed_up: 'Followed up', follow_up_written: 'Follow-up written' }
             const fmtD = d => new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
             return (
               <div style={{ marginBottom: 16, background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 16px' }}>
-                <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)', marginBottom: 12 }}>🗓 Activity</div>
+                <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)', marginBottom: 12 }}> Activity</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {allEvents.filter(a => LABELS[a.type]).map((a, i) => (
                     <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
@@ -791,7 +811,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
           {/* Follow-up section */}
           <div style={{ background: 'linear-gradient(135deg, rgba(244,114,182,0.06), rgba(139,127,255,0.04))', border: '1px solid rgba(244,114,182,0.18)', borderRadius: 14, padding: '16px', marginBottom: 16 }}>
             <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#f9a8d4', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span>✉️ Follow-up</span>
+              <span> Follow-up</span>
               <Button variant="primary" size="sm" onClick={handleGenerateFollowUp} disabled={fuLoading}>
                 {fuLoading ? <><Spinner />Writing...</> : fuText ? 'Regenerate' : 'Generate message'}
               </Button>
@@ -800,8 +820,8 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
               <>
                 <textarea value={fuText} onChange={e => setFuText(e.target.value)} style={{ width: '100%', minHeight: 100, background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 10, padding: '10px 12px', fontSize: 13, resize: 'vertical', fontFamily: 'var(--font-sans)', lineHeight: 1.7, outline: 'none', boxSizing: 'border-box', marginBottom: 8 }} />
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  <button onClick={() => navigator.clipboard.writeText(fuText)} style={{ fontSize: 12, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>📋 Copy</button>
-                  {c.email && <a href={`mailto:${c.email}?subject=${encodeURIComponent('Following up!')}&body=${encodeURIComponent(fuText)}`} style={{ fontSize: 12, color: '#93c5fd', background: 'rgba(99,179,255,0.1)', border: '1px solid rgba(99,179,255,0.25)', borderRadius: 8, padding: '3px 10px', textDecoration: 'none' }}>✉ Email</a>}
+                  <button onClick={() => navigator.clipboard.writeText(fuText)} style={{ fontSize: 12, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}> Copy</button>
+                  {c.email && <a href={`mailto:${c.email}?subject=${encodeURIComponent('Following up!')}&body=${encodeURIComponent(fuText)}`} style={{ fontSize: 12, color: '#93c5fd', background: 'rgba(99,179,255,0.1)', border: '1px solid rgba(99,179,255,0.25)', borderRadius: 8, padding: '3px 10px', textDecoration: 'none' }}> Email</a>}
                   <Button size="sm" variant="primary" onClick={() => saveAll({ followUpText: fuText })}>Save</Button>
                 </div>
               </>
@@ -812,7 +832,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
 
           {/* Schedule */}
           <div style={{ background: 'linear-gradient(135deg, rgba(99,179,255,0.08), rgba(99,179,255,0.03))', border: '1px solid rgba(99,179,255,0.2)', borderRadius: 14, padding: '16px', marginBottom: 16 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#93c5fd', marginBottom: 12 }}>📅 Schedule Coffee Chat</div>
+            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#93c5fd', marginBottom: 12 }}> Schedule Coffee Chat</div>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
               <div style={{ flex: 1, minWidth: 130 }}><Input label="Date" type="date" value={c.chatDate} onChange={v => upd('chatDate', v)} /></div>
               <div style={{ flex: 1, minWidth: 130 }}><Input label="Time" type="time" value={chatTime} onChange={setChatTime} /></div>
@@ -839,7 +859,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
         <div>
           {/* Sub-tab toggle */}
           <div style={{ display: 'flex', gap: 4, marginBottom: 14, background: 'var(--surface-3)', borderRadius: 10, padding: 4 }}>
-            {[['my-notes', '📝 My Notes'], ['meeting-notes', '🤖 Meeting Notes']].map(([key, label]) => (
+            {[['my-notes', ' My Notes'], ['meeting-notes', ' Meeting Notes']].map(([key, label]) => (
               <button key={key} onClick={() => setNotesSubTab(key)} style={{ flex: 1, padding: '7px 0', borderRadius: 7, border: 'none', background: notesSubTab === key ? 'var(--surface-2)' : 'transparent', color: notesSubTab === key ? 'var(--text-primary)' : 'var(--text-tertiary)', fontWeight: notesSubTab === key ? 600 : 400, fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
                 {label}
               </button>
@@ -863,7 +883,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
               )}
               <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px', marginBottom: 16 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)' }}>📝 Notes <span style={{ fontSize: 9, opacity: 0.5, fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>· auto-saves</span></div>
+                  <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)' }}> Notes <span style={{ fontSize: 9, opacity: 0.5, fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>· auto-saves</span></div>
                 </div>
                 <RichNotes value={c.notes} onChange={v => upd('notes', v)} placeholder="Key takeaways, action items, things they mentioned..." minHeight={160} />
               </div>
@@ -874,12 +894,12 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
             <div>
               <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px', marginBottom: 16 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)' }}>🤖 AI Meeting Notes <span style={{ fontSize: 9, opacity: 0.5, fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>· auto-saves</span></div>
+                  <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)' }}> AI Meeting Notes <span style={{ fontSize: 9, opacity: 0.5, fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>· auto-saves</span></div>
                 </div>
                 <textarea
                   value={meetingNotes}
                   onChange={e => setMeetingNotes(e.target.value)}
-                  placeholder={`Paste your AI meeting notes here — Notion AI, Otter.ai transcripts, or any structured notes from your conversation with ${c.name}...`}
+                  placeholder={`Paste your AI meeting notes here - Notion AI, Otter.ai transcripts, or any structured notes from your conversation with ${c.name}...`}
                   rows={16}
                   style={{ width: '100%', background: 'transparent', color: 'var(--text-primary)', border: 'none', outline: 'none', fontSize: 13, lineHeight: 1.7, resize: 'none', fontFamily: 'var(--font-sans)', boxSizing: 'border-box' }}
                 />
@@ -907,7 +927,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
             <div style={{ display: 'flex', gap: 8 }}>
               <input value={linkedinUrl} onChange={e => setLinkedinUrl(e.target.value)} placeholder="https://linkedin.com/in/handle" style={{ flex: 1, background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 'var(--radius-md)', padding: '7px 11px', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)' }} />
               <Button size="sm" variant="primary" onClick={() => { saveAll({ linkedinUrl }); window.open(linkedinUrl || searchUrl, '_blank') }}>
-                {linkedinUrl ? 'Open ↗' : 'Search ↗'}
+                {linkedinUrl ? 'Open ' : 'Search '}
               </Button>
             </div>
           </div>
@@ -946,8 +966,8 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
             {parsing
               ? <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontSize: 13, color: 'var(--text-secondary)' }}><Spinner /> Parsing PDF...</div>
               : pdfName
-                ? <div><div style={{ fontSize: 22, marginBottom: 4 }}>📄</div><div style={{ fontSize: 13, fontWeight: 500 }}>{pdfName}</div><div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 2 }}>Click to replace</div></div>
-                : <div><div style={{ fontSize: 28, marginBottom: 6, opacity: 0.25 }}>⬆</div><div style={{ fontSize: 13 }}>Drop LinkedIn PDF here</div><div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 2 }}>or click to browse</div></div>}
+                ? <div><FileText size={22} style={{ marginBottom: 4 }} aria-hidden="true" /><div style={{ fontSize: 13, fontWeight: 500 }}>{pdfName}</div><div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 2 }}>Click to replace</div></div>
+                : <div><Upload size={28} style={{ marginBottom: 6, opacity: 0.25 }} aria-hidden="true" /><div style={{ fontSize: 13 }}>Drop LinkedIn PDF here</div><div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 2 }}>or click to browse</div></div>}
           </div>
           <input ref={fileInputRef} type="file" accept=".pdf" style={{ display: 'none' }} onChange={e => handlePDFFile(e.target.files[0])} />
 
@@ -970,7 +990,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
               {parsed.locations?.length > 0 && (
                 <div style={{ marginBottom: 12 }}>
                   <SectionLabel>Location</SectionLabel>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>{parsed.locations.map((x, i) => <Chip key={i} kind="location">📍 {x}</Chip>)}</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>{parsed.locations.map((x, i) => <Chip key={i} kind="location"> {x}</Chip>)}</div>
                 </div>
               )}
               {parsed.companies?.length > 0 && (
@@ -979,7 +999,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {parsed.companies.map((x, i) => (
                       <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, background: 'var(--chip-experience-bg)', border: '1px solid var(--chip-experience-border)', borderRadius: 10, padding: '8px 12px' }}>
-                        <span style={{ fontSize: 14, flexShrink: 0, lineHeight: 1.5 }}>💼</span>
+                        <BriefcaseBusiness size={14} strokeWidth={1.8} color="var(--chip-experience-color)" style={{ flexShrink: 0, marginTop: 2 }} aria-hidden="true" />
                         <span style={{ fontSize: 12, color: 'var(--chip-experience-color)', lineHeight: 1.6, wordBreak: 'break-word' }}>{x}</span>
                       </div>
                     ))}
@@ -988,19 +1008,19 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
               )}
               {parsed.education?.length > 0 && (
                 <div style={{ marginBottom: 12 }}>
-                  <SectionLabel>🎓 Education</SectionLabel>
+                  <SectionLabel> Education</SectionLabel>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>{parsed.education.map((x, i) => <Chip key={i} kind="education">{x}</Chip>)}</div>
                 </div>
               )}
               {parsed.organizations?.length > 0 && (
                 <div style={{ marginBottom: 12 }}>
-                  <SectionLabel>🤝 Organizations & Clubs</SectionLabel>
+                  <SectionLabel> Organizations & Clubs</SectionLabel>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>{parsed.organizations.map((x, i) => <Chip key={i} kind="org">{x}</Chip>)}</div>
                 </div>
               )}
               {parsed.skills?.length > 0 && (
                 <div style={{ marginBottom: 12 }}>
-                  <SectionLabel>⚡ Skills</SectionLabel>
+                  <SectionLabel> Skills</SectionLabel>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>{parsed.skills.map((x, i) => <Chip key={i} kind="skill">{x}</Chip>)}</div>
                 </div>
               )}
@@ -1012,13 +1032,13 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
               )}
               {parsed.Honors?.length > 0 && (
                 <div style={{ marginBottom: 12 }}>
-                  <SectionLabel>🏆 Honors & Awards</SectionLabel>
+                  <SectionLabel> Honors & Awards</SectionLabel>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>{parsed.Honors.map((x, i) => <Chip key={i} kind="honor">{x}</Chip>)}</div>
                 </div>
               )}
               {parsed.publications?.length > 0 && (
                 <div style={{ marginBottom: 12 }}>
-                  <SectionLabel>📄 Publications</SectionLabel>
+                  <SectionLabel> Publications</SectionLabel>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>{parsed.publications.map((x, i) => <Chip key={i}>{x}</Chip>)}</div>
                 </div>
               )}
@@ -1039,7 +1059,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
       {tab === 'Resume' && (
         <div>
           <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.6 }}>
-            Upload {c.name?.split(' ')[0]}'s resume if they've shared it with you — useful for prep briefs and follow-ups.
+            Upload {c.name?.split(' ')[0]}'s resume if they've shared it with you - useful for prep briefs and follow-ups.
           </div>
           <div style={{ marginBottom: 16 }}>
             <Notice variant="blue" style={{ marginBottom: 10 }}>Save as PDF and drop below</Notice>
@@ -1053,8 +1073,8 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
               {parsing
                 ? <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontSize: 13, color: 'var(--text-secondary)' }}><Spinner /> Parsing resume...</div>
                 : pdfName
-                  ? <div><div style={{ fontSize: 22, marginBottom: 4 }}>📄</div><div style={{ fontSize: 13, fontWeight: 500 }}>{pdfName}</div><div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 2 }}>Click to replace</div></div>
-                  : <div><div style={{ fontSize: 28, marginBottom: 6, opacity: 0.25 }}>⬆</div><div style={{ fontSize: 13 }}>Drop their resume PDF here</div><div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 2 }}>or click to browse</div></div>}
+                  ? <div><FileText size={22} style={{ marginBottom: 4 }} aria-hidden="true" /><div style={{ fontSize: 13, fontWeight: 500 }}>{pdfName}</div><div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 2 }}>Click to replace</div></div>
+                  : <div><Upload size={28} style={{ marginBottom: 6, opacity: 0.25 }} aria-hidden="true" /><div style={{ fontSize: 13 }}>Drop their resume PDF here</div><div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 2 }}>or click to browse</div></div>}
             </div>
             <input ref={fileInputRef} type="file" accept=".pdf" style={{ display: 'none' }} onChange={e => handlePDFFile(e.target.files[0])} />
           </div>
@@ -1064,15 +1084,15 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
               <div style={{ borderTop: '1px solid var(--border)', margin: '16px 0' }} />
               <div style={{ fontWeight: 700, fontFamily: 'var(--font-display)', marginBottom: 12 }}>{c.name}'s Resume</div>
               {parsed.summary && <div style={{ fontSize: 13, lineHeight: 1.8, color: 'var(--text-secondary)', marginBottom: 16 }}>{parsed.summary}</div>}
-              {parsed.companies?.length > 0 && <div style={{ marginBottom: 12 }}><SectionLabel>Experience</SectionLabel><div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>{parsed.companies.map((x, i) => <div key={i} style={{ display: 'flex', gap: 10, background: 'var(--chip-experience-bg)', border: '1px solid var(--chip-experience-border)', borderRadius: 10, padding: '8px 12px' }}><span style={{ fontSize: 14, flexShrink: 0 }}>💼</span><span style={{ fontSize: 12, color: 'var(--chip-experience-color)', lineHeight: 1.6 }}>{x}</span></div>)}</div></div>}
-              {parsed.education?.length > 0 && <div style={{ marginBottom: 12 }}><SectionLabel>🎓 Education</SectionLabel><div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>{parsed.education.map((x, i) => <Chip key={i} kind="education">{x}</Chip>)}</div></div>}
-              {parsed.skills?.length > 0 && <div style={{ marginBottom: 12 }}><SectionLabel>⚡ Skills</SectionLabel><div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>{parsed.skills.map((x, i) => <Chip key={i} kind="skill">{x}</Chip>)}</div></div>}
+              {parsed.companies?.length > 0 && <div style={{ marginBottom: 12 }}><SectionLabel>Experience</SectionLabel><div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>{parsed.companies.map((x, i) => <div key={i} style={{ display: 'flex', gap: 10, background: 'var(--chip-experience-bg)', border: '1px solid var(--chip-experience-border)', borderRadius: 10, padding: '8px 12px' }}><BriefcaseBusiness size={14} strokeWidth={1.8} color="var(--chip-experience-color)" style={{ flexShrink: 0, marginTop: 2 }} aria-hidden="true" /><span style={{ fontSize: 12, color: 'var(--chip-experience-color)', lineHeight: 1.6 }}>{x}</span></div>)}</div></div>}
+              {parsed.education?.length > 0 && <div style={{ marginBottom: 12 }}><SectionLabel> Education</SectionLabel><div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>{parsed.education.map((x, i) => <Chip key={i} kind="education">{x}</Chip>)}</div></div>}
+              {parsed.skills?.length > 0 && <div style={{ marginBottom: 12 }}><SectionLabel> Skills</SectionLabel><div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>{parsed.skills.map((x, i) => <Chip key={i} kind="skill">{x}</Chip>)}</div></div>}
               <div style={{ marginTop: 12 }}>
                 <Button size="sm" variant="primary" onClick={() => saveAll()}>Save</Button>
               </div>
             </div>
           )}
-          {parsed?.error && <Notice variant="muted" style={{ marginTop: 10 }}>Couldn't parse — make sure it's a standard PDF.</Notice>}
+          {parsed?.error && <Notice variant="muted" style={{ marginTop: 10 }}>Couldn't parse - make sure it's a standard PDF.</Notice>}
         </div>
       )}
 
@@ -1085,14 +1105,14 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
           </Notice>
 
           <Button variant="primary" size="sm" onClick={handleGenerateBrief} disabled={briefLoading}>
-            {briefLoading ? <><Spinner />Generating...</> : brief ? 'Regenerate ↗' : 'Generate prep brief ↗'}
+            {briefLoading ? <><Spinner />Generating...</> : brief ? 'Regenerate ' : 'Generate prep brief '}
           </Button>
 
           {brief && <BriefDisplay brief={brief} />}
 
           {brief && (
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12 }}>
-              <button onClick={() => navigator.clipboard.writeText(brief)} style={{ fontSize: 12, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', gap: 4 }}>📋 Copy</button>
+              <button onClick={() => navigator.clipboard.writeText(brief)} style={{ fontSize: 12, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', gap: 4 }}> Copy</button>
               <ExportButton text={brief} contactName={c.name} label="prep-brief" />
             </div>
           )}

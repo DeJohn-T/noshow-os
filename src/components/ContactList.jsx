@@ -1,6 +1,7 @@
 // components/ContactList.jsx
 
 import React, { useState } from 'react'
+import { AlertTriangle, CalendarDays, UserPlus } from 'lucide-react'
 import { Avatar, StatusBadge } from './UI'
 import { formatDate } from '../lib/utils'
 
@@ -49,10 +50,10 @@ export function ContactList({ contacts, onSelect }) {
   if (contacts.length === 0) {
     return (
       <div style={{ textAlign: 'center', padding: '3.5rem 1rem' }}>
-        <div style={{ fontSize: 28, marginBottom: 12, opacity: 0.35 }}>☕</div>
+        <UserPlus size={28} style={{ marginBottom: 12, opacity: 0.35 }} aria-hidden="true" />
         <div style={{ fontSize: 15, fontWeight: 500, marginBottom: 6 }}>No contacts yet</div>
         <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-          Add someone you want to connect with —<br />
+          Add someone you want to connect with -<br />
           a recruiter, mentor, or professional you admire.
         </div>
       </div>
@@ -124,7 +125,7 @@ export function UpcomingList({ contacts, onSelect, onSchedule }) {
   if (upcoming.length === 0 && needsScheduling.length === 0) {
     return (
       <div style={{ textAlign: 'center', padding: '3.5rem 1rem' }}>
-        <div style={{ fontSize: 28, marginBottom: 12, opacity: 0.35 }}>📅</div>
+        <CalendarDays size={28} style={{ marginBottom: 12, opacity: 0.35 }} aria-hidden="true" />
         <div style={{ fontSize: 15, fontWeight: 500, marginBottom: 6 }}>Nothing scheduled</div>
         <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
           Set a chat date on any contact and click<br />"Schedule chat" to see them here.
@@ -138,7 +139,8 @@ export function UpcomingList({ contacts, onSelect, onSchedule }) {
       {needsScheduling.length > 0 && (
         <div style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 16, padding: '1.1rem 1.25rem', marginBottom: 12 }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: '#fbbf24', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-            ⚠️ {needsScheduling.length} meeting{needsScheduling.length > 1 ? 's' : ''} waiting to be scheduled
+            <AlertTriangle size={14} strokeWidth={1.8} aria-hidden="true" />
+            {needsScheduling.length} meeting{needsScheduling.length > 1 ? 's' : ''} waiting to be scheduled
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {needsScheduling.map(c => (
@@ -152,7 +154,7 @@ export function UpcomingList({ contacts, onSelect, onSchedule }) {
                   onClick={(e) => { e.stopPropagation(); onSchedule && onSchedule(c) }}
                   style={{ background: '#fbbf24', color: '#000', border: 'none', borderRadius: 8, padding: '6px 14px', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-display)', whiteSpace: 'nowrap' }}
                 >
-                  Schedule →
+                  Schedule
                 </button>
               </div>
             ))}
@@ -189,7 +191,7 @@ export function UpcomingList({ contacts, onSelect, onSchedule }) {
             <div style={{ position: 'relative', zIndex: 1, display: 'flex', gap: 14, alignItems: 'center', width: '100%', paddingLeft: 3 }}>
               <div style={{ width: 44, height: 44, borderRadius: 10, background: isToday ? 'var(--accent)' : 'var(--surface-3)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 {isToday ? (
-                  <span style={{ fontSize: 20 }}>☕</span>
+                  <CalendarDays size={20} color="var(--accent-fg)" strokeWidth={1.8} aria-hidden="true" />
                 ) : (
                   <>
                     <span style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-display)', lineHeight: 1, color: 'var(--text-primary)' }}>{dt.getDate()}</span>

@@ -62,7 +62,7 @@ Instructions:
 - For summary: Write a detailed and specific summary that captures the essence of the person's professional background, key achievements, notable companies they've worked at, and relevant skills. Do not be generic or vague. Do not just list things, synthesize them into a coherent narrative that highlights what makes this person unique and impressive.
 - For locations: prioritize most recent or relevant locations. If it gives an area instead of a city, list the area, city and state. For example, if it says 'Bay Area', write 'Bay Area, San Francisco, CA'. You will always be specfic about the location. If it says 'Remote', write 'Remote'. If it says 'United States', write 'United States'. Do not just write 'United States' for every profile, be specific unless you certainly cant.
 - For companies: Do not list more than 6 different companies. Group companies together, any change of roles within the same company, will all be grouped together. For EACH role at a company, include 1-2 key achievements or responsibilities. You NEVER use more than2 sentences maximum for their experience description. You Must always show more than 5 work experiences, if not applicable, list all they have if any.
--For education: List ALL education experiences — do not skip any, including study abroad programs, exchange programs, community college, bootcamps, or certifications. For each one, include the degree or program type, school name, and year. Write graduation year as 'Class of YEAR'. If currently a student, write 'Expected graduation YEAR'. Never omit an institution just because it seems less prestigious or is a study abroad/exchange program.
+-For education: List ALL education experiences - do not skip any, including study abroad programs, exchange programs, community college, bootcamps, or certifications. For each one, include the degree or program type, school name, and year. Write graduation year as 'Class of YEAR'. If currently a student, write 'Expected graduation YEAR'. Never omit an institution just because it seems less prestigious or is a study abroad/exchange program.
 - For organizations: List any relevant organizations or clubs they are a part of. This can include professional organizations, clubs, or any other relevant groups. You will prioritize the most recent or relevant ones. Look under 'Activities and societies' in the education section.
 - For skills: List the top 6 skills that are most relevant to the person's current role and industry. If the person has a lot of skills, prioritize the ones that are most impressive and relevant. If the person has a lot of skills but they are not very relevant or impressive, you will list the most relevant and impressive ones even if they are not at the top of the list. You will not list more than 6 skills. You will not use the top 3 that is listed in the document.
 - For interests: List any relevant interests that are mentioned in the profile. This can include hobbies, passions, or any other relevant interests.
@@ -112,7 +112,7 @@ BACKGROUND
 2-sentence summary of who this person is.;
 
 MUTUAL GROUND
-- (Shared schools, cities, industries, interests, or experiences between you and them — these are your easiest icebreakers)
+- (Shared schools, cities, industries, interests, or experiences between you and them - these are your easiest icebreakers)
 
 THEIR CAREER STORY
 2-3 sentences on the pattern of how they've moved through their career. What have they optimized for? What drives them? Read between the lines of their experience.
@@ -148,7 +148,7 @@ export async function generateFollowUp(contact, resume) {
 
 export async function generateQuotes(profile) {
   const raw = await callClaude(
-    `Generate 8 short, genuine motivational quotes for an ambitious college student focused on networking and career growth. NOT cheesy or corporate. Think real mentor wisdom — the kind of thing a senior engineer or VP would say over coffee. Each quote should be a completely different angle: career strategy, relationship building, personal growth, hustle mindset, resilience, curiosity, authenticity, long-game thinking. Return ONLY a JSON array of 8 strings. No markdown.`,
+    `Generate 8 short, genuine motivational quotes for an ambitious college student focused on networking and career growth. NOT cheesy or corporate. Think real mentor wisdom - the kind of thing a senior engineer or VP would say over coffee. Each quote should be a completely different angle: career strategy, relationship building, personal growth, hustle mindset, resilience, curiosity, authenticity, long-game thinking. Return ONLY a JSON array of 8 strings. No markdown.`,
     `Student: ${profile?.name || ''}, ${profile?.major || ''} at ${profile?.school || ''}. Goal: ${profile?.goals || ''}.`,
     600
   )
@@ -193,7 +193,7 @@ export async function extractInsights(contact) {
   const combined = [notes, meeting].filter(Boolean).join('\n\n---\n\n')
   if (!combined) return []
   const raw = await callClaude(
-    `Extract 3-5 memorable, specific insights or pieces of advice that ${contact.name} shared. These should be things they actually said — specific, quotable, useful. Return ONLY a JSON array of short strings (max 120 chars each). No generic tips — only things directly from their words. Example: ["Figure out where you want to go", "The foundation comes before anything", "Executives love sharing wisdom — let them cook"]`,
+    `Extract 3-5 memorable, specific insights or pieces of advice that ${contact.name} shared. These should be things they actually said - specific, quotable, useful. Return ONLY a JSON array of short strings (max 120 chars each). No generic tips - only things directly from their words. Example: ["Figure out where you want to go", "The foundation comes before anything", "Executives love sharing wisdom - let them cook"]`,
     `Contact: ${contact.name}${contact.role ? `, ${contact.role}` : ''}${contact.company ? ` at ${contact.company}` : ''}\n\nNotes:\n${combined.slice(0, 4000)}`,
     600
   )

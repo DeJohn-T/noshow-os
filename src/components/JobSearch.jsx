@@ -1,5 +1,6 @@
 // components/JobSearch.jsx
 import React from 'react'
+import { BriefcaseBusiness, Sparkles } from 'lucide-react'
 import { generateJobRecs } from '../lib/ai'
 import { saveJobRecs } from '../lib/storage'
 
@@ -28,17 +29,17 @@ export function JobSearch({ profile, resume, skills, cachedJobs, setCachedJobs, 
 
   if (loading) return (
     <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-secondary)' }}>
-      <div style={{ fontSize: 28, marginBottom: 12, animation: 'pulse-glow 1.5s ease infinite' }}>✦</div>
+      <Sparkles size={28} style={{ marginBottom: 12, animation: 'pulse-glow 1.5s ease infinite' }} aria-hidden="true" />
       <div style={{ fontSize: 14 }}>Finding your best opportunities...</div>
     </div>
   )
 
   if (jobs.length === 0) return (
     <div style={{ textAlign: 'center', padding: '3rem' }}>
-      <div style={{ fontSize: 28, marginBottom: 12, opacity: 0.4 }}>💼</div>
-      <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 16 }}>No matches yet — generate your first list.</div>
+      <BriefcaseBusiness size={28} style={{ marginBottom: 12, opacity: 0.4 }} aria-hidden="true" />
+      <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 16 }}>No matches yet - generate your first list.</div>
       <button onClick={handleGenerate} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>
-        Generate matches ✦
+        Generate matches
       </button>
     </div>
   )
@@ -68,11 +69,11 @@ export function JobSearch({ profile, resume, skills, cachedJobs, setCachedJobs, 
                 </div>
               </div>
               <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.65, marginBottom: 6 }}>{job.description}</div>
-              {job.whyMatch && <div style={{ fontSize: 12, color: 'var(--accent)', marginBottom: 10, opacity: 0.85 }}>✦ {job.whyMatch}</div>}
+              {job.whyMatch && <div style={{ fontSize: 12, color: 'var(--accent)', marginBottom: 10, opacity: 0.85 }}>{job.whyMatch}</div>}
               <a href={job.searchUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: 'var(--text-tertiary)', textDecoration: 'none', borderBottom: '1px solid var(--border)', paddingBottom: 1 }}
                 onMouseEnter={e => e.target.style.color = 'var(--text-primary)'}
                 onMouseLeave={e => e.target.style.color = 'var(--text-tertiary)'}
-              >Search on LinkedIn ↗</a>
+              >Search on LinkedIn </a>
             </div>
           )
         })}

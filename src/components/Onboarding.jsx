@@ -1,5 +1,6 @@
 // components/Onboarding.jsx
 import React, { useState, useRef, useEffect } from 'react'
+import { Contact, FileText, Upload } from 'lucide-react'
 import { extractTextFromPDF } from '../lib/pdfParser'
 import { parseResumePDF } from '../lib/ai'
 
@@ -198,7 +199,7 @@ function SkillsInput({ skills, onChange }) {
             onKeyDown={handleKey}
             onFocus={e => { setFocused(true); e.target.style.borderBottomColor = '#7c6fff' }}
             onBlur={e => { setTimeout(() => setFocused(false), 150); e.target.style.borderBottomColor = 'rgba(255,255,255,0.15)' }}
-            placeholder={skills.length === 0 ? 'Type a skill — suggestions appear as you type' : 'Add another...'}
+            placeholder={skills.length === 0 ? 'Type a skill - suggestions appear as you type' : 'Add another...'}
             style={inputStyle}
           />
           {input.trim() && (
@@ -257,8 +258,8 @@ function PDFDrop({ hint, onFile, fileName, parsing }) {
         style={{ border: `2px dashed ${dragging ? 'rgba(124,111,255,0.8)' : 'rgba(255,255,255,0.12)'}`, borderRadius: 12, padding: '1.25rem', textAlign: 'center', cursor: 'pointer', background: dragging ? 'rgba(124,111,255,0.06)' : 'rgba(255,255,255,0.02)', transition: 'all 0.15s' }}
       >
         {parsing ? <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>Parsing PDF...</div>
-          : fileName ? <div><div style={{ fontSize: 18, marginBottom: 4 }}>📄</div><div style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', fontWeight: 500 }}>{fileName}</div><div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>Click to replace</div></div>
-          : <div><div style={{ fontSize: 22, marginBottom: 6, opacity: 0.25 }}>⬆</div><div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>{hint}</div></div>}
+          : fileName ? <div><FileText size={18} style={{ marginBottom: 4 }} aria-hidden="true" /><div style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', fontWeight: 500 }}>{fileName}</div><div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>Click to replace</div></div>
+          : <div><Upload size={22} style={{ marginBottom: 6, opacity: 0.25 }} aria-hidden="true" /><div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>{hint}</div></div>}
       </div>
       <input ref={ref} type="file" accept=".pdf" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) onFile(e.target.files[0]) }} />
     </div>
@@ -390,7 +391,7 @@ export function Onboarding({ onComplete, existingProfile }) {
     <div key="goals" style={stepStyle}>
       <div style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 14 }}>Your focus</div>
       <div style={{ fontSize: 38, fontWeight: 800, lineHeight: 1.1, marginBottom: 10 }}>What are you<br />working toward?</div>
-      <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.3)', marginBottom: 44 }}>Be specific — this personalizes everything.</div>
+      <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.3)', marginBottom: 44 }}>Be specific - this personalizes everything.</div>
       <AnimatedField show={true} delay={100}>
         <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>Your goal</div>
         <input autoFocus value={goals} onChange={e => setGoals(e.target.value)} onKeyDown={e => e.key === 'Enter' && goals.trim() && goNext()}
@@ -409,7 +410,7 @@ export function Onboarding({ onComplete, existingProfile }) {
     <div key="skills" style={stepStyle}>
       <div style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 14 }}>Your skills</div>
       <div style={{ fontSize: 38, fontWeight: 800, lineHeight: 1.1, marginBottom: 10 }}>What do you<br />bring to the table?</div>
-      <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.3)', marginBottom: 40 }}>Start typing — suggestions appear automatically.</div>
+      <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.3)', marginBottom: 40 }}>Start typing - suggestions appear automatically.</div>
       <AnimatedField show={true} delay={100}>
         <SkillsInput skills={skills} onChange={setSkills} />
       </AnimatedField>
@@ -429,7 +430,7 @@ export function Onboarding({ onComplete, existingProfile }) {
       <AnimatedField show={true} delay={100}>
         <PDFDrop hint="Drop your resume PDF here" onFile={handleResumeFile} fileName={resumeName} parsing={parsingResume} />
         {resumeParsed && !resumeParsed.error && (
-          <div style={{ marginTop: 12, fontSize: 13, color: 'rgba(74,222,128,0.8)' }}>✓ Parsed successfully — your skills have been updated</div>
+          <div style={{ marginTop: 12, fontSize: 13, color: 'rgba(74,222,128,0.8)' }}>✓ Parsed successfully - your skills have been updated</div>
         )}
       </AnimatedField>
       <AnimatedField show={true} delay={200}>
@@ -453,7 +454,7 @@ export function Onboarding({ onComplete, existingProfile }) {
             <div key={i} style={{ height: 3, borderRadius: 2, flex: i === step ? 4 : 1, background: i <= step ? '#7c6fff' : 'rgba(255,255,255,0.08)', transition: 'all 0.35s ease' }} />
           ))}
         </div>
-        <div style={{ fontSize: 30, marginBottom: 28 }}>☕</div>
+        <Contact size={30} style={{ marginBottom: 28, color: '#7c6fff' }} aria-hidden="true" />
         {steps[step]}
       </div>
     </div>

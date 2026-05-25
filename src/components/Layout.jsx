@@ -65,13 +65,13 @@ export function LeftRail({ activeTab, onTabChange, onAddContact, onEditProfile, 
 export function MobileTopBar({ activeTab, onTabChange, onAddContact, onEditProfile, profile }) {
   return (
     <header className="mobile-top-bar">
-      <button onClick={() => onTabChange('home')} style={{ border: 'none', background: 'transparent', color: 'var(--text-primary)', fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 16, cursor: 'pointer' }}>
+      <button onClick={() => onTabChange('home')} style={{ border: 'none', background: 'transparent', color: 'var(--text-primary)', fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 15, lineHeight: 0.95, cursor: 'pointer' }}>
         NoShow OS
       </button>
-      <select value={activeTab} onChange={e => onTabChange(e.target.value)} aria-label="Current view" style={{ minWidth: 128, background: 'var(--surface)', color: 'var(--text-primary)', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontFamily: 'var(--font-sans)' }}>
+      <select value={activeTab} onChange={e => onTabChange(e.target.value)} aria-label="Current view" style={{ minWidth: 112, background: 'var(--surface)', color: 'var(--text-primary)', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontFamily: 'var(--font-sans)' }}>
         {NAV_ITEMS.map(item => <option key={item.key} value={item.key}>{item.label}</option>)}
       </select>
-      <div style={{ display: 'flex', gap: 8 }}>
+      <div style={{ display: 'flex', gap: 6 }}>
         <IconButton label="Add contact" icon={Plus} onClick={onAddContact} />
         <IconButton label={profile?.name ? `${profile.name} profile` : 'Edit profile'} icon={Settings} onClick={onEditProfile} />
       </div>
@@ -132,7 +132,7 @@ export function TodayDesk({ contact, stats, onOpenContact }) {
           <StatusBadge status={contact.status} />
         </div>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 1, background: 'var(--border)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(105px, 1fr))', gap: 1, background: 'transparent' }}>
         <div style={{ background: 'var(--surface)', padding: 16 }}>
           <div className="section-kicker" style={{ marginBottom: 8 }}>Brief</div>
           <div style={{ color: contact.brief ? 'var(--green-text)' : 'var(--text-secondary)', fontWeight: 700 }}>{contact.brief ? 'Generated' : 'Not generated'}</div>

@@ -44,12 +44,12 @@ function getGreeting(name) {
 
 // ─── Pro Tip Box ─────────────────────────────────────────────────────────────
 const PRO_TIPS = [
-  { icon: '📌', text: 'Upload LinkedIn PDFs for instant profiles — it pulls skills, experience, and more automatically.' },
-  { icon: '🎯', text: 'Set chat dates on contacts to keep your meetings organized and get reminders.' },
-  { icon: '✉️', text: 'Send follow-ups within 24 hours — the sooner you reach out, the stronger the connection.' },
-  { icon: '☕', text: 'Prep briefs are your cheat code — generate one before every coffee chat.' },
-  { icon: '🤝', text: "Mention something specific from their background — it shows you've done your homework." },
-  { icon: '⚡', text: 'Add your skills and resume to get better, more personalized prep briefs and job matches.' },
+  { text: 'Upload LinkedIn PDFs for instant profiles - it pulls skills, experience, and more automatically.' },
+  { text: 'Set chat dates on contacts to keep your meetings organized and get reminders.' },
+  { text: 'Send follow-ups within 24 hours - the sooner you reach out, the stronger the connection.' },
+  { text: 'Prep briefs are your cheat code - generate one before every coffee chat.' },
+  { text: "Mention something specific from their background - it shows you've done your homework." },
+  { text: 'Add your skills and resume to get better, more personalized prep briefs and job matches.' },
 ]
 
 function HighlightsBox({ highlights, onAdd, onRemove, onReorder }) {
@@ -188,7 +188,10 @@ function CircleBackReminder({ contacts, onSelect }) {
 
   return (
     <div style={{ background: 'linear-gradient(135deg, rgba(96,165,250,0.1), rgba(139,127,255,0.06))', border: '1px solid rgba(96,165,250,0.25)', borderRadius: 16, padding: '1rem 1.25rem', marginBottom: '1.25rem' }}>
-      <div style={{ fontSize: 11, color: '#60a5fa', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>📅 Circle Back</div>
+      <div style={{ fontSize: 11, color: '#60a5fa', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 7 }}>
+        <CalendarDays size={14} strokeWidth={1.8} aria-hidden="true" />
+        Circle Back
+      </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <Avatar name={person.name} company={person.company} size={36} />
         <div style={{ flex: 1, opacity: fade ? 1 : 0, transform: fade ? 'none' : 'translateY(4px)', transition: 'all 0.3s ease' }}>
@@ -202,7 +205,7 @@ function CircleBackReminder({ contacts, onSelect }) {
           )}
         </div>
         <button onClick={() => onSelect(person)} style={{ background: 'rgba(96,165,250,0.15)', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.3)', borderRadius: 8, padding: '6px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap', flexShrink: 0 }}>
-          Open →
+          Open
         </button>
       </div>
       {contacts.length > 1 && (
@@ -239,7 +242,7 @@ function ProTipBox() {
       <div style={{ position: 'absolute', bottom: -20, left: -20, width: 100, height: 100, borderRadius: '50%', background: 'radial-gradient(circle, rgba(244,114,182,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <div style={{ fontSize: 13, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 18 }}>💡</span> Pro Tip
+          <Lightbulb size={18} strokeWidth={1.8} aria-hidden="true" /> Pro Tip
         </div>
         <div style={{ display: 'flex', gap: 5 }}>
           {PRO_TIPS.map((_, i) => (
@@ -248,7 +251,7 @@ function ProTipBox() {
         </div>
       </div>
       <div style={{ opacity: fade ? 1 : 0, transform: fade ? 'translateY(0)' : 'translateY(8px)', transition: 'opacity 0.35s ease, transform 0.35s ease', fontSize: 17, color: 'var(--text-primary)', lineHeight: 1.75, display: 'flex', alignItems: 'flex-start', gap: 14, fontWeight: 500 }}>
-        <span style={{ fontSize: 28, flexShrink: 0, marginTop: 2 }}>{tip.icon}</span>
+        <Lightbulb size={26} color="#93c5fd" strokeWidth={1.7} style={{ flexShrink: 0, marginTop: 2 }} aria-hidden="true" />
         <span>{tip.text}</span>
       </div>
     </div>
@@ -280,7 +283,7 @@ function TodoList({ todos, onToggle, onDelete }) {
     return (
       <div style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--text-tertiary)', fontSize: 13 }}>
         <div style={{ fontSize: 24, marginBottom: 8, opacity: 0.4 }}>✓</div>
-        No tasks yet — add one to stay organized!
+        No tasks yet - add one to stay organized!
       </div>
     )
   }
@@ -384,7 +387,7 @@ function SkillsInput({ skills, onChange, onPendingChange }) {
             onChange={e => { setInput(e.target.value); setActiveIdx(0); if (onPendingChange) onPendingChange(e.target.value) }}
             onKeyDown={handleKey}
             onBlur={() => setTimeout(() => setInput(i => i), 150)}
-            placeholder="Type a skill — suggestions appear automatically..."
+            placeholder="Type a skill - suggestions appear automatically..."
             style={{ width: '100%', background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '8px 12px', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)', boxSizing: 'border-box' }}
           />
           {suggestions.length > 0 && (
@@ -453,9 +456,9 @@ function calcNetworkScore(contacts) {
 
 // ─── Debrief Modal ───────────────────────────────────────────────────────────────
 const VIBES = [
-  { label: '🔥 Crushed it', value: 'great', color: '#4ade80', bg: 'rgba(74,222,128,0.12)', border: 'rgba(74,222,128,0.3)' },
-  { label: '👍 Solid', value: 'okay', color: '#fbbf24', bg: 'rgba(251,191,36,0.12)', border: 'rgba(251,191,36,0.3)' },
-  { label: '😬 Awkward', value: 'awkward', color: '#f472b6', bg: 'rgba(244,114,182,0.12)', border: 'rgba(244,114,182,0.3)' },
+  { label: 'Crushed it', value: 'great', color: '#4ade80', bg: 'rgba(74,222,128,0.12)', border: 'rgba(74,222,128,0.3)' },
+  { label: 'Solid', value: 'okay', color: '#fbbf24', bg: 'rgba(251,191,36,0.12)', border: 'rgba(251,191,36,0.3)' },
+  { label: 'Awkward', value: 'awkward', color: '#f472b6', bg: 'rgba(244,114,182,0.12)', border: 'rgba(244,114,182,0.3)' },
 ]
 
 function DebriefModal({ contact, onSave, onClose }) {
@@ -471,7 +474,10 @@ function DebriefModal({ contact, onSave, onClose }) {
   return (
     <div style={{ background: 'var(--surface-2)', borderRadius: 20, border: '1px solid var(--border-strong)', padding: '1.75rem', width: '100%', maxWidth: 420, boxShadow: 'var(--shadow-lg)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <div style={{ fontSize: 17, fontWeight: 700, fontFamily: 'var(--font-display)' }}>☕ How'd it go?</div>
+        <div style={{ fontSize: 17, fontWeight: 700, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <MessageSquareText size={18} strokeWidth={1.8} aria-hidden="true" />
+          How'd it go?
+        </div>
         <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 22, lineHeight: 1 }}>✕</button>
       </div>
       <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16 }}>Quick debrief for your chat with <strong style={{ color: 'var(--text-primary)' }}>{contact.name}</strong></div>
@@ -496,7 +502,7 @@ function DebriefModal({ contact, onSave, onClose }) {
       </div>
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
         <button onClick={onClose} style={{ background: 'var(--surface-3)', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 8, padding: '9px 18px', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Skip</button>
-        <button onClick={handleSave} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 22px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>Save debrief →</button>
+        <button onClick={handleSave} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 22px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>Save debrief</button>
       </div>
     </div>
   )
@@ -522,7 +528,7 @@ function BrainDumpPanel({ onClose, user }) {
     <div style={{ position: 'fixed', bottom: 80, right: 20, width: 320, background: 'var(--surface-2)', border: '1px solid var(--border-strong)', borderRadius: 20, padding: '1.25rem', boxShadow: 'var(--shadow-lg)', zIndex: 200 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 18 }}>⚡</span> Quick Notes
+          <NotebookText size={18} strokeWidth={1.8} aria-hidden="true" /> Quick Notes
         </div>
         <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 18, lineHeight: 1 }}>✕</button>
       </div>
@@ -534,7 +540,7 @@ function BrainDumpPanel({ onClose, user }) {
         <button onClick={add} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 12px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>+</button>
       </div>
       <div style={{ maxHeight: 260, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {notes.length === 0 && <div style={{ fontSize: 13, color: 'var(--text-tertiary)', textAlign: 'center', padding: '1rem' }}>Nothing yet — dump your brain here</div>}
+        {notes.length === 0 && <div style={{ fontSize: 13, color: 'var(--text-tertiary)', textAlign: 'center', padding: '1rem' }}>Nothing yet - dump your brain here</div>}
         {notes.map(n => (
           <div key={n.id} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', background: 'var(--surface-3)', borderRadius: 10, padding: '8px 10px', border: '1px solid var(--border)' }}>
             <div style={{ flex: 1 }}>
@@ -642,8 +648,8 @@ function NetworkMap({ contacts, onSelect }) {
   }
 
   if (contacts.length === 0) return (
-    <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-tertiary)', fontSize: 13 }}>
-      <div style={{ fontSize: 32, marginBottom: 12, opacity: 0.3 }}>🕸️</div>
+      <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-tertiary)', fontSize: 13 }}>
+      <NetworkIcon size={32} style={{ marginBottom: 12, opacity: 0.3 }} aria-hidden="true" />
       Add contacts to see your network map
     </div>
   )
@@ -663,7 +669,7 @@ function NetworkMap({ contacts, onSelect }) {
   const edges = allEdges.slice(0, MAX_EDGES)
   const clipped = allEdges.length > MAX_EDGES
 
-  // For hovered node — find all connected nodes + their edge type
+  // For hovered node - find all connected nodes + their edge type
   const hoveredEdges = hovered ? edges.filter(e => e.a.id === hovered || e.b.id === hovered) : []
   const hoveredConnectedIds = new Set(hoveredEdges.flatMap(e => [e.a.id, e.b.id]))
   const isFiltering = hovered !== null
@@ -779,7 +785,7 @@ function NetworkMap({ contacts, onSelect }) {
           </div>
         ) : (
           <div style={{ background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 14, padding: '18px', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            <div style={{ fontSize: 28, opacity: 0.3 }}>👆</div>
+            <NetworkIcon size={28} style={{ opacity: 0.3 }} aria-hidden="true" />
             <div style={{ fontSize: 12, color: 'var(--text-tertiary)', textAlign: 'center', lineHeight: 1.6 }}>Hover a node to see their connections</div>
           </div>
         )}
@@ -832,7 +838,7 @@ function EditProfileModal({ profile, onSave, onClose, onLogout, isMobile }) {
 }
 
 // ─── Add Contact Modal ──────────────────────────────────────────────────────────
-export const HOW_WE_MET = [] // user-defined — see getHowWeMetSuggestions()
+export const HOW_WE_MET = [] // user-defined - see getHowWeMetSuggestions()
 
 function AddModal({ onAdd, onClose, contacts = [] }) {
   const [name, setName] = useState('')
@@ -907,12 +913,15 @@ function ScheduleModal({ contacts, onSchedule, onClose, prefillDate }) {
   return (
     <div style={{ background: 'var(--surface-2)', borderRadius: 20, border: '1px solid var(--border-strong)', padding: '1.75rem', width: '100%', maxWidth: 420, boxShadow: 'var(--shadow-lg)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <div style={{ fontSize: 17, fontWeight: 700, fontFamily: 'var(--font-display)' }}>📅 Schedule Meeting</div>
+        <div style={{ fontSize: 17, fontWeight: 700, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <CalendarDays size={18} strokeWidth={1.8} aria-hidden="true" />
+          Schedule Meeting
+        </div>
         <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 22, lineHeight: 1 }}>✕</button>
       </div>
       <label style={{ display: 'block', fontSize: 11, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Contact</label>
       <select value={contactId} onChange={e => setContactId(e.target.value)} style={{ ...inp, cursor: 'pointer' }}>
-        {contacts.map(c => <option key={c.id} value={c.id}>{c.name}{c.company ? ` — ${c.company}` : ''}</option>)}
+        {contacts.map(c => <option key={c.id} value={c.id}>{c.name}{c.company ? ` - ${c.company}` : ''}</option>)}
       </select>
       <div style={{ display: 'flex', gap: 12 }}>
         <div style={{ flex: 1 }}>
@@ -927,7 +936,7 @@ function ScheduleModal({ contacts, onSchedule, onClose, prefillDate }) {
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
         <button onClick={onClose} style={{ background: 'var(--surface-3)', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 18px', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Cancel</button>
         <button onClick={handleSchedule} disabled={!date} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontSize: 14, fontWeight: 600, cursor: date ? 'pointer' : 'not-allowed', opacity: date ? 1 : 0.4, fontFamily: 'var(--font-display)' }}>
-          Schedule →
+          Schedule
         </button>
       </div>
     </div>
@@ -955,8 +964,11 @@ function ScheduledTasksPanel({ tasks, contacts, onAdd, onToggle, onDelete }) {
   const todayStr = new Date().toISOString().split('T')[0]
 
   return (
-    <div style={{ marginTop: 24 }}>
-      <div style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-display)', marginBottom: 12 }}>📋 Scheduled Tasks</div>
+      <div style={{ marginTop: 24 }}>
+      <div style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-display)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <ListChecks size={16} strokeWidth={1.8} aria-hidden="true" />
+        Scheduled Tasks
+      </div>
 
       {/* Add task form */}
       <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 16px', marginBottom: 14 }}>
@@ -993,8 +1005,8 @@ function ScheduledTasksPanel({ tasks, contacts, onAdd, onToggle, onDelete }) {
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', textDecoration: task.done ? 'line-through' : 'none' }}>{task.text}</div>
                   <div style={{ display: 'flex', gap: 8, marginTop: 3, flexWrap: 'wrap' }}>
-                    {task.forWho && <span style={{ fontSize: 11, color: 'var(--accent)' }}>👤 {task.forWho}</span>}
-                    {dateLabel && <span style={{ fontSize: 11, color: overdue ? '#f87171' : 'var(--text-tertiary)' }}>📅 {dateLabel}{overdue ? ' · overdue' : ''}</span>}
+                    {task.forWho && <span style={{ fontSize: 11, color: 'var(--accent)' }}> {task.forWho}</span>}
+                    {dateLabel && <span style={{ fontSize: 11, color: overdue ? '#f87171' : 'var(--text-tertiary)' }}> {dateLabel}{overdue ? ' · overdue' : ''}</span>}
                   </div>
                 </div>
                 <button onClick={() => onDelete(task.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 16, lineHeight: 1, padding: 4 }}>×</button>
@@ -1009,12 +1021,12 @@ function ScheduledTasksPanel({ tasks, contacts, onAdd, onToggle, onDelete }) {
 
 // ─── Resume Tab ──────────────────────────────────────────────────────────────────
 const RESUME_TIPS = [
-  { icon: '📏', title: 'Keep it to one page', body: 'For students and recent grads, one page is the standard. Recruiters spend ~7 seconds on a first scan.' },
-  { icon: '🎯', title: 'Lead with impact numbers', body: 'Replace "helped with marketing" with "grew Instagram engagement 40% in 3 months." Quantify everything you can.' },
-  { icon: '🤖', title: 'Beat the ATS bots', body: "Most companies use applicant tracking software. Mirror exact keywords from the job description — don't paraphrase." },
-  { icon: '💼', title: 'Tailor for every role', body: 'Keep a master resume and create a trimmed, targeted version for each application. Generic resumes get filtered out.' },
-  { icon: '✍️', title: 'Start every bullet with an action verb', body: '"Led," "Built," "Designed," "Increased" — not "Responsible for" or "Helped with."' },
-  { icon: '🧹', title: 'Ruthless formatting', body: 'Consistent fonts, aligned margins, no photos. Save as PDF. Name it "FirstLast_Resume.pdf" — not "resume_FINAL_v3.pdf".' },
+  { title: 'Keep it to one page', body: 'For students and recent grads, one page is the standard. Recruiters spend ~7 seconds on a first scan.' },
+  { title: 'Lead with impact numbers', body: 'Replace "helped with marketing" with "grew Instagram engagement 40% in 3 months." Quantify everything you can.' },
+  { title: 'Beat the ATS bots', body: "Most companies use applicant tracking software. Mirror exact keywords from the job description - don't paraphrase." },
+  { title: 'Tailor for every role', body: 'Keep a master resume and create a trimmed, targeted version for each application. Generic resumes get filtered out.' },
+  { title: 'Start every bullet with an action verb', body: '"Led," "Built," "Designed," "Increased" - not "Responsible for" or "Helped with."' },
+  { title: 'Ruthless formatting', body: 'Consistent fonts, aligned margins, no photos. Save as PDF. Name it "FirstLast_Resume.pdf" - not "resume_FINAL_v3.pdf".' },
 ]
 
 function ResumeTab({ resume, profile, onUpdateResume }) {
@@ -1074,19 +1086,19 @@ function ResumeTab({ resume, profile, onUpdateResume }) {
           {resume && (
             <button onClick={handleAnalyze} disabled={analyzing}
               style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 18px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: analyzing ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-sans)', opacity: analyzing ? 0.7 : 1 }}>
-              {analyzing ? <><Spinner />Analyzing…</> : '✦ AI Analysis'}
+              {analyzing ? <><Spinner />Analyzing...</> : <><Sparkles size={14} strokeWidth={1.8} aria-hidden="true" /> AI Analysis</>}
             </button>
           )}
         </div>
       </div>
 
       {!resume ? (
-        /* No resume — show upload prompt + tips */
+        /* No resume - show upload prompt + tips */
         <div>
           <div style={{ background: 'var(--surface-2)', border: '2px dashed var(--border-strong)', borderRadius: 16, padding: '3rem 2rem', textAlign: 'center', marginBottom: 28 }}
             onDragOver={e => e.preventDefault()}
             onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f) { const ev = { target: { files: [f] } }; handleReupload(ev) } }}>
-            <div style={{ fontSize: 36, marginBottom: 12 }}>📄</div>
+            <FileText size={36} style={{ marginBottom: 12 }} aria-hidden="true" />
             <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 6 }}>Drop your resume here</div>
             <div style={{ fontSize: 13, color: 'var(--text-tertiary)', marginBottom: 20 }}>PDF only · we'll parse it and give you personalized feedback</div>
             <button onClick={() => fileRef.current?.click()}
@@ -1098,7 +1110,7 @@ function ResumeTab({ resume, profile, onUpdateResume }) {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
             {RESUME_TIPS.map((tip, i) => (
               <div key={i} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px 18px' }}>
-                <div style={{ fontSize: 22, marginBottom: 8 }}>{tip.icon}</div>
+                <FileText size={20} style={{ marginBottom: 8, color: 'var(--accent)' }} aria-hidden="true" />
                 <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>{tip.title}</div>
                 <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.7 }}>{tip.body}</div>
               </div>
@@ -1226,7 +1238,7 @@ function ResumeTab({ resume, profile, onUpdateResume }) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
               {RESUME_TIPS.map((tip, i) => (
                 <div key={i} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px 18px' }}>
-                  <div style={{ fontSize: 22, marginBottom: 8 }}>{tip.icon}</div>
+                  <FileText size={20} style={{ marginBottom: 8, color: 'var(--accent)' }} aria-hidden="true" />
                   <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>{tip.title}</div>
                   <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.7 }}>{tip.body}</div>
                 </div>
@@ -1258,7 +1270,7 @@ function LoginScreen() {
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', padding: '1rem' }}>
       <GlobalStyles />
       <div style={{ width: '100%', maxWidth: 360, background: 'var(--surface-2)', border: '1px solid var(--border-strong)', borderRadius: 24, padding: '2.5rem 2rem', boxShadow: 'var(--shadow-lg)', textAlign: 'center' }}>
-        <div style={{ fontSize: 40, marginBottom: 12 }}>☕</div>
+        <ContactIcon size={40} style={{ marginBottom: 12, color: 'var(--accent)' }} aria-hidden="true" />
         <div style={{ fontSize: 24, fontWeight: 800, fontFamily: 'var(--font-display)', letterSpacing: '-0.02em', marginBottom: 6 }}>NoShow OS</div>
         <div style={{ fontSize: 13, color: 'var(--text-tertiary)', marginBottom: '2rem', lineHeight: 1.5 }}>
           Show up prepared. Every time.<br />
@@ -1355,7 +1367,7 @@ export default function App() {
 
   // ─── Supabase auth ──────────────────────────────────────────────────────────
   useEffect(() => {
-    // INITIAL_SESSION fires once on load — handles both normal visits and
+    // INITIAL_SESSION fires once on load - handles both normal visits and
     // OAuth redirects (where getSession() can briefly return null while
     // the URL hash is being processed)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -1372,7 +1384,7 @@ export default function App() {
   }, [])
 
   async function loginWithSupabase(userId) {
-    // Only run the UI setup once per user — SIGNED_IN fires on every token
+    // Only run the UI setup once per user - SIGNED_IN fires on every token
     // refresh which would otherwise reset profileLoaded and flash the screen
     const isFirstLogin = authedUserId.current !== userId
     authedUserId.current = userId
@@ -1389,7 +1401,7 @@ export default function App() {
       const cloud = await fetchUserData(userId)
       if (cloud) {
         // Only update each piece of state if that specific field changed in cloud
-        // Never set profile to null — that would wipe the profile and show onboarding
+        // Never set profile to null - that would wipe the profile and show onboarding
         if (Array.isArray(cloud.contacts) && cloud.contacts.length > 0) {
           saveContacts(userId, cloud.contacts)
           setContacts(loadContacts(userId))
@@ -1816,361 +1828,6 @@ export default function App() {
           </RightOrbit>
         </div>
       )}
-
-      {/* Legacy home kept off while the Brief Desk redesign rolls forward. */}
-      {false && tab === 'home' && (
-        <div style={{ position: 'relative', overflow: 'hidden' }}>
-          {/* Ambient glows */}
-          <div style={{ position: 'fixed', top: 80, left: '40%', width: 700, height: 500, borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(124,140,248,0.06) 0%, transparent 65%)', pointerEvents: 'none', zIndex: 0 }} />
-          <div style={{ position: 'fixed', bottom: 0, right: '10%', width: 500, height: 400, borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(251,191,36,0.04) 0%, transparent 65%)', pointerEvents: 'none', zIndex: 0 }} />
-          <div style={{ position: 'fixed', inset: 0, opacity: 0.015, backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(200,220,255,0.6) 1px, transparent 0)', backgroundSize: '44px 44px', pointerEvents: 'none', zIndex: 0 }} />
-
-          <div style={{ maxWidth: 1100, margin: '0 auto', padding: isMobile ? '1rem' : '1.75rem 1.5rem', position: 'relative', zIndex: 1 }}>
-
-            {/* ── Hero greeting ─── */}
-            <div style={{ marginBottom: '1.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                <div style={{ fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500 }}>✦ Dashboard</div>
-                <button onClick={() => setShowHomeCustomize(v => !v)} style={{ background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 8, padding: '4px 10px', fontSize: 11, color: 'var(--text-tertiary)', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
-                  {showHomeCustomize ? 'Done' : 'Customize'}
-                </button>
-              </div>
-              {showHomeCustomize && (
-                <div style={{ background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 12, padding: '12px 14px', marginBottom: 14, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {[['statCards','Stats'], ['streak','Streak'], ['networkScore','Network Score'], ['highlights','Highlights'], ['circleBack','Circle Back'], ['upcoming','Upcoming'], ['followUp','Follow-ups'], ['tips','Pro Tips']].map(([key, label]) => (
-                    <button key={key} onClick={() => toggleHomeSection(key)} style={{ padding: '5px 12px', borderRadius: 20, border: `1px solid ${homeConfig[key] ? 'var(--accent)' : 'var(--border)'}`, background: homeConfig[key] ? 'var(--accent-dim)' : 'transparent', color: homeConfig[key] ? 'var(--accent)' : 'var(--text-tertiary)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-sans)', fontWeight: homeConfig[key] ? 600 : 400, transition: 'all 0.15s' }}>
-                      {homeConfig[key] ? '✓ ' : ''}{label}
-                    </button>
-                  ))}
-                </div>
-              )}
-              <div style={{ fontFamily: 'var(--font-display)', lineHeight: 1.05, marginBottom: 12 }}>
-                <span style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 400, color: 'var(--text-secondary)' }}>{greeting.line1} </span>
-                <span style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 800, color: 'var(--text-primary)' }}>{greeting.line2}</span>
-              </div>
-              <div style={{ borderLeft: '3px solid var(--accent)', paddingLeft: 14, maxWidth: 520 }}>
-                {quoteLoading
-                  ? <div style={{ fontSize: 13, color: 'var(--text-tertiary)', display: 'flex', gap: 8, alignItems: 'center' }}><Spinner /> Generating your quotes...</div>
-                  : <div style={{ fontSize: 14, color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: 1.7, opacity: quoteFade ? 1 : 0, transform: quoteFade ? 'translateY(0)' : 'translateY(4px)', transition: 'opacity 0.3s ease, transform 0.3s ease' }}>"{quotes[quoteIdx] || ''}"</div>}
-              </div>
-            </div>
-
-            {/* ── Highlights ─── */}
-            {homeConfig.highlights && <HighlightsBox highlights={highlights} onAdd={addHighlight} onRemove={removeHighlight} onReorder={reorderHighlights} />}
-
-            {/* ── Prep brief reminder ─── */}
-            {soonChats.length > 0 && (
-              <div style={{ background: 'linear-gradient(135deg, rgba(74,222,128,0.1), rgba(99,179,255,0.06))', border: '1px solid rgba(74,222,128,0.3)', borderRadius: 14, padding: '14px 18px', marginBottom: '1.25rem', display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', flexDirection: isMobile ? 'column' : 'row', gap: 14 }}>
-                <span style={{ fontSize: 28, flexShrink: 0 }}>☕</span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: '#6ee7b7', marginBottom: 3 }}>
-                    {soonChats[0].chatDate === todayStr ? 'Chat today' : 'Chat tomorrow'} — {soonChats[0].name}
-                    {soonChats[0].chatTime && <span style={{ fontWeight: 400, color: 'var(--text-secondary)' }}> at {soonChats[0].chatTime}</span>}
-                  </div>
-                  <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Review your prep brief so you walk in confident.</div>
-                </div>
-                <button onClick={() => setDetail(soonChats[0])} style={{ background: '#4ade80', color: '#000', border: 'none', borderRadius: 8, padding: '7px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-display)', whiteSpace: 'nowrap' }}>
-                  View brief →
-                </button>
-              </div>
-            )}
-
-            {/* ── Stat cards ─── */}
-            {homeConfig.statCards && <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: isMobile ? 8 : 12, marginBottom: '1.25rem' }}>
-              {STAT_CARDS.map(({ label, value, icon, accent, onClick, badge, contactList }) => {
-                // Group contacts by company for avatar display
-                const grouped = []
-                const seen = {}
-                ;(contactList || []).forEach(c => {
-                  const co = (c.company || '').toLowerCase().trim()
-                  if (co && seen[co]) { seen[co].count++ }
-                  else if (co) { const entry = { contact: c, count: 1 }; seen[co] = entry; grouped.push(entry) }
-                  else { grouped.push({ contact: c, count: 1 }) }
-                })
-                const visibleGroups = grouped.slice(0, 5)
-                return (
-                <div key={label} onClick={onClick} className="fade-in" style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: isMobile ? 14 : 20, padding: isMobile ? '1rem' : '1.5rem', cursor: 'pointer', position: 'relative', overflow: 'hidden', transition: 'border-color 0.2s, transform 0.15s' }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = accent + '55'; e.currentTarget.style.transform = 'translateY(-2px)' }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'none' }}>
-                  <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: `radial-gradient(circle, ${accent}20 0%, transparent 70%)`, pointerEvents: 'none' }} />
-                  <div style={{ fontSize: 11, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>{label}</div>
-                  <div style={{ fontSize: isMobile ? 36 : 48, fontWeight: 800, fontFamily: 'var(--font-display)', lineHeight: 1 }}>{value}</div>
-                  {visibleGroups.length > 0 ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 10, flexWrap: 'wrap' }}>
-                      {visibleGroups.map(({ contact: ct, count }, i) => (
-                        <div key={i} style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
-                          <Avatar name={ct.name} company={ct.company} size={24} />
-                          {count > 1 && <span style={{ position: 'absolute', bottom: -2, right: -6, background: accent, color: '#000', fontSize: 8, fontWeight: 800, borderRadius: 100, padding: '1px 4px', lineHeight: 1.4 }}>×{count}</span>}
-                        </div>
-                      ))}
-                      {grouped.length > 5 && <span style={{ fontSize: 10, color: 'var(--text-tertiary)' }}>+{grouped.length - 5}</span>}
-                    </div>
-                  ) : (
-                    <div style={{ marginTop: 10, fontSize: 20 }}>{icon}</div>
-                  )}
-                  {badge && (
-                    <div style={{ position: 'absolute', top: 10, right: 10, background: badge.color, color: '#000', fontSize: 9, fontWeight: 700, padding: '3px 7px', borderRadius: 100, whiteSpace: 'nowrap' }}>
-                      {badge.text}
-                    </div>
-                  )}
-                </div>
-              )})}
-            </div>}
-
-            {/* ── Streak + Score ─── */}
-            {(homeConfig.streak || homeConfig.networkScore) && <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : (homeConfig.streak && homeConfig.networkScore ? '1fr 1fr' : '1fr'), gap: isMobile ? 8 : 12, marginBottom: '1.25rem' }}>
-              {homeConfig.streak && <div style={{ background: 'linear-gradient(135deg, rgba(251,191,36,0.1), rgba(251,146,60,0.06))', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 16, padding: '1.1rem 1.25rem', display: 'flex', alignItems: 'center', gap: 14 }}>
-                <div style={{ fontSize: 36 }}>🔥</div>
-                <div>
-                  <div style={{ fontSize: 28, fontWeight: 800, fontFamily: 'var(--font-display)', color: '#fbbf24', lineHeight: 1 }}>{streak}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>week{streak !== 1 ? 's' : ''} streak</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>{streak === 0 ? 'Complete a chat to start!' : streak >= 4 ? 'On fire 🔥 keep going!' : 'Keep it up!'}</div>
-                </div>
-              </div>}
-              {homeConfig.networkScore && <div style={{ background: 'linear-gradient(135deg, rgba(139,127,255,0.1), rgba(99,179,255,0.06))', border: '1px solid rgba(139,127,255,0.25)', borderRadius: 16, padding: '1.1rem 1.25rem', display: 'flex', alignItems: 'center', gap: 14 }}>
-                <div style={{ fontSize: 36 }}>⚡</div>
-                <div>
-                  <div style={{ fontSize: 28, fontWeight: 800, fontFamily: 'var(--font-display)', color: '#a78bfa', lineHeight: 1 }}>{networkScore}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>network score</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>{networkScore < 50 ? 'Just getting started' : networkScore < 150 ? 'Building momentum' : networkScore < 300 ? 'Well connected!' : 'Network legend 👑'}</div>
-                </div>
-              </div>}
-            </div>}
-
-            {/* ── Main dashboard grid ─── */}
-            {(homeConfig.upcoming || homeConfig.followUp) && <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : (homeConfig.upcoming && homeConfig.followUp ? '1fr 1fr' : '1fr'), gap: isMobile ? 8 : 12 }}>
-
-              {/* Upcoming chats */}
-              {homeConfig.upcoming && <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 20, padding: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-display)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-secondary)' }}>📅 Upcoming</div>
-                  <button onClick={() => setTab('upcoming')} style={{ fontSize: 12, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>View all →</button>
-                </div>
-                {upcoming.length === 0
-                  ? <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-tertiary)', fontSize: 13 }}>No upcoming meetings yet</div>
-                  : <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {upcoming.slice(0, 4).map(c => {
-                      const dt = new Date(c.chatDate + 'T12:00:00')
-                      const isToday = dt.toDateString() === new Date().toDateString()
-                      const isTomorrow = dt.toDateString() === new Date(Date.now() + 86400000).toDateString()
-                      const label = isToday ? 'Today' : isTomorrow ? 'Tomorrow' : dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-                      return (
-                        <div key={c.id} onClick={() => setDetail(c)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.8rem 1rem', background: isToday ? 'rgba(124,111,255,0.08)' : 'var(--surface-3)', borderRadius: 12, cursor: 'pointer', border: `1px solid ${isToday ? 'rgba(124,111,255,0.2)' : 'var(--border)'}`, transition: 'border-color 0.15s' }}
-                          onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--border-strong)'}
-                          onMouseLeave={e => e.currentTarget.style.borderColor = isToday ? 'rgba(124,111,255,0.2)' : 'var(--border)'}
-                        >
-                          <div style={{ width: 40, height: 40, borderRadius: 10, background: isToday ? 'var(--accent)' : 'var(--surface-2)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                            {isToday ? <span style={{ fontSize: 18 }}>☕</span> : <><span style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-display)', lineHeight: 1 }}>{dt.getDate()}</span><span style={{ fontSize: 9, color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>{dt.toLocaleString('en-US', { month: 'short' })}</span></>}
-                          </div>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontWeight: 600, fontSize: 14, fontFamily: 'var(--font-display)' }}>{c.name}</div>
-                            <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{[c.role, c.company].filter(Boolean).join(' · ')}</div>
-                          </div>
-                          <div style={{ fontSize: 12, color: isToday ? 'var(--accent)' : 'var(--text-tertiary)', fontWeight: isToday ? 600 : 400, flexShrink: 0, textAlign: 'right' }}>
-                            <div>{label}</div>
-                            {c.chatTime && <div style={{ fontSize: 11, marginTop: 2, opacity: 0.7 }}>{c.chatTime}</div>}
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>}
-              </div>}
-
-              {/* Follow-ups needed */}
-              {homeConfig.followUp && <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 20, padding: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-display)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-secondary)' }}>✉ Follow-ups</div>
-                  {needsFollowUp.length > 0 && <span style={{ fontSize: 11, background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.2)', borderRadius: 100, padding: '2px 8px', fontWeight: 600 }}>{needsFollowUp.length} pending</span>}
-                </div>
-                {needsFollowUp.length === 0
-                  ? <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-tertiary)', fontSize: 13 }}>
-                      <div style={{ fontSize: 24, marginBottom: 8, opacity: 0.4 }}>✓</div>
-                      All caught up!
-                    </div>
-                  : <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {needsFollowUp.slice(0, 4).map(c => (
-                      <div key={c.id} onClick={() => setDetail(c)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.8rem 1rem', background: 'var(--surface-3)', borderRadius: 12, cursor: 'pointer', border: '1px solid var(--border)', transition: 'border-color 0.15s' }}
-                        onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--border-strong)'}
-                        onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
-                      >
-                        <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid rgba(251,191,36,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'rgba(251,191,36,0.6)' }} />
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontWeight: 600, fontSize: 13, fontFamily: 'var(--font-display)' }}>{c.name}</div>
-                          <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 1 }}>{c.company || 'No company'} · needs follow-up</div>
-                        </div>
-                        <div style={{ fontSize: 11, color: '#fbbf24' }}>Write →</div>
-                      </div>
-                    ))}
-                  </div>}
-              </div>}
-
-              {/* Circle Back Reminder */}
-              {(() => {
-                const circleBack = contacts.filter(c => c.nextAction === 'circle-back' && c.nextAction !== 'done')
-                if (!circleBack.length) return null
-                return <CircleBackReminder contacts={circleBack} onSelect={setDetail} />
-              })()}
-
-              {/* Follow-up Reminders */}
-              {(() => {
-                const reminders = contacts
-                  .filter(c => c.followUpDate && c.nextAction !== 'done' && c.status !== 'followed up')
-                  .sort((a, b) => new Date(a.followUpDate) - new Date(b.followUpDate))
-                const hasCompleted = contacts.some(c => (c.status === 'followed up' || c.nextAction === 'done') && (c.activity || []).some(a => ['followed_up', 'follow_up_written'].includes(a.type)))
-                if (reminders.length === 0 && !hasCompleted) return null
-                const now = new Date()
-                return (
-                  <div style={{ gridColumn: '1 / -1', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 20, padding: '1.5rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                      <div style={{ fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-display)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-secondary)' }}>🔔 Follow-up Reminders</div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <span style={{ fontSize: 11, background: 'rgba(99,179,255,0.12)', color: '#93c5fd', border: '1px solid rgba(99,179,255,0.25)', borderRadius: 100, padding: '2px 8px', fontWeight: 600 }}>{reminders.length} scheduled</span>
-                        <button onClick={() => setTab('upcoming')} style={{ fontSize: 12, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>View all →</button>
-                      </div>
-                    </div>
-                    {reminders.length === 0 && <div style={{ fontSize: 13, color: 'var(--text-tertiary)', marginBottom: 8 }}>No pending follow-ups.</div>}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 8 }}>
-                      {reminders.slice(0, 4).map(c => {
-                        const dt = new Date(c.followUpDate + 'T12:00:00')
-                        const isOverdue = dt < now
-                        const isToday = dt.toDateString() === now.toDateString()
-                        const label = isOverdue ? 'Overdue' : isToday ? 'Today' : dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-                        return (
-                          <div key={c.id} onClick={() => setDetail(c)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.8rem 1rem', background: isOverdue ? 'rgba(239,68,68,0.06)' : 'var(--surface-3)', borderRadius: 12, cursor: 'pointer', border: `1px solid ${isOverdue ? 'rgba(239,68,68,0.2)' : isToday ? 'rgba(99,179,255,0.25)' : 'var(--border)'}`, transition: 'border-color 0.15s' }}
-                            onMouseEnter={e => e.currentTarget.style.borderColor = isOverdue ? 'rgba(239,68,68,0.4)' : 'var(--border-strong)'}
-                            onMouseLeave={e => e.currentTarget.style.borderColor = isOverdue ? 'rgba(239,68,68,0.2)' : isToday ? 'rgba(99,179,255,0.25)' : 'var(--border)'}
-                          >
-                            <div style={{ width: 38, height: 38, borderRadius: 10, background: isOverdue ? 'rgba(239,68,68,0.12)' : isToday ? 'rgba(99,179,255,0.12)' : 'var(--surface-2)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: `1px solid ${isOverdue ? 'rgba(239,68,68,0.2)' : isToday ? 'rgba(99,179,255,0.2)' : 'var(--border)'}` }}>
-                              {isOverdue
-                                ? <span style={{ fontSize: 16 }}>⚠️</span>
-                                : isToday
-                                ? <span style={{ fontSize: 16 }}>🔔</span>
-                                : <><span style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-display)', lineHeight: 1, color: '#93c5fd' }}>{dt.getDate()}</span><span style={{ fontSize: 9, color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>{dt.toLocaleString('en-US', { month: 'short' })}</span></>}
-                            </div>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontWeight: 600, fontSize: 13, fontFamily: 'var(--font-display)' }}>{c.name}</div>
-                              <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{[c.role, c.company].filter(Boolean).join(' · ') || 'No role set'}</div>
-                              {c.followUpNote && <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontStyle: 'italic' }}>"{c.followUpNote}"</div>}
-                            </div>
-                            <div style={{ fontSize: 11, fontWeight: 600, flexShrink: 0, color: isOverdue ? '#f87171' : isToday ? '#93c5fd' : 'var(--text-tertiary)', textAlign: 'right' }}>{label}</div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                    {/* Completed follow-ups */}
-                    {(() => {
-                      const done = contacts.filter(c =>
-                        (c.status === 'followed up' || c.nextAction === 'done') &&
-                        (c.activity || []).some(a => ['followed_up', 'follow_up_written'].includes(a.type))
-                      ).slice(0, 4)
-                      if (!done.length) return null
-                      return (
-                        <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border)' }}>
-                          <div style={{ fontSize: 10, color: 'var(--text-tertiary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>✓ Completed</div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                            {done.map(person => {
-                              const lastFu = (person.activity || []).filter(a => ['followed_up', 'follow_up_written'].includes(a.type)).slice(-1)[0]
-                              return (
-                                <div key={person.id} onClick={() => setDetail(person)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: 'rgba(74,222,128,0.05)', border: '1px solid rgba(74,222,128,0.15)', borderRadius: 10, cursor: 'pointer' }}>
-                                  <Avatar name={person.name} company={person.company} size={28} />
-                                  <div style={{ flex: 1, minWidth: 0 }}>
-                                    <div style={{ fontSize: 13, fontWeight: 600 }}>{person.name}</div>
-                                    <div style={{ fontSize: 11, color: 'var(--text-tertiary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{[person.role, person.company].filter(Boolean).join(' · ')}</div>
-                                  </div>
-                                  <div style={{ fontSize: 11, color: '#4ade80', fontWeight: 600, flexShrink: 0 }}>
-                                    ✓ {lastFu ? new Date(lastFu.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Done'}
-                                  </div>
-                                </div>
-                              )
-                            })}
-                          </div>
-                        </div>
-                      )
-                    })()}
-                  </div>
-                )
-              })()}
-
-              {/* To-do list */}
-              <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 20, padding: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-display)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-secondary)' }}>✓ To-do List</div>
-                  {todos.filter(t => !t.done).length > 0 && <span style={{ fontSize: 11, background: 'rgba(124,111,255,0.15)', color: '#a78bfa', border: '1px solid rgba(124,111,255,0.3)', borderRadius: 100, padding: '2px 8px', fontWeight: 600 }}>{todos.filter(t => !t.done).length} pending</span>}
-                </div>
-                <TodoInput onAdd={addTodo} />
-                <div style={{ marginTop: 14 }}>
-                  <TodoList todos={todos} onToggle={toggleTodo} onDelete={deleteTodo} />
-                </div>
-              </div>
-
-              {/* Recent contacts */}
-              <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 20, padding: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-display)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-secondary)' }}>🤝 Recent Contacts</div>
-                  <button onClick={() => setTab('contacts')} style={{ fontSize: 12, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>All →</button>
-                </div>
-                {recent.length === 0
-                  ? <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-tertiary)', fontSize: 13 }}>No contacts yet — add one!</div>
-                  : <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {recent.map(c => (
-                      <div key={c.id} onClick={() => setDetail(c)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.7rem 0.9rem', background: 'var(--surface-3)', borderRadius: 12, cursor: 'pointer', border: '1px solid var(--border)', transition: 'border-color 0.15s' }}
-                        onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--border-strong)'}
-                        onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
-                      >
-                        <Avatar name={c.name} company={c.company} size={32} />
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontWeight: 600, fontSize: 13, fontFamily: 'var(--font-display)' }}>{c.name}</div>
-                          <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{[c.role, c.company].filter(Boolean).join(' · ') || 'No role set'}</div>
-                        </div>
-                        <StatusBadge status={c.status} />
-                      </div>
-                    ))}
-                  </div>}
-              </div>
-
-              {/* Goal + skills */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {profile.goals && (
-                  <div style={{ background: 'linear-gradient(135deg, rgba(124,111,255,0.08), rgba(74,222,128,0.05))', border: '1px solid rgba(124,111,255,0.25)', borderRadius: 20, padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
-                    <div style={{ position: 'absolute', top: -30, right: -30, width: 120, height: 120, borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,111,255,0.15) 0%, transparent 70%)', pointerEvents: 'none' }} />
-                    <div style={{ fontSize: 11, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span>🎯</span> Your North Star
-                    </div>
-                    <div style={{ fontSize: 16, lineHeight: 1.6, color: 'var(--text-primary)', fontWeight: 600, marginBottom: 12 }}>{profile.goals}</div>
-                    <button onClick={() => setShowEdit(true)} style={{ fontSize: 12, color: '#a78bfa', background: 'rgba(124,111,255,0.15)', border: '1px solid rgba(124,111,255,0.3)', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontFamily: 'var(--font-sans)', fontWeight: 500 }}>Edit goal</button>
-                  </div>
-                )}
-                <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 20, padding: '1.5rem', flex: 1 }}>
-                  <div style={{ fontSize: 11, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span>⚡</span> Your Skills ({skills.length})
-                  </div>
-                  {skills.length > 0
-                    ? <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 12 }}>
-                        {skills.map((s, i) => {
-                          const colors = [
-                            { bg: 'rgba(139,127,255,0.15)', color: '#c4b8ff', border: 'rgba(139,127,255,0.35)' },
-                            { bg: 'rgba(99,179,255,0.12)', color: '#93c5fd', border: 'rgba(99,179,255,0.3)' },
-                            { bg: 'rgba(52,211,153,0.12)', color: '#6ee7b7', border: 'rgba(52,211,153,0.3)' },
-                            { bg: 'rgba(251,191,36,0.12)', color: '#fcd34d', border: 'rgba(251,191,36,0.3)' },
-                            { bg: 'rgba(244,114,182,0.12)', color: '#f9a8d4', border: 'rgba(244,114,182,0.3)' },
-                          ]
-                          const c = colors[i % colors.length]
-                          return (
-                            <span key={s} style={{ background: c.bg, border: `1px solid ${c.border}`, color: c.color, borderRadius: 100, padding: '5px 12px', fontSize: 12, fontWeight: 500 }}>{s}</span>
-                          )
-                        })}
-                      </div>
-                    : <div style={{ fontSize: 13, color: 'var(--text-tertiary)', marginBottom: 10 }}>No skills added yet</div>}
-                  <button onClick={() => setShowEdit(true)} style={{ fontSize: 12, color: 'var(--text-tertiary)', background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontFamily: 'var(--font-sans)', fontWeight: 500 }}>Manage skills</button>
-                </div>
-              </div>
-            </div>}
-          </div>
-        </div>
-      )}
-
       {/* ── CONTACTS ─────────────────────────────────────────────────────────────── */}
       {tab === 'contacts' && (
         <div style={{ maxWidth: 760, margin: '0 auto', padding: isMobile ? '1rem' : '1.5rem 1.5rem' }}>
@@ -2196,7 +1853,7 @@ export default function App() {
                   "{allInsights[insightIdx % allInsights.length]?.text}"
                 </div>
                 <div style={{ fontSize: 13, color: '#a78bfa', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  — {allInsights[insightIdx % allInsights.length]?.name}
+                  - {allInsights[insightIdx % allInsights.length]?.name}
                   {contacts.filter(c => (c.notes || c.meetingNotes) && !c.insights?.length).length > 0 && (
                     <button onClick={generateAllInsights} disabled={generatingInsights} style={{ background: 'none', border: 'none', fontSize: 11, color: 'rgba(167,139,250,0.5)', cursor: 'pointer', fontFamily: 'var(--font-sans)', padding: 0 }}>
                       {generatingInsights ? `processing ${insightsProgress.done}/${insightsProgress.total}...` : '+ add more'}
@@ -2207,7 +1864,7 @@ export default function App() {
             ) : (
               <div>
                 <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 12, lineHeight: 1.6 }}>
-                  Generate insights pulled directly from your meeting notes — attributed to the person who said them.
+                  Generate insights pulled directly from your meeting notes - attributed to the person who said them.
                 </div>
                 <button onClick={generateAllInsights} disabled={generatingInsights || !contacts.some(c => c.notes || c.meetingNotes)}
                   style={{ background: '#7c6fff', color: '#fff', border: 'none', borderRadius: 10, padding: '9px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)', opacity: generatingInsights || !contacts.some(c => c.notes || c.meetingNotes) ? 0.6 : 1 }}>
@@ -2249,8 +1906,9 @@ export default function App() {
               <div style={{ background: 'linear-gradient(135deg, rgba(244,114,182,0.1), rgba(251,191,36,0.06))', border: '1px solid rgba(244,114,182,0.3)', borderRadius: 16, padding: '14px 16px', marginBottom: '1rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#f9a8d4' }}>
-                      🔔 {due.length} follow-up{due.length > 1 ? 's' : ''} pending
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#f9a8d4', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <Bell size={14} strokeWidth={1.8} aria-hidden="true" />
+                      {due.length} follow-up{due.length > 1 ? 's' : ''} pending
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 2 }}>Don't let these connections go cold</div>
                   </div>
@@ -2282,17 +1940,18 @@ export default function App() {
                 placeholder="Search contacts by name, role, or company..."
                 style={{ width: '100%', background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 12, padding: '10px 14px 10px 38px', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)', boxSizing: 'border-box' }}
               />
-              <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)', fontSize: 15, pointerEvents: 'none' }}>🔍</span>
+              <Search size={15} strokeWidth={1.8} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)', pointerEvents: 'none' }} aria-hidden="true" />
               {contactSearch && <button onClick={() => setContactSearch('')} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 16 }}>×</button>}
             </div>
             <button onClick={() => setShowNotionImport(true)} style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6, padding: '10px 14px', background: 'var(--surface-3)', color: 'var(--text-secondary)', border: '1px solid var(--border-strong)', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap' }}>
-              📋 Import
+              <FileText size={14} strokeWidth={1.8} aria-hidden="true" />
+              Import
             </button>
             {/* View toggle */}
             <div style={{ display: 'flex', background: 'var(--surface-3)', border: '1px solid var(--border-strong)', borderRadius: 10, overflow: 'hidden', flexShrink: 0 }}>
-              {[['az', '⬡', 'A–Z Directory'], ['grouped', '▤', 'By Status'], ['connection', '🤝', 'By How We Met']].map(([v, icon, title]) => (
+              {[['az', ListChecks, 'A-Z Directory'], ['grouped', Settings2, 'By Status'], ['connection', NetworkIcon, 'By How We Met']].map(([v, Icon, title]) => (
                 <button key={v} onClick={() => setContactView(v)} title={title} style={{ padding: '9px 11px', background: contactView === v ? 'var(--accent-dim)' : 'transparent', color: contactView === v ? 'var(--accent)' : 'var(--text-tertiary)', border: 'none', cursor: 'pointer', fontSize: 14, lineHeight: 1 }}>
-                  {icon}
+                  <Icon size={15} strokeWidth={1.8} aria-hidden="true" />
                 </button>
               ))}
             </div>
@@ -2324,12 +1983,12 @@ export default function App() {
               return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                   {toShow.map(key => {
-                    const meta = HOW_WE_MET.find(o => o.value === key) || { icon: '✦', label: 'Other' }
+                    const meta = HOW_WE_MET.find(o => o.value === key) || { label: 'Other' }
                     const catContacts = grouped[key]
                     return (
                       <div key={key}>
                         <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--accent)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <span style={{ fontSize: 16 }}>{meta.icon}</span> {meta.label} <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-tertiary)', marginLeft: 4 }}>({catContacts.length})</span>
+                          {meta.label} <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-tertiary)', marginLeft: 4 }}>({catContacts.length})</span>
                         </div>
                         <ContactList contacts={catContacts} onSelect={setDetail} />
                       </div>
@@ -2343,10 +2002,10 @@ export default function App() {
             // Grouped by status view (recently added feel)
             if (contactView === 'grouped' && !contactSearch.trim()) {
               const cats = [
-                { status: 'new', label: 'New — Reach Out', icon: '👋', color: '#917aff' },
-                { status: 'scheduled', label: 'Scheduled Meetings', icon: '📅', color: '#4ade80' },
-                { status: 'completed', label: 'Completed Chats', icon: '✓', color: '#fbbf24' },
-                { status: 'followed up', label: 'Followed Up', icon: '✉', color: '#f472b6' },
+                { status: 'new', label: 'New - Reach Out', color: '#917aff' },
+                { status: 'scheduled', label: 'Scheduled Meetings', color: '#4ade80' },
+                { status: 'completed', label: 'Completed Chats', color: '#fbbf24' },
+                { status: 'followed up', label: 'Followed Up', color: '#f472b6' },
               ]
               const toShow = contactFilter === 'all' ? cats : cats.filter(c => c.status === contactFilter)
               return (
@@ -2357,7 +2016,7 @@ export default function App() {
                     return (
                       <div key={cat.status}>
                         <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: cat.color, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <span>{cat.icon}</span> {cat.label} <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-tertiary)', marginLeft: 4 }}>({catContacts.length})</span>
+                          {cat.label} <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-tertiary)', marginLeft: 4 }}>({catContacts.length})</span>
                         </div>
                         <ContactList contacts={catContacts} onSelect={setDetail} />
                       </div>
@@ -2370,7 +2029,7 @@ export default function App() {
 
             if (base.length === 0) return (
               <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-tertiary)', fontSize: 14 }}>
-                {contactSearch.trim() ? `No results for "${contactSearch}"` : 'No contacts yet — add one to get started!'}
+                {contactSearch.trim() ? `No results for "${contactSearch}"` : 'No contacts yet - add one to get started!'}
               </div>
             )
 
@@ -2413,14 +2072,13 @@ export default function App() {
                               </div>
                               {(() => {
                                 const fmtD = d => new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                                const ACT_ICONS = { connected: '🤝', meeting_scheduled: '📅', meeting_completed: '☕', followed_up: '✉', follow_up_written: '✉', status_new: '·' }
                                 const ACT_LABELS = { connected: 'Connected', meeting_scheduled: 'Scheduled', meeting_completed: 'Met', followed_up: 'Followed up', follow_up_written: 'Follow-up sent' }
                                 const items = (person.activity || []).filter(a => ACT_LABELS[a.type])
                                 const connected = person.connectedDate || (person.id ? new Date(person.id).toISOString().split('T')[0] : null)
                                 if (!items.length && !connected) return null
                                 const display = connected && !items.length
-                                  ? [`🤝 Connected ${fmtD(connected)}`]
-                                  : items.slice(-3).map(a => `${ACT_ICONS[a.type] || '·'} ${ACT_LABELS[a.type]} ${fmtD(a.date)}`)
+                                  ? [`Connected ${fmtD(connected)}`]
+                                  : items.slice(-3).map(a => `${ACT_LABELS[a.type]} ${fmtD(a.date)}`)
                                 return (
                                   <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                     {display.join('  ·  ')}
@@ -2435,12 +2093,12 @@ export default function App() {
                               <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                                 {hasUpcoming && (
                                   <span style={{ fontSize: 10, color: '#4ade80', background: 'rgba(74,222,128,0.1)', padding: '1px 6px', borderRadius: 10 }}>
-                                    ☕ {new Date(person.chatDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                     {new Date(person.chatDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                                   </span>
                                 )}
                                 {followUpDue && (
                                   <span style={{ fontSize: 10, color: '#f9a8d4', background: 'rgba(244,114,182,0.1)', padding: '1px 6px', borderRadius: 10 }}>
-                                    🔔 Follow-up due
+                                     Follow-up due
                                   </span>
                                 )}
                                 {person.nextAction === 'done' && (
@@ -2470,7 +2128,10 @@ export default function App() {
       {tab === 'upcoming' && (
         <div style={{ maxWidth: 900, margin: '0 auto', padding: isMobile ? '1rem' : '1.5rem 1.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-display)' }}>📅 Calendar</div>
+            <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <CalendarDays size={22} strokeWidth={1.8} aria-hidden="true" />
+              Calendar
+            </div>
             <button onClick={() => setShowSchedule(true)} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>
               + Schedule Meeting
             </button>
@@ -2489,7 +2150,10 @@ export default function App() {
             const todayStr2 = new Date().toISOString().split('T')[0]
             return (
               <div style={{ marginTop: 24 }}>
-                <div style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-display)', marginBottom: 10 }}>🔔 Follow-up Reminders</div>
+                <div style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-display)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Bell size={16} strokeWidth={1.8} aria-hidden="true" />
+                  Follow-up Reminders
+                </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {reminders.map(c => {
                     const overdue = c.followUpDate < todayStr2
@@ -2551,8 +2215,11 @@ export default function App() {
         <div style={{ maxWidth: 900, margin: '0 auto', padding: isMobile ? '1rem' : '1.5rem 1.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <div>
-              <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-display)', marginBottom: 4 }}>🕸 Your Network</div>
-              <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Connections between your contacts — lines = shared company or school</div>
+              <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-display)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 10 }}>
+                <NetworkIcon size={22} strokeWidth={1.8} aria-hidden="true" />
+                Your Network
+              </div>
+              <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Connections between your contacts - lines = shared company or school</div>
             </div>
           </div>
           <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 20, padding: '1.5rem' }}>
@@ -2616,7 +2283,7 @@ export default function App() {
         onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
         title="Quick notes"
       >
-        ⚡
+        <Zap size={22} strokeWidth={1.8} aria-hidden="true" />
       </button>
       {showBrainDump && <BrainDumpPanel onClose={() => setShowBrainDump(false)} user={currentUser} />}
 
