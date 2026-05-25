@@ -387,19 +387,29 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
   }
 
   async function cleanUpNotes() {
-    const raw = (c.notes || '').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').trim()
+    const raw = (c.notes || '').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim()
     if (!raw) return
     setCleaningNotes(true)
     try {
       const cleaned = await callClaude(
-        `Clean up and reformat these meeting notes. Make them readable and well-structured. Rules:
-- Preserve ALL information and every specific detail — do not remove or summarize anything
-- Keep exact quotes and specific advice word for word
-- Add clear structure: use bullet points, short paragraphs, or headers where it makes sense
-- Remove duplicate lines, weird formatting artifacts, and clutter
-- Return plain text only — no markdown symbols like ** or ##
-- Keep it concise but complete`,
-        `Notes from meeting with ${c.name}:\n\n${raw.slice(0, 6000)}`
+        `You are lightly cleaning up raw meeting notes. Fix ONLY formatting issues — do NOT restructure, reorder, summarize, or remove any content.
+
+Do:
+- Fix inconsistent spacing and extra blank lines
+- Clean up separator lines (like ----, ===, ***) into a single clean line
+- Fix obvious duplicate lines (exact repeats only)
+- Normalize bullet points (use - consistently)
+
+Do NOT:
+- Reorder, merge, or split any sections
+- Remove any content, even if redundant
+- Summarize or shorten anything
+- Add new sections or headers that weren't there
+- Change any wording
+
+Return the full cleaned text in plain text.`,
+        `${raw}`,
+        4000
       )
       upd('notes', cleaned)
       setNotesKey(k => k + 1)
