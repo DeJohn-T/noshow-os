@@ -238,6 +238,11 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
   const [editName, setEditName] = useState(contact.name || '')
   const [editRole, setEditRole] = useState(contact.role || '')
   const [editCompany, setEditCompany] = useState(contact.company || '')
+  const [pastRoles, setPastRoles] = useState(contact.pastRoles || [])
+  const [addingRole, setAddingRole] = useState(false)
+  const [newRoleTitle, setNewRoleTitle] = useState('')
+  const [newRoleCompany, setNewRoleCompany] = useState('')
+  const [newRolePeriod, setNewRolePeriod] = useState('')
   const fileInputRef = useRef(null)
 
   // Chatbot state
@@ -248,9 +253,25 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
 
   const upd = (k, v) => setC(p => ({ ...p, [k]: v }))
   function saveAll(overrides = {}, close = false) {
-    const updated = { ...c, linkedinUrl, parsedProfile: parsed, brief, followUpText: fuText, pdfName, ...overrides }
+    const updated = { ...c, linkedinUrl, parsedProfile: parsed, brief, followUpText: fuText, pdfName, pastRoles, ...overrides }
     onUpdate(updated)
     if (close) onClose()
+  }
+
+  function savePastRole() {
+    if (!newRoleTitle.trim() && !newRoleCompany.trim()) return
+    const updated = [...pastRoles, { role: newRoleTitle.trim(), company: newRoleCompany.trim(), period: newRolePeriod.trim() }]
+    setPastRoles(updated)
+    const contact = { ...c, linkedinUrl, parsedProfile: parsed, brief, followUpText: fuText, pdfName, pastRoles: updated }
+    setC(contact); onUpdate(contact)
+    setNewRoleTitle(''); setNewRoleCompany(''); setNewRolePeriod(''); setAddingRole(false)
+  }
+
+  function removePastRole(i) {
+    const updated = pastRoles.filter((_, idx) => idx !== i)
+    setPastRoles(updated)
+    const contact = { ...c, linkedinUrl, parsedProfile: parsed, brief, followUpText: fuText, pdfName, pastRoles: updated }
+    setC(contact); onUpdate(contact)
   }
 
   async function handlePDFFile(file) {
@@ -398,6 +419,70 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
               <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>{c.chatDate ? `Chat: ${new Date(c.chatDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : 'No date set'}</div>
             </div>
           </div>
+
+          {/* Career history */}
+          {(c.role || c.company || pastRoles.length > 0) && (
+            <div style={{ marginBottom: 16, background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)' }}>💼 Career</div>
+                <button onClick={() => setAddingRole(true)} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 6, padding: '3px 10px', fontSize: 11, color: 'var(--text-tertiary)', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>+ Add past role</button>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                {(c.role || c.company) && (
+                  <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', paddingBottom: pastRoles.length > 0 ? 10 : 0 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 4 }}>
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0 }} />
+                      {pastRoles.length > 0 && <div style={{ width: 2, flex: 1, background: 'var(--border)', marginTop: 4, minHeight: 20 }} />}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{c.role || 'Unknown role'}</div>
+                      <div style={{ fontSize: 12, color: 'var(--accent)', marginTop: 1 }}>{c.company || ''} · <span style={{ opacity: 0.7 }}>Current</span></div>
+                    </div>
+                  </div>
+                )}
+                {pastRoles.map((r, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', paddingBottom: i < pastRoles.length - 1 ? 10 : 0 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 4 }}>
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--border-strong)', flexShrink: 0 }} />
+                      {i < pastRoles.length - 1 && <div style={{ width: 2, flex: 1, background: 'var(--border)', marginTop: 4, minHeight: 20 }} />}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{r.role || r.company}</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 1 }}>
+                        {r.role && r.company ? r.company : ''}{r.period ? ` · ${r.period}` : ''}
+                      </div>
+                    </div>
+                    <button onClick={() => removePastRole(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 16, lineHeight: 1, padding: '2px 4px', flexShrink: 0 }}>×</button>
+                  </div>
+                ))}
+              </div>
+              {addingRole && (
+                <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 6 }}>
+                    <input value={newRoleTitle} onChange={e => setNewRoleTitle(e.target.value)} placeholder="Role / Title" autoFocus
+                      style={{ background: 'var(--surface-2)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 7, padding: '7px 10px', fontSize: 12, outline: 'none', fontFamily: 'var(--font-sans)' }} />
+                    <input value={newRoleCompany} onChange={e => setNewRoleCompany(e.target.value)} placeholder="Company"
+                      style={{ background: 'var(--surface-2)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 7, padding: '7px 10px', fontSize: 12, outline: 'none', fontFamily: 'var(--font-sans)' }} />
+                  </div>
+                  <input value={newRolePeriod} onChange={e => setNewRolePeriod(e.target.value)} placeholder="Period (optional, e.g. 2022–2024)"
+                    style={{ width: '100%', background: 'var(--surface-2)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 7, padding: '7px 10px', fontSize: 12, outline: 'none', fontFamily: 'var(--font-sans)', boxSizing: 'border-box', marginBottom: 8 }} />
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <button onClick={() => { setAddingRole(false); setNewRoleTitle(''); setNewRoleCompany(''); setNewRolePeriod('') }}
+                      style={{ flex: 1, background: 'var(--surface-2)', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 7, padding: '7px', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Cancel</button>
+                    <button onClick={savePastRole}
+                      style={{ flex: 2, background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 7, padding: '7px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>Save</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Add career if no role yet */}
+          {!c.role && !c.company && pastRoles.length === 0 && (
+            <button onClick={() => setAddingRole(true)} style={{ width: '100%', background: 'none', border: '1px dashed var(--border)', borderRadius: 12, padding: '10px', fontSize: 13, color: 'var(--text-tertiary)', cursor: 'pointer', fontFamily: 'var(--font-sans)', marginBottom: 16 }}>
+              + Add career history
+            </button>
+          )}
 
           {/* Debrief card */}
           {c.debrief && (c.debrief.vibe || c.debrief.note) && (() => {
