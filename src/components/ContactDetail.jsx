@@ -24,7 +24,7 @@ import {
 import { Avatar, StatusBadge, Button, Input, Textarea, RichNotes, Tabs, Notice, Spinner, AIOutput, SectionLabel, Chip, CompanyLogo } from './UI'
 import { parseLinkedInPDF, generateBrief, generateFollowUp, callClaude, callClaudeChat } from '../lib/ai'
 import { extractTextFromPDF } from '../lib/pdfParser'
-import { addDays } from '../lib/utils'
+import { addDays, normalizeStatus, STATUS_OPTIONS, statusLabel } from '../lib/utils'
 
 const BRIEF_SECTIONS = [
   { key: 'BACKGROUND', icon: BookOpen, gradient: 'linear-gradient(135deg, rgba(139,127,255,0.1), rgba(139,127,255,0.03))', border: 'rgba(139,127,255,0.3)', accent: '#c4b8ff' },
@@ -239,8 +239,6 @@ function formatLinkedInExport(parsed, contact) {
   if (parsed.publications?.length) lines.push(`PUBLICATIONS\n${parsed.publications.map(x => `• ${x}`).join('\n')}\n`)
   return lines.join('\n')
 }
-
-const STATUSES = ['new', 'scheduled', 'completed', 'followed up']
 
 function getInsights(contact, parsed) {
   const name = contact.name?.split(' ')[0] || 'They'
@@ -570,8 +568,8 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
           <button onClick={onClose} aria-label="Close contact detail" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', lineHeight: 1, display: 'flex', alignItems: 'center' }}><X size={18} strokeWidth={1.8} aria-hidden="true" /></button>
-          <select value={c.status} onChange={e => upd('status', e.target.value)} style={{ fontSize: 12, padding: '4px 8px', borderRadius: 'var(--radius-full)', border: '1px solid var(--border-strong)', background: 'var(--surface-3)', color: 'var(--text-primary)', cursor: 'pointer' }}>
-            {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+          <select value={normalizeStatus(c.status)} onChange={e => upd('status', e.target.value)} style={{ fontSize: 12, padding: '4px 8px', borderRadius: 'var(--radius-full)', border: '1px solid var(--border-strong)', background: 'var(--surface-3)', color: 'var(--text-primary)', cursor: 'pointer' }}>
+            {STATUS_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
           </select>
         </div>
       </div>
@@ -601,7 +599,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
             </div>
             <div style={{ background: 'linear-gradient(135deg, rgba(74,222,128,0.1), rgba(74,222,128,0.03))', border: '1px solid rgba(74,222,128,0.25)', borderRadius: 14, padding: '14px 16px' }}>
               <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6ee7b7', marginBottom: 8 }}> Status</div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', textTransform: 'capitalize' }}>{c.status}</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{statusLabel(c.status)}</div>
               <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>{c.chatDate ? `Chat: ${new Date(c.chatDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : 'No date set'}</div>
             </div>
           </div>
@@ -625,8 +623,9 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
               ].map(opt => (
                 <button key={opt.key} onClick={() => {
                   const updates = { nextAction: opt.key }
-                  if (opt.key === 'follow-up') { const d = new Date(); d.setDate(d.getDate() + 7); setCalDate(d.toISOString().split('T')[0]); updates.status = 'followed up' }
-                  if (opt.key === 'circle-back') { const d = new Date(); d.setDate(d.getDate() + 90); setCalDate(d.toISOString().split('T')[0]) }
+                  if (opt.key === 'follow-up') { const d = new Date(); d.setDate(d.getDate() + 7); setCalDate(d.toISOString().split('T')[0]); updates.status = 'follow up' }
+                  if (opt.key === 'circle-back') { const d = new Date(); d.setDate(d.getDate() + 90); setCalDate(d.toISOString().split('T')[0]); updates.status = 'circle back' }
+                  if (opt.key === 'one-time') updates.status = 'one & done'
                   const updated = { ...c, ...updates }; setC(updated); saveAll(updates)
                 }} style={{
                   minWidth: 0, background: c.nextAction === opt.key ? `${opt.color}22` : 'var(--surface-2)',

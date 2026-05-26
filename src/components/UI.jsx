@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { Building2, Highlighter, Loader2, X } from 'lucide-react'
-import { initials, statusColor } from '../lib/utils'
+import { initials, statusColor, statusLabel } from '../lib/utils'
 
 // --- Avatar ---
 const AVATAR_GRADIENTS = [
@@ -140,7 +140,7 @@ export function StatusBadge({ status }) {
       letterSpacing: '0.01em',
       whiteSpace: 'nowrap',
     }}>
-      {status}
+      {statusLabel(status)}
     </span>
   )
 }

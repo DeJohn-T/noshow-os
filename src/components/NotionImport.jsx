@@ -74,7 +74,7 @@ export default function NotionImport({ onImport, onClose, endpoint, isMobile = f
       role: manualRole.trim(),
       company: manualCompany.trim(),
       notes: manualNotes.trim(),
-      status: 'new',
+      status: 'schedule',
       chatDate: '', linkedinUrl: '', parsedProfile: null,
       brief: '', followUpText: '', pdfName: '', meetingType: 'coffee chat',
     }])
@@ -89,7 +89,7 @@ export default function NotionImport({ onImport, onClose, endpoint, isMobile = f
       role: c.role || '',
       company: c.company || '',
       notes: c.notes || '',
-      status: 'new',
+      status: 'schedule',
       chatDate: '', linkedinUrl: '', parsedProfile: null,
       brief: '', followUpText: '', pdfName: '',
       meetingType: c.meetingType || 'coffee chat',

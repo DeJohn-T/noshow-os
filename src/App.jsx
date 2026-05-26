@@ -36,7 +36,7 @@ import { Avatar, StatusBadge, GlobalStyles, Spinner, Button } from './components
 import { loadContacts, saveContacts, loadProfile, saveProfile, loadQuotes, saveQuotes, loadTodos, saveTodos, loadBrainDump, saveBrainDump, loadUsers, saveUsers, getCurrentUser, setCurrentUser, clearCurrentUser, loadScheduledTasks, saveScheduledTasks, loadJobRecs, saveJobRecs, exportBackup, importBackup } from './lib/storage'
 import { generateQuotes, analyzeResume, generateJobRecs, extractInsights, parseLinkedInPDF, parseResumePDF } from './lib/ai'
 import { extractTextFromPDF } from './lib/pdfParser'
-import { formatDate } from './lib/utils'
+import { formatDate, isFinalStatus, isPostChatStatus, normalizeStatus, STATUS_OPTIONS, statusLabel, statusMeta } from './lib/utils'
 import { supabase, fetchUserData, signInWithGoogle } from './lib/supabase.js'
 import NotionImport from './components/NotionImport.jsx'
 
@@ -432,7 +432,7 @@ function getWeekKey(dateStr) {
 function calcStreak(contacts) {
   const weeks = new Set(
     contacts
-      .filter(c => (c.status === 'completed' || c.status === 'followed up') && c.chatDate)
+      .filter(c => isPostChatStatus(c.status) && c.chatDate)
       .map(c => getWeekKey(c.chatDate))
   )
   if (weeks.size === 0) return 0
@@ -455,9 +455,10 @@ function calcStreak(contacts) {
 function calcNetworkScore(contacts) {
   return contacts.reduce((score, c) => {
     score += 5
-    if (c.status === 'scheduled') score += 8
-    if (c.status === 'completed') score += 10
-    if (c.status === 'followed up') score += 15
+    const status = normalizeStatus(c.status)
+    if (status === 'scheduled') score += 8
+    if (['follow up', 'circle back'].includes(status)) score += 10
+    if (isFinalStatus(status)) score += 15
     if (c.brief) score += 5
     if (c.followUpText) score += 3
     if (c.parsedProfile && !c.parsedProfile.error) score += 4
@@ -567,8 +568,6 @@ function BrainDumpPanel({ onClose, user, isMobile = false }) {
 }
 
 // ─── Network Map ─────────────────────────────────────────────────────────────────
-const STATUS_COLORS = { new: '#a78bfa', scheduled: '#4ade80', completed: '#fbbf24', 'followed up': '#f472b6' }
-
 const CONN_TYPES = [
   { key: 'company',  label: 'Current company', color: 'rgba(74,222,128,0.55)',  colorSolid: '#4ade80' },
   { key: 'pastco',   label: 'Past companies',   color: 'rgba(52,211,153,0.4)',   colorSolid: '#34d399' },
@@ -712,9 +711,9 @@ function NetworkMap({ contacts, onSelect, isMobile = false }) {
 
         {/* Status dots */}
         <div style={{ display: 'flex', gap: 12, marginBottom: 10, flexWrap: 'wrap' }}>
-          {Object.entries(STATUS_COLORS).map(([s, c]) => (
-            <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: 'var(--text-tertiary)' }}>
-              <div style={{ width: 7, height: 7, borderRadius: '50%', background: c }} /> {s}
+          {STATUS_OPTIONS.map(status => (
+            <div key={status.value} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: 'var(--text-tertiary)' }}>
+              <div style={{ width: 7, height: 7, borderRadius: '50%', background: status.accent }} /> {status.label}
             </div>
           ))}
           {isFiltering && !isMobile && <div style={{ fontSize: 10, color: 'var(--text-tertiary)', marginLeft: 'auto' }}>Hover a node to highlight its connections</div>}
@@ -741,7 +740,7 @@ function NetworkMap({ contacts, onSelect, isMobile = false }) {
             const isHov = hovered === n.id
             const isConnected = hoveredConnectedIds.has(n.id)
             const dimmed = isFiltering && !isHov && !isConnected
-            const nc = STATUS_COLORS[n.status] || '#7c8cf8'
+            const nc = statusMeta(n.status).accent
             return (
               <g key={n.id}
                 onClick={() => onSelect(n)}
@@ -771,7 +770,7 @@ function NetworkMap({ contacts, onSelect, isMobile = false }) {
       <div style={{ width: isMobile ? '100%' : 280, flexShrink: 0 }}>
         {hoveredNode ? (
           <div style={{ background: 'var(--surface-3)', border: '1px solid var(--border-strong)', borderRadius: 14, padding: isMobile ? 14 : 18, height: isMobile ? 'auto' : '100%', boxSizing: 'border-box' }}>
-            <div style={{ fontWeight: 700, fontSize: 16, fontFamily: 'var(--font-display)', color: STATUS_COLORS[hoveredNode.status] || 'var(--text-primary)', marginBottom: 4 }}>{hoveredNode.name}</div>
+            <div style={{ fontWeight: 700, fontSize: 16, fontFamily: 'var(--font-display)', color: statusMeta(hoveredNode.status).accent, marginBottom: 4 }}>{hoveredNode.name}</div>
             <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 14, lineHeight: 1.5 }}>
               {[hoveredNode.role, hoveredNode.company].filter(Boolean).join(' · ') || 'No role set'}
             </div>
@@ -1740,17 +1739,19 @@ export default function App() {
 
   function addContact(c) {
     const today = new Date().toISOString().split('T')[0]
-    const newContact = { ...c, id: Date.now(), status: 'new', notes: '', chatDate: '', linkedinUrl: '', parsedProfile: null, brief: '', followUpText: '', pdfName: '', connectedDate: today, activity: [{ type: 'connected', date: today }] }
+    const newContact = { ...c, id: Date.now(), status: 'schedule', notes: '', chatDate: '', linkedinUrl: '', parsedProfile: null, brief: '', followUpText: '', pdfName: '', connectedDate: today, activity: [{ type: 'connected', date: today }] }
     persist([newContact, ...contacts])
     setShowAdd(false)
   }
   function updateContact(c) {
     const prev = contacts.find(x => x.id === c.id)
     let activity = c.activity || []
-    if (prev && prev.status !== c.status) {
-      const typeMap = { scheduled: 'meeting_scheduled', completed: 'meeting_completed', 'followed up': 'followed_up', new: 'status_new' }
-      const noteMap = { scheduled: 'Meeting scheduled', completed: 'Meeting completed', 'followed up': 'Followed up', new: 'Moved to new' }
-      activity = logActivity(activity, typeMap[c.status] || 'status_changed', noteMap[c.status] || c.status)
+    const nextStatus = normalizeStatus(c.status)
+    const prevStatus = normalizeStatus(prev?.status)
+    if (prev && prevStatus !== nextStatus) {
+      const typeMap = { scheduled: 'meeting_scheduled', 'follow up': 'meeting_completed', 'followed up': 'followed_up', schedule: 'status_schedule', 'circle back': 'status_circle_back', 'one & done': 'status_one_done', complete: 'status_complete' }
+      const noteMap = { scheduled: 'Meeting scheduled', 'follow up': 'Follow-up needed', 'followed up': 'Followed up', schedule: 'Moved to schedule', 'circle back': 'Circle back later', 'one & done': 'Marked one and done', complete: 'Marked complete' }
+      activity = logActivity(activity, typeMap[nextStatus] || 'status_changed', noteMap[nextStatus] || statusLabel(nextStatus))
     }
     if (prev && c.followUpText && !prev.followUpText) {
       activity = logActivity(activity, 'follow_up_written', 'Follow-up message written')
@@ -1761,7 +1762,7 @@ export default function App() {
     const updated = { ...c, activity }
     persist(contacts.map(x => x.id === c.id ? updated : x))
     setDetail(updated)
-    if (c.status === 'completed' && prev?.status !== 'completed') setDebriefContact(updated)
+    if (nextStatus === 'follow up' && prevStatus !== 'follow up') setDebriefContact(updated)
   }
   function deleteContact(id) { persist(contacts.filter(x => x.id !== id)); setDetail(null) }
 
@@ -1784,16 +1785,23 @@ export default function App() {
   if (!profileLoaded) return null
   if (!profile || showOnboarding) return <Onboarding onComplete={handleOnboardingComplete} existingProfile={profile} />
 
-  const stats = {
-    total: contacts.length,
-    scheduled: contacts.filter(x => x.status === 'scheduled').length,
-    completed: contacts.filter(x => x.status === 'completed').length,
-    followedUp: contacts.filter(x => x.status === 'followed up').length,
-  }
+  const stats = contacts.reduce((acc, contact) => {
+    const status = normalizeStatus(contact.status)
+    acc.total += 1
+    if (status === 'schedule') acc.schedule += 1
+    if (status === 'scheduled') acc.scheduled += 1
+    if (status === 'follow up') acc.followUp += 1
+    if (status === 'circle back') acc.circleBack += 1
+    if (status === 'one & done') acc.oneAndDone += 1
+    if (status === 'followed up') acc.followedUp += 1
+    if (status === 'complete') acc.complete += 1
+    if (isFinalStatus(status)) acc.done += 1
+    return acc
+  }, { total: 0, schedule: 0, scheduled: 0, followUp: 0, circleBack: 0, oneAndDone: 0, followedUp: 0, complete: 0, done: 0 })
 
   const todayStr = new Date().toISOString().split('T')[0]
-  const upcoming = contacts.filter(x => x.chatDate && x.status === 'scheduled' && x.chatDate >= todayStr).sort((a, b) => new Date(a.chatDate + 'T12:00:00') - new Date(b.chatDate + 'T12:00:00'))
-  const needsFollowUp = contacts.filter(x => x.status === 'completed' && !x.followUpText)
+  const upcoming = contacts.filter(x => x.chatDate && normalizeStatus(x.status) === 'scheduled' && x.chatDate >= todayStr).sort((a, b) => new Date(a.chatDate + 'T12:00:00') - new Date(b.chatDate + 'T12:00:00'))
+  const needsFollowUp = contacts.filter(x => normalizeStatus(x.status) === 'follow up' && !x.followUpText)
   const recent = [...contacts].sort((a, b) => b.id - a.id).slice(0, 5)
   const resume = profile?.resumeText ? { text: profile.resumeText, parsed: profile.resumeParsed } : null
   const skills = profile?.skills || []
@@ -1802,17 +1810,18 @@ export default function App() {
   const soonChats = upcoming.filter(c => c.chatDate === todayStr || c.chatDate === tomorrowStr)
   const streak = calcStreak(contacts)
   const networkScore = calcNetworkScore(contacts)
-  const todayDeskContact = upcoming[0] || null
+  const todayDeskContact = soonChats[0] || null
 
   const filteredContacts = contactSearch.trim()
     ? contacts.filter(c => [c.name, c.role, c.company].filter(Boolean).join(' ').toLowerCase().includes(contactSearch.toLowerCase()))
     : contacts
 
   const HOME_METRICS = [
-    { label: 'Contacts', value: stats.total, icon: ContactIcon, accent: 'var(--cyan)', onClick: () => setTab('contacts') },
+    { label: 'Schedule', value: stats.schedule, icon: ContactIcon, accent: 'var(--cyan)', onClick: () => { setContactFilter('schedule'); setTab('contacts') } },
     { label: 'Scheduled', value: stats.scheduled, icon: CalendarDays, accent: 'var(--green-text)', onClick: () => setTab('upcoming') },
-    { label: 'Completed', value: stats.completed, icon: CheckCircle2, accent: 'var(--amber)', onClick: () => setTab('contacts') },
-    { label: 'Followed Up', value: stats.followedUp, icon: MessageSquareText, accent: 'var(--rose)', onClick: () => setTab('contacts') },
+    { label: 'Follow up', value: stats.followUp, icon: MessageSquareText, accent: 'var(--rose)', onClick: () => { setContactFilter('follow up'); setTab('contacts') } },
+    { label: 'Circle back', value: stats.circleBack, icon: Clock3, accent: '#93c5fd', onClick: () => { setContactFilter('circle back'); setTab('contacts') } },
+    { label: 'Done', value: stats.done, icon: CheckCircle2, accent: 'var(--accent)', onClick: () => { setContactFilter('done'); setTab('contacts') } },
   ]
 
   const modalBg = { position: 'fixed', inset: 0, background: 'rgba(8,16,24,0.8)', display: 'flex', alignItems: isMobile ? 'flex-end' : 'center', justifyContent: 'center', padding: isMobile ? '0' : '1rem', zIndex: 100, backdropFilter: 'blur(12px)' }
@@ -1852,15 +1861,71 @@ export default function App() {
       )}
 
       {tab === 'home' && (
-        <div className="brief-desk-grid">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="brief-desk-grid home-shell">
+          <div className="home-primary" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <TodayDesk contact={todayDeskContact} stats={stats} onOpenContact={setDetail} onOpenContacts={() => setTab('contacts')} onAddContact={() => setShowAdd(true)} />
 
             {homeConfig.statCards && (
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, minmax(0, 1fr))', gap: 12 }}>
+              <div className="home-action-grid" style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, minmax(0, 1fr))' : 'repeat(5, minmax(0, 1fr))', gap: 12 }}>
                 {HOME_METRICS.map(metric => (
-                  <MetricTile key={metric.label} {...metric} />
+                  <MetricTile key={metric.label} {...metric} className="home-action-tile" />
                 ))}
+              </div>
+            )}
+
+            {isMobile && (
+              <OrbitPanel title="Profile signal" icon={Target} accent="var(--amber)">
+                {profile.goals ? (
+                  <div style={{ color: 'var(--text-secondary)', lineHeight: 1.55, fontSize: 13 }}>{profile.goals}</div>
+                ) : (
+                  <div style={{ color: 'var(--text-tertiary)', lineHeight: 1.55, fontSize: 13 }}>Add a goal to sharpen brief generation.</div>
+                )}
+              </OrbitPanel>
+            )}
+
+            {(homeConfig.upcoming || homeConfig.followUp) && (
+              <div className="home-priority-grid" style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1fr) minmax(0, 1fr)', gap: 12 }}>
+                {homeConfig.upcoming && (
+                  <OrbitPanel title="Upcoming" icon={CalendarDays} accent="var(--green-text)" action={<button onClick={() => setTab('upcoming')} style={{ background: 'transparent', border: 'none', color: 'var(--green-text)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>View all</button>}>
+                    {upcoming.length === 0 ? (
+                      <div style={{ color: 'var(--text-tertiary)', fontSize: 13, padding: '16px 0' }}>No scheduled meetings yet.</div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        {upcoming.slice(0, isMobile ? 3 : 4).map(c => (
+                          <button key={c.id} onClick={() => setDetail(c)} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 0', background: 'transparent', border: 'none', borderTop: '1px solid var(--border)', color: 'var(--text-primary)', textAlign: 'left', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
+                            <Avatar name={c.name} company={c.company} size={32} />
+                            <span style={{ flex: 1, minWidth: 0 }}>
+                              <span style={{ display: 'block', fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</span>
+                              <span style={{ display: 'block', color: 'var(--text-tertiary)', fontSize: 11, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{[c.role, c.company].filter(Boolean).join(' at ') || 'No role set'}</span>
+                            </span>
+                            <span style={{ color: 'var(--text-secondary)', fontSize: 11, textAlign: 'right' }}>{formatDate(c.chatDate)}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </OrbitPanel>
+                )}
+
+                {homeConfig.followUp && (
+                  <OrbitPanel title="Follow-ups" icon={Bell} accent="var(--rose)">
+                    {needsFollowUp.length === 0 ? (
+                      <div style={{ color: 'var(--text-tertiary)', fontSize: 13, padding: '16px 0' }}>All caught up.</div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        {needsFollowUp.slice(0, isMobile ? 3 : 4).map(c => (
+                          <button key={c.id} onClick={() => setDetail(c)} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 0', background: 'transparent', border: 'none', borderTop: '1px solid var(--border)', color: 'var(--text-primary)', textAlign: 'left', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
+                            <MessageSquareText size={16} color="var(--rose)" strokeWidth={1.8} aria-hidden="true" />
+                            <span style={{ flex: 1, minWidth: 0 }}>
+                              <span style={{ display: 'block', fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</span>
+                              <span style={{ display: 'block', color: 'var(--text-tertiary)', fontSize: 11 }}>Needs follow-up</span>
+                            </span>
+                            <span style={{ color: 'var(--rose)', fontSize: 11 }}>Write</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </OrbitPanel>
+                )}
               </div>
             )}
 
@@ -1893,52 +1958,6 @@ export default function App() {
 
             {homeConfig.highlights && <HighlightsBox highlights={highlights} onAdd={addHighlight} onRemove={removeHighlight} onReorder={reorderHighlights} />}
 
-            {(homeConfig.upcoming || homeConfig.followUp) && (
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1fr) minmax(0, 1fr)', gap: 12 }}>
-                {homeConfig.upcoming && (
-                  <OrbitPanel title="Upcoming" icon={CalendarDays} accent="var(--green-text)" action={<button onClick={() => setTab('upcoming')} style={{ background: 'transparent', border: 'none', color: 'var(--green-text)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>View all</button>}>
-                    {upcoming.length === 0 ? (
-                      <div style={{ color: 'var(--text-tertiary)', fontSize: 13, padding: '16px 0' }}>No scheduled meetings yet.</div>
-                    ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        {upcoming.slice(0, 4).map(c => (
-                          <button key={c.id} onClick={() => setDetail(c)} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 0', background: 'transparent', border: 'none', borderTop: '1px solid var(--border)', color: 'var(--text-primary)', textAlign: 'left', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
-                            <Avatar name={c.name} company={c.company} size={32} />
-                            <span style={{ flex: 1, minWidth: 0 }}>
-                              <span style={{ display: 'block', fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</span>
-                              <span style={{ display: 'block', color: 'var(--text-tertiary)', fontSize: 11, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{[c.role, c.company].filter(Boolean).join(' at ') || 'No role set'}</span>
-                            </span>
-                            <span style={{ color: 'var(--text-secondary)', fontSize: 11, textAlign: 'right' }}>{formatDate(c.chatDate)}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </OrbitPanel>
-                )}
-
-                {homeConfig.followUp && (
-                  <OrbitPanel title="Follow-ups" icon={Bell} accent="var(--rose)">
-                    {needsFollowUp.length === 0 ? (
-                      <div style={{ color: 'var(--text-tertiary)', fontSize: 13, padding: '16px 0' }}>All caught up.</div>
-                    ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        {needsFollowUp.slice(0, 4).map(c => (
-                          <button key={c.id} onClick={() => setDetail(c)} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 0', background: 'transparent', border: 'none', borderTop: '1px solid var(--border)', color: 'var(--text-primary)', textAlign: 'left', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
-                            <MessageSquareText size={16} color="var(--rose)" strokeWidth={1.8} aria-hidden="true" />
-                            <span style={{ flex: 1, minWidth: 0 }}>
-                              <span style={{ display: 'block', fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</span>
-                              <span style={{ display: 'block', color: 'var(--text-tertiary)', fontSize: 11 }}>Needs follow-up</span>
-                            </span>
-                            <span style={{ color: 'var(--rose)', fontSize: 11 }}>Write</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </OrbitPanel>
-                )}
-              </div>
-            )}
-
             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1fr) minmax(0, 1fr)', gap: 12 }}>
               <OrbitPanel title="To-do list" icon={ListChecks} accent="var(--accent)">
                 <TodoInput onAdd={addTodo} />
@@ -1968,7 +1987,7 @@ export default function App() {
             </div>
           </div>
 
-          <RightOrbit>
+          {!isMobile && <RightOrbit className="home-side">
             <OrbitPanel title="Field note" icon={Sparkles} accent="var(--accent)">
               {quoteLoading ? (
                 <div style={{ color: 'var(--text-tertiary)', display: 'flex', gap: 8, alignItems: 'center', fontSize: 13 }}><Spinner /> Generating quote</div>
@@ -2021,7 +2040,7 @@ export default function App() {
                 Edit profile
               </button>
             </OrbitPanel>
-          </RightOrbit>
+          </RightOrbit>}
         </div>
       )}
       {/* ── CONTACTS ─────────────────────────────────────────────────────────────── */}
@@ -2074,8 +2093,15 @@ export default function App() {
             )}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, 1fr)', gap: isMobile ? 8 : 10, marginBottom: '1rem' }}>
-            {[['All', stats.total, '#917aff', 'all'], ['Scheduled', stats.scheduled, '#4ade80', 'scheduled'], ['Completed', stats.completed, '#fbbf24', 'completed'], ['Followed up', stats.followedUp, '#f472b6', 'followed up']].map(([l, v, color, filter]) => (
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, minmax(0, 1fr))' : 'repeat(6, 1fr)', gap: isMobile ? 8 : 10, marginBottom: '1rem' }}>
+            {[
+              ['All', stats.total, '#917aff', 'all'],
+              ['Schedule', stats.schedule, '#8fe3ff', 'schedule'],
+              ['Follow up', stats.followUp, '#ff7aa8', 'follow up'],
+              ['Circle back', stats.circleBack, '#93c5fd', 'circle back'],
+              ['Scheduled', stats.scheduled, '#a7f3ba', 'scheduled'],
+              ['Done', stats.done, '#c5ff5a', 'done'],
+            ].map(([l, v, color, filter]) => (
               <div key={l} onClick={() => setContactFilter(contactFilter === filter ? 'all' : filter)}
                 style={{ background: contactFilter === filter ? `${color}15` : 'var(--surface-2)', border: `1px solid ${contactFilter === filter ? `${color}44` : 'var(--border)'}`, borderRadius: 'var(--radius-lg)', padding: isMobile ? '12px 8px' : '1rem', textAlign: 'center', position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'all 0.15s' }}>
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: color }} />
@@ -2091,10 +2117,10 @@ export default function App() {
             const due = contacts.filter(c =>
               c.nextAction !== 'one-time' &&
               c.nextAction !== 'done' &&
-              c.status !== 'followed up' && (
+              !isFinalStatus(c.status) && (
                 c.nextAction === 'follow-up' ||
                 (c.followUpDate && c.followUpDate <= today) ||
-                (c.status === 'completed' && !c.followUpText && !c.nextAction)
+                (normalizeStatus(c.status) === 'follow up' && !c.followUpText && !c.nextAction)
               )
             )
             if (!due.length) return null
@@ -2159,12 +2185,10 @@ export default function App() {
           {/* A-Z Directory or Grouped */}
           {(() => {
             const todayStr = new Date().toISOString().split('T')[0]
-            const STATUS_COLORS = { new: '#917aff', scheduled: '#4ade80', completed: '#fbbf24', 'followed up': '#f472b6' }
-            const STATUS_LABELS = { new: 'New', scheduled: 'Scheduled', completed: 'Completed', 'followed up': 'Followed Up' }
-
             const base = contactSearch.trim() ? filteredContacts
               : contactFilter === 'all' ? contacts
-              : contacts.filter(x => x.status === contactFilter)
+              : contactFilter === 'done' ? contacts.filter(x => isFinalStatus(x.status))
+              : contacts.filter(x => normalizeStatus(x.status) === contactFilter)
 
             // Grouped by how we met
             if (contactView === 'connection' && !contactSearch.trim()) {
@@ -2198,16 +2222,19 @@ export default function App() {
             // Grouped by status view (recently added feel)
             if (contactView === 'grouped' && !contactSearch.trim()) {
               const cats = [
-                { status: 'new', label: 'New - Reach Out', color: '#917aff' },
-                { status: 'scheduled', label: 'Scheduled Meetings', color: '#4ade80' },
-                { status: 'completed', label: 'Completed Chats', color: '#fbbf24' },
-                { status: 'followed up', label: 'Followed Up', color: '#f472b6' },
+                { status: 'schedule', label: 'Schedule', color: '#8fe3ff' },
+                { status: 'scheduled', label: 'Scheduled', color: '#a7f3ba' },
+                { status: 'follow up', label: 'Follow up', color: '#ff7aa8' },
+                { status: 'circle back', label: 'Circle back', color: '#93c5fd' },
+                { status: 'one & done', label: 'One & done', color: '#34d399' },
+                { status: 'followed up', label: 'Followed up', color: '#c5ff5a' },
+                { status: 'complete', label: 'Complete', color: '#d8d2c5' },
               ]
-              const toShow = contactFilter === 'all' ? cats : cats.filter(c => c.status === contactFilter)
+              const toShow = contactFilter === 'all' ? cats : contactFilter === 'done' ? cats.filter(c => isFinalStatus(c.status)) : cats.filter(c => c.status === contactFilter)
               return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                   {toShow.map(cat => {
-                    const catContacts = base.filter(x => x.status === cat.status)
+                    const catContacts = base.filter(x => normalizeStatus(x.status) === cat.status)
                     if (catContacts.length === 0) return null
                     return (
                       <div key={cat.status}>
@@ -2251,9 +2278,9 @@ export default function App() {
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                       {grouped[letter].map(person => {
-                        const followUpDue = person.followUpDate && person.followUpDate <= todayStr && person.nextAction !== 'done' && person.status !== 'followed up'
-                        const hasUpcoming = person.chatDate && person.chatDate >= todayStr && person.status === 'scheduled'
-                        const color = STATUS_COLORS[person.status] || '#917aff'
+                        const followUpDue = person.followUpDate && person.followUpDate <= todayStr && person.nextAction !== 'done' && !isFinalStatus(person.status)
+                        const hasUpcoming = person.chatDate && person.chatDate >= todayStr && normalizeStatus(person.status) === 'scheduled'
+                        const color = statusMeta(person.status).accent
                         return (
                           <div key={person.id} onClick={() => setDetail(person)}
                             style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', gap: isMobile ? 10 : 12, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 14, padding: isMobile ? '12px' : '12px 14px', cursor: 'pointer', transition: 'border-color 0.15s' }}
@@ -2268,7 +2295,7 @@ export default function App() {
                               </div>
                               {(() => {
                                 const fmtD = d => new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                                const ACT_LABELS = { connected: 'Connected', meeting_scheduled: 'Scheduled', meeting_completed: 'Met', followed_up: 'Followed up', follow_up_written: 'Follow-up sent' }
+                                const ACT_LABELS = { connected: 'Connected', meeting_scheduled: 'Scheduled', meeting_completed: 'Met', followed_up: 'Followed up', follow_up_written: 'Follow-up sent', status_schedule: 'Moved to schedule', status_circle_back: 'Circle back', status_one_done: 'One and done', status_complete: 'Complete' }
                                 const items = (person.activity || []).filter(a => ACT_LABELS[a.type])
                                 const connected = person.connectedDate || (person.id ? new Date(person.id).toISOString().split('T')[0] : null)
                                 if (!items.length && !connected) return null
@@ -2284,7 +2311,7 @@ export default function App() {
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0, maxWidth: isMobile ? 96 : 'none' }}>
                               <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20, background: color + '22', color, border: `1px solid ${color}44`, whiteSpace: 'nowrap' }}>
-                                {STATUS_LABELS[person.status] || person.status}
+                                {statusLabel(person.status)}
                               </span>
                               <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                                 {hasUpcoming && !isMobile && (
@@ -2341,7 +2368,7 @@ export default function App() {
 
           {/* ── Follow-up Reminders ── */}
           {(() => {
-            const reminders = contacts.filter(c => c.followUpDate && c.nextAction !== 'done' && c.status !== 'followed up').sort((a, b) => new Date(a.followUpDate) - new Date(b.followUpDate))
+            const reminders = contacts.filter(c => c.followUpDate && c.nextAction !== 'done' && !isFinalStatus(c.status)).sort((a, b) => new Date(a.followUpDate) - new Date(b.followUpDate))
             if (!reminders.length) return null
             const todayStr2 = new Date().toISOString().split('T')[0]
             return (

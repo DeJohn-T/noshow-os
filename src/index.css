@@ -150,6 +150,14 @@ body {
   align-items: start;
 }
 
+.home-action-grid {
+  align-items: stretch;
+}
+
+.home-action-tile {
+  min-height: 86px !important;
+}
+
 .left-rail {
   position: sticky;
   top: 0;
@@ -254,6 +262,10 @@ body {
   .brief-desk-grid {
     grid-template-columns: 1fr;
   }
+
+  .home-shell {
+    gap: 12px;
+  }
 }
 
 @media (max-width: 640px) {
@@ -328,5 +340,30 @@ body {
   .tab-bar-scroll {
     margin-left: -2px;
     margin-right: -2px;
+  }
+
+  .home-primary {
+    gap: 12px !important;
+  }
+
+  .home-action-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .home-action-tile {
+    min-height: 76px !important;
+    padding: 11px !important;
+  }
+
+  .home-action-tile .section-kicker {
+    max-width: 82px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .home-priority-grid {
+    gap: 10px !important;
   }
 }

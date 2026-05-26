@@ -97,9 +97,9 @@ export function OrbitPanel({ title, icon: Icon, accent = 'var(--cyan)', action, 
   )
 }
 
-export function MetricTile({ label, value, icon: Icon, accent = 'var(--accent)', onClick }) {
+export function MetricTile({ label, value, icon: Icon, accent = 'var(--accent)', onClick, className = '' }) {
   return (
-    <button onClick={onClick} style={{ textAlign: 'left', background: 'rgba(244,247,249,0.04)', border: '1px solid var(--border)', borderRadius: 12, padding: 14, color: 'var(--text-primary)', cursor: onClick ? 'pointer' : 'default', minHeight: 92 }}>
+    <button className={className} onClick={onClick} style={{ textAlign: 'left', background: 'rgba(244,247,249,0.04)', border: '1px solid var(--border)', borderRadius: 12, padding: 14, color: 'var(--text-primary)', cursor: onClick ? 'pointer' : 'default', minHeight: 92 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <span className="section-kicker">{label}</span>
         {Icon && <Icon size={17} color={accent} strokeWidth={1.8} aria-hidden="true" />}
@@ -109,8 +109,8 @@ export function MetricTile({ label, value, icon: Icon, accent = 'var(--accent)',
   )
 }
 
-export function RightOrbit({ children }) {
-  return <aside style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{children}</aside>
+export function RightOrbit({ children, className = '' }) {
+  return <aside className={className} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{children}</aside>
 }
 
 export function TodayDesk({ contact, stats, onOpenContact, onOpenContacts, onAddContact }) {
@@ -121,7 +121,7 @@ export function TodayDesk({ contact, stats, onOpenContact, onOpenContacts, onAdd
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 20, alignItems: 'end' }}>
           <div>
             <h1 className="today-desk-title" style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(32px, 5vw, 58px)', lineHeight: 0.95, letterSpacing: 0, marginBottom: 14 }}>No meeting queued</h1>
-            <p style={{ color: 'var(--text-secondary)', maxWidth: 620, lineHeight: 1.7, margin: 0 }}>Schedule a chat or choose who you want to prepare for. The desk only promotes upcoming meetings now, so completed contacts stay out of the lead spot.</p>
+            <p style={{ color: 'var(--text-secondary)', maxWidth: 620, lineHeight: 1.7, margin: 0 }}>Schedule a chat or choose who you want to prepare for. The desk only promotes calls that are actually coming up soon.</p>
           </div>
           <div style={{ display: 'grid', gap: 10 }}>
             <div style={{ background: 'rgba(244,247,249,0.04)', border: '1px solid var(--border)', borderRadius: 12, padding: 14 }}>

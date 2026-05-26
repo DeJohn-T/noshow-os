@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, UserPlus } from 'lucide-react'
 import { Avatar, StatusBadge } from './UI'
-import { formatDate } from '../lib/utils'
+import { formatDate, normalizeStatus, statusMeta } from '../lib/utils'
 
 function getLogoUrl(company) {
   if (!company) return null
@@ -18,13 +18,8 @@ function getLogoUrl(company) {
 }
 
 function getStatusColor(status) {
-  switch (status) {
-    case 'new': return { bg: 'rgba(139,127,255,0.08)', border: 'rgba(139,127,255,0.25)', accent: '#a78bfa' }
-    case 'scheduled': return { bg: 'rgba(74,222,128,0.08)', border: 'rgba(74,222,128,0.25)', accent: '#4ade80' }
-    case 'completed': return { bg: 'rgba(251,191,36,0.08)', border: 'rgba(251,191,36,0.25)', accent: '#fbbf24' }
-    case 'followed up': return { bg: 'rgba(244,114,182,0.08)', border: 'rgba(244,114,182,0.25)', accent: '#f472b6' }
-    default: return { bg: 'var(--surface)', border: 'var(--border)', accent: 'var(--text-tertiary)' }
-  }
+  const meta = statusMeta(status)
+  return { bg: meta.bg, border: meta.border, accent: meta.accent }
 }
 
 function LogoBg({ company }) {
@@ -120,10 +115,10 @@ export function ContactList({ contacts, onSelect, isMobile = false }) {
 
 export function UpcomingList({ contacts, onSelect, onSchedule, isMobile = false }) {
   const upcoming = contacts
-    .filter(x => x.chatDate && x.status === 'scheduled')
+    .filter(x => x.chatDate && normalizeStatus(x.status) === 'scheduled')
     .sort((a, b) => new Date(a.chatDate + 'T12:00:00') - new Date(b.chatDate + 'T12:00:00'))
 
-  const needsScheduling = contacts.filter(x => x.chatDate && x.status !== 'scheduled' && new Date(x.chatDate + 'T12:00:00') > new Date())
+  const needsScheduling = contacts.filter(x => x.chatDate && normalizeStatus(x.status) !== 'scheduled' && new Date(x.chatDate + 'T12:00:00') > new Date())
 
   if (upcoming.length === 0 && needsScheduling.length === 0) {
     return (
@@ -240,7 +235,7 @@ export function MonthCalendar({ contacts, onSelect, onDayClick, isMobile = false
 
   const getMeetingsForDay = (day) => {
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-    return contacts.filter(c => c.chatDate === dateStr && c.status === 'scheduled')
+    return contacts.filter(c => c.chatDate === dateStr && normalizeStatus(c.status) === 'scheduled')
   }
 
   const today = new Date()
