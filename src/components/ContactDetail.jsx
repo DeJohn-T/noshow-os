@@ -546,7 +546,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
                 <button onClick={() => {
                   const updated = { ...c, name: editName.trim() || c.name, role: editRole.trim(), company: editCompany.trim(), howWeMet: editHowWeMet }
                   setC(updated); onUpdate({ ...updated, linkedinUrl, parsedProfile: parsed, brief, followUpText: fuText, pdfName }); setEditingInfo(false)
-                }} style={{ fontSize: 12, padding: '4px 12px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: 'var(--font-sans)', fontWeight: 600 }}>Save</button>
+                }} style={{ fontSize: 12, padding: '4px 12px', background: 'var(--accent)', color: 'var(--accent-fg)', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: 'var(--font-sans)', fontWeight: 600 }}>Save</button>
                 <button onClick={() => { setEditName(c.name); setEditRole(c.role || ''); setEditCompany(c.company || ''); setEditHowWeMet(c.howWeMet || ''); setEditingInfo(false) }} style={{ fontSize: 12, padding: '4px 12px', background: 'var(--surface-3)', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 6, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Cancel</button>
               </div>
             </div>
@@ -730,7 +730,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
                     <button onClick={() => { setAddingRole(false); setNewRoleTitle(''); setNewRoleCompany(''); setNewRolePeriod('') }}
                       style={{ flex: 1, background: 'var(--surface-2)', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 7, padding: '7px', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Cancel</button>
                     <button onClick={savePastRole}
-                      style={{ flex: 2, background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 7, padding: '7px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>Save</button>
+                      style={{ flex: 2, background: 'var(--accent)', color: 'var(--accent-fg)', border: 'none', borderRadius: 7, padding: '7px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>Save</button>
                   </div>
                 </div>
               )}
@@ -791,7 +791,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
                               const updated = { ...c, connectedDate: connectedDateInput, activity: (c.activity || []).map(ev => ev.type === 'connected' ? { ...ev, date: connectedDateInput } : ev) }
                               setC(updated); onUpdate({ ...updated, linkedinUrl, parsedProfile: parsed, brief, followUpText: fuText, pdfName, pastRoles, notesSummary, meetingNotes })
                               setEditingConnectedDate(false)
-                            }} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 6, padding: '3px 10px', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>Save</button>
+                            }} style={{ background: 'var(--accent)', color: 'var(--accent-fg)', border: 'none', borderRadius: 6, padding: '3px 10px', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>Save</button>
                             <button onClick={() => setEditingConnectedDate(false)} style={{ background: 'none', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer', fontSize: 12 }}>Cancel</button>
                           </div>
                         ) : (

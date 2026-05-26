@@ -38,7 +38,7 @@ export function JobSearch({ profile, resume, skills, cachedJobs, setCachedJobs, 
     <div style={{ textAlign: 'center', padding: isMobile ? '2.25rem 1rem' : '3rem' }}>
       <BriefcaseBusiness size={28} style={{ marginBottom: 12, opacity: 0.4 }} aria-hidden="true" />
       <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 16 }}>No matches yet - generate your first list.</div>
-      <button onClick={handleGenerate} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>
+      <button onClick={handleGenerate} style={{ background: 'var(--accent)', color: 'var(--accent-fg)', border: 'none', borderRadius: 8, padding: '10px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>
         Generate matches
       </button>
     </div>

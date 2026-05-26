@@ -282,7 +282,7 @@ function TodoInput({ onAdd }) {
         placeholder="Add a task..."
         style={{ flex: 1, background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '8px 12px', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)' }} />
       {input.trim() && (
-        <button onClick={add} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>Add</button>
+        <button onClick={add} style={{ background: 'var(--accent)', color: 'var(--accent-fg)', border: 'none', borderRadius: 8, padding: '8px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>Add</button>
       )}
     </div>
   )
@@ -414,7 +414,7 @@ function SkillsInput({ skills, onChange, onPendingChange }) {
           )}
         </div>
         {input.trim() && (
-          <button onClick={() => addSkill()} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)', flexShrink: 0 }}>Add</button>
+          <button onClick={() => addSkill()} style={{ background: 'var(--accent)', color: 'var(--accent-fg)', border: 'none', borderRadius: 8, padding: '8px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)', flexShrink: 0 }}>Add</button>
         )}
       </div>
     </div>
@@ -515,7 +515,7 @@ function DebriefModal({ contact, onSave, onClose, isMobile = false }) {
       </div>
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', flexDirection: isMobile ? 'column-reverse' : 'row' }}>
         <button onClick={onClose} style={{ background: 'var(--surface-3)', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 8, padding: '9px 18px', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-sans)', width: isMobile ? '100%' : 'auto' }}>Skip</button>
-        <button onClick={handleSave} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 22px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)', width: isMobile ? '100%' : 'auto' }}>Save debrief</button>
+        <button onClick={handleSave} style={{ background: 'var(--accent)', color: 'var(--accent-fg)', border: 'none', borderRadius: 8, padding: '9px 22px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)', width: isMobile ? '100%' : 'auto' }}>Save debrief</button>
       </div>
     </div>
   )
@@ -550,7 +550,7 @@ function BrainDumpPanel({ onClose, user, isMobile = false }) {
           placeholder="Thought, idea, thing to remember..."
           autoFocus
           style={{ flex: 1, background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '7px 10px', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)' }} />
-        <button onClick={add} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 12px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>+</button>
+        <button onClick={add} style={{ background: 'var(--accent)', color: 'var(--accent-fg)', border: 'none', borderRadius: 8, padding: '7px 12px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>+</button>
       </div>
       <div style={{ maxHeight: 260, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
         {notes.length === 0 && <div style={{ fontSize: 13, color: 'var(--text-tertiary)', textAlign: 'center', padding: '1rem' }}>Nothing yet - dump your brain here</div>}
@@ -844,7 +844,7 @@ function EditProfileModal({ profile, onSave, onClose, onLogout, isMobile }) {
           <button onClick={() => {
             const finalSkills = pendingSkill.trim() && !skills.includes(pendingSkill.trim()) ? [...skills, pendingSkill.trim()] : skills
             onSave({ ...profile, name: name.trim(), school: school.trim(), major: major.trim(), goals: goals.trim(), skills: finalSkills })
-          }} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)', width: isMobile ? '100%' : 'auto' }}>Save</button>
+          }} style={{ background: 'var(--accent)', color: 'var(--accent-fg)', border: 'none', borderRadius: 8, padding: '10px 22px', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)', width: isMobile ? '100%' : 'auto' }}>Save</button>
         </div>
       </div>
     </div>
@@ -895,7 +895,7 @@ function AddModal({ onAdd, onClose, contacts = [], isMobile = false }) {
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', flexDirection: isMobile ? 'column-reverse' : 'row' }}>
         <button onClick={onClose} style={{ background: 'var(--surface-3)', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 18px', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-sans)', width: isMobile ? '100%' : 'auto' }}>Cancel</button>
         <button onClick={() => { if (name.trim()) onAdd({ name, role, company, howWeMet }) }} disabled={!name.trim()}
-          style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontSize: 14, fontWeight: 600, cursor: name.trim() ? 'pointer' : 'not-allowed', opacity: name.trim() ? 1 : 0.4, fontFamily: 'var(--font-display)', width: isMobile ? '100%' : 'auto' }}>
+          style={{ background: 'var(--accent)', color: 'var(--accent-fg)', border: 'none', borderRadius: 8, padding: '10px 22px', fontSize: 14, fontWeight: 600, cursor: name.trim() ? 'pointer' : 'not-allowed', opacity: name.trim() ? 1 : 0.4, fontFamily: 'var(--font-display)', width: isMobile ? '100%' : 'auto' }}>
           Add contact
         </button>
       </div>
@@ -949,7 +949,7 @@ function ScheduleModal({ contacts, onSchedule, onClose, prefillDate, isMobile = 
       </div>
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', flexDirection: isMobile ? 'column-reverse' : 'row' }}>
         <button onClick={onClose} style={{ background: 'var(--surface-3)', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 18px', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-sans)', width: isMobile ? '100%' : 'auto' }}>Cancel</button>
-        <button onClick={handleSchedule} disabled={!date} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontSize: 14, fontWeight: 600, cursor: date ? 'pointer' : 'not-allowed', opacity: date ? 1 : 0.4, fontFamily: 'var(--font-display)', width: isMobile ? '100%' : 'auto' }}>
+        <button onClick={handleSchedule} disabled={!date} style={{ background: 'var(--accent)', color: 'var(--accent-fg)', border: 'none', borderRadius: 8, padding: '10px 22px', fontSize: 14, fontWeight: 600, cursor: date ? 'pointer' : 'not-allowed', opacity: date ? 1 : 0.4, fontFamily: 'var(--font-display)', width: isMobile ? '100%' : 'auto' }}>
           Schedule
         </button>
       </div>
@@ -998,7 +998,7 @@ function ScheduledTasksPanel({ tasks, contacts, onAdd, onToggle, onDelete, isMob
             {contacts.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
           </select>
           <button onClick={handleAdd} disabled={!text.trim()}
-            style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 16px', fontSize: 13, fontWeight: 600, cursor: text.trim() ? 'pointer' : 'not-allowed', opacity: text.trim() ? 1 : 0.4, fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap', width: isMobile ? '100%' : 'auto' }}>
+            style={{ background: 'var(--accent)', color: 'var(--accent-fg)', border: 'none', borderRadius: 8, padding: '9px 16px', fontSize: 13, fontWeight: 600, cursor: text.trim() ? 'pointer' : 'not-allowed', opacity: text.trim() ? 1 : 0.4, fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap', width: isMobile ? '100%' : 'auto' }}>
             + Add
           </button>
         </div>
@@ -1250,7 +1250,7 @@ function ResumeTab({ resume, profile, onUpdateResume, onUpdateProfile, isMobile 
             <div style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 800, marginBottom: 6 }}>Drop your resume here</div>
             <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 20 }}>PDF only. NoShow OS will parse it and give you personalized feedback.</div>
             <button onClick={() => fileRef.current?.click()}
-              style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 24px', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
+              style={{ background: 'var(--accent)', color: 'var(--accent-fg)', border: 'none', borderRadius: 10, padding: '10px 24px', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
               Choose file
             </button>
           </div>
@@ -2366,7 +2366,7 @@ export default function App() {
               <CalendarDays size={22} strokeWidth={1.8} aria-hidden="true" />
               Calendar
             </div>
-            <button onClick={() => setShowSchedule(true)} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)', width: isMobile ? '100%' : 'auto' }}>
+            <button onClick={() => setShowSchedule(true)} style={{ background: 'var(--accent)', color: 'var(--accent-fg)', border: 'none', borderRadius: 8, padding: '9px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)', width: isMobile ? '100%' : 'auto' }}>
               + Schedule Meeting
             </button>
           </div>

@@ -142,7 +142,7 @@ export default function NotionImport({ onImport, onClose, endpoint, isMobile = f
               style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 12, borderRadius: 12, padding: '12px 14px', fontSize: 13 }}
             />
             {error && <div style={{ fontSize: 12, color: '#f87171', marginBottom: 12, padding: '8px 12px', background: 'rgba(239,68,68,0.08)', borderRadius: 8 }}>{error}</div>}
-            <button onClick={extract} disabled={loading} style={{ width: '100%', background: loading ? 'var(--accent-dim)' : 'var(--accent)', color: '#fff', border: 'none', borderRadius: 12, padding: '14px', fontSize: 15, fontWeight: 700, cursor: loading ? 'default' : 'pointer', fontFamily: 'var(--font-display)', opacity: loading ? 0.8 : 1 }}>
+            <button onClick={extract} disabled={loading} style={{ width: '100%', background: loading ? 'var(--accent-dim)' : 'var(--accent)', color: loading ? 'var(--accent)' : 'var(--accent-fg)', border: 'none', borderRadius: 12, padding: '14px', fontSize: 15, fontWeight: 700, cursor: loading ? 'default' : 'pointer', fontFamily: 'var(--font-display)', opacity: loading ? 0.8 : 1 }}>
               {loading ? 'Extracting contacts...' : 'Extract Contacts'}
             </button>
           </>
@@ -176,7 +176,7 @@ export default function NotionImport({ onImport, onClose, endpoint, isMobile = f
               <button onClick={() => setPreview(null)} style={{ flex: 1, background: 'var(--surface-3)', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 10, padding: '12px', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
                 Back
               </button>
-              <button onClick={confirm} style={{ flex: 2, background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 10, padding: '12px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>
+              <button onClick={confirm} style={{ flex: 2, background: 'var(--accent)', color: 'var(--accent-fg)', border: 'none', borderRadius: 10, padding: '12px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>
                 Add {preview.length} Contact{preview.length !== 1 ? 's' : ''}
                 <ArrowRight size={15} strokeWidth={1.8} style={{ verticalAlign: -2, marginLeft: 6 }} aria-hidden="true" />
               </button>
@@ -206,7 +206,7 @@ export default function NotionImport({ onImport, onClose, endpoint, isMobile = f
               <textarea value={manualNotes} onChange={e => setManualNotes(e.target.value)} placeholder="How you met, what you talked about, anything relevant..." rows={4}
                 style={{ ...inputStyle, resize: 'none', lineHeight: 1.6 }} />
             </label>
-            <button onClick={addManual} disabled={!manualName.trim()} style={{ width: '100%', background: manualName.trim() ? 'var(--accent)' : 'var(--surface-3)', color: manualName.trim() ? '#fff' : 'var(--text-tertiary)', border: 'none', borderRadius: 12, padding: '13px', fontSize: 15, fontWeight: 700, cursor: manualName.trim() ? 'pointer' : 'default', fontFamily: 'var(--font-display)', marginTop: 4 }}>
+            <button onClick={addManual} disabled={!manualName.trim()} style={{ width: '100%', background: manualName.trim() ? 'var(--accent)' : 'var(--surface-3)', color: manualName.trim() ? 'var(--accent-fg)' : 'var(--text-tertiary)', border: 'none', borderRadius: 12, padding: '13px', fontSize: 15, fontWeight: 700, cursor: manualName.trim() ? 'pointer' : 'default', fontFamily: 'var(--font-display)', marginTop: 4 }}>
               Add Contact
               <ArrowRight size={15} strokeWidth={1.8} style={{ verticalAlign: -2, marginLeft: 6 }} aria-hidden="true" />
             </button>
