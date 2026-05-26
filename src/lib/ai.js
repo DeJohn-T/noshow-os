@@ -1,5 +1,5 @@
 // lib/ai.js
-// In dev, Vite proxies /api/anthropic/v1/messages → Anthropic directly
+// In dev, Vite proxies /api/anthropic/v1/messages to Anthropic directly
 // In production (Vercel), /api/anthropic is a serverless function
 const API = import.meta.env.DEV
   ? '/api/anthropic/v1/messages'

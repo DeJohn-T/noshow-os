@@ -4,7 +4,10 @@ import {
   BookOpen,
   BriefcaseBusiness,
   Bell,
+  Check,
   CheckCircle2,
+  ChevronDown,
+  ChevronRight,
   CircleQuestionMark,
   Download,
   FileText,
@@ -16,6 +19,7 @@ import {
   Target,
   Upload,
   Users,
+  X,
 } from 'lucide-react'
 import { Avatar, StatusBadge, Button, Input, Textarea, RichNotes, Tabs, Notice, Spinner, AIOutput, SectionLabel, Chip, CompanyLogo } from './UI'
 import { parseLinkedInPDF, generateBrief, generateFollowUp, callClaude, callClaudeChat } from '../lib/ai'
@@ -114,7 +118,7 @@ function ExportButton({ text, contactName, label = 'follow-up' }) {
     <div>
       <button onClick={() => setOpen(!open)} style={{ fontSize: 12, color: 'var(--text-secondary)', background: 'var(--surface-3)', border: '1px solid var(--border-strong)', borderRadius: 'var(--radius-md)', padding: '5px 12px', cursor: 'pointer', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', gap: 4 }}>
         <Download size={13} strokeWidth={1.8} aria-hidden="true" />
-        Export {open ? '▾' : '▸'}
+        Export {open ? <ChevronDown size={13} strokeWidth={1.8} aria-hidden="true" /> : <ChevronRight size={13} strokeWidth={1.8} aria-hidden="true" />}
       </button>
       {open && (
         <div style={{ marginTop: 6, background: 'var(--surface-3)', border: '1px solid var(--border-strong)', borderRadius: 12, padding: 6 }}>
@@ -262,10 +266,10 @@ function getInsights(contact, parsed) {
   }
   const tips = [
     ` Follow up within 24 hours - the connection is freshest right after you meet`,
-    ` Warm intros are 5× more likely to get a response than cold outreach`,
+    ` Warm intros are 5 times more likely to get a response than cold outreach`,
     ` Keep follow-ups under 3 sentences - specific and genuine beats long and generic`,
     ` Mention one specific thing from your conversation to make your message stand out`,
-    ` Reaching out 3× per week to new contacts compounds your network fast`,
+    ` Reaching out 3 times per week to new contacts compounds your network fast`,
     ` Ask for a 15-minute coffee chat - shorter requests get more yes's`,
     ` Reconnect with dormant contacts by sharing something relevant to them`,
     ` People remember how you made them feel, not everything you said`,
@@ -306,7 +310,7 @@ function InsightCard({ contact, parsed }) {
   return (
     <div style={{ background: 'linear-gradient(135deg, rgba(139,127,255,0.1), rgba(99,179,255,0.06))', border: '1px solid rgba(139,127,255,0.25)', borderRadius: 16, padding: '14px 16px', marginBottom: 14, overflow: 'hidden' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-        <div style={{ fontSize: 10, color: '#c4b8ff', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>✦ About {contact.name?.split(' ')[0]}</div>
+        <div style={{ fontSize: 10, color: '#c4b8ff', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: 6 }}><Sparkles size={13} strokeWidth={1.8} aria-hidden="true" /> About {contact.name?.split(' ')[0]}</div>
         <div style={{ display: 'flex', gap: 4 }}>
           {insights.map((_, i) => (
             <div key={i} style={{ width: i === idx ? 16 : 5, height: 5, borderRadius: 3, background: i === idx ? '#c4b8ff' : 'rgba(196,184,255,0.2)', transition: 'all 0.3s' }} />
@@ -565,7 +569,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
           )}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 20, lineHeight: 1 }}>✕</button>
+          <button onClick={onClose} aria-label="Close contact detail" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', lineHeight: 1, display: 'flex', alignItems: 'center' }}><X size={18} strokeWidth={1.8} aria-hidden="true" /></button>
           <select value={c.status} onChange={e => upd('status', e.target.value)} style={{ fontSize: 12, padding: '4px 8px', borderRadius: 'var(--radius-full)', border: '1px solid var(--border-strong)', background: 'var(--surface-3)', color: 'var(--text-primary)', cursor: 'pointer' }}>
             {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
@@ -610,7 +614,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
                 const lastFu = (c.activity || []).filter(a => ['followed_up', 'follow_up_written'].includes(a.type)).slice(-1)[0]
                 if (!lastFu) return null
                 const d = new Date(lastFu.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                return <span style={{ fontSize: 11, color: 'var(--success)', fontWeight: 500 }}>✓ Followed up {d}</span>
+                return <span style={{ fontSize: 11, color: 'var(--success)', fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: 4 }}><Check size={12} strokeWidth={2.2} aria-hidden="true" /> Followed up {d}</span>
               })()}
             </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: (c.nextAction === 'follow-up' || c.nextAction === 'circle-back') ? 14 : 0 }}>
@@ -648,7 +652,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
                     const updates = { followUpDate: today, nextAction: 'done', status: 'followed up' }
                     const updated = { ...c, ...updates }; setC(updated); saveAll(updates)
                   }} style={{ background: 'rgba(74,222,128,0.15)', border: '1px solid rgba(74,222,128,0.3)', color: '#4ade80', borderRadius: 8, padding: '4px 10px', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap' }}>
-                    ✓ Already did it
+                    <Check size={12} strokeWidth={2.2} style={{ verticalAlign: -2, marginRight: 4 }} aria-hidden="true" /> Already did it
                   </button>
                 </div>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -664,7 +668,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
                   </button>
                   <button onClick={addToGoogleCalendar} disabled={calLoading2 || calAdded}
                     style={{ background: calAdded ? 'rgba(74,222,128,0.2)' : 'rgba(99,179,255,0.15)', color: calAdded ? '#4ade80' : '#93c5fd', border: `1px solid ${calAdded ? 'rgba(74,222,128,0.3)' : 'rgba(99,179,255,0.3)'}`, borderRadius: 8, padding: '7px 12px', fontSize: 12, cursor: calLoading2 ? 'default' : 'pointer', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}>
-                    {calLoading2 ? <><Spinner />Adding...</> : calAdded ? '✓ Added!' : ' Add to Google Calendar'}
+                    {calLoading2 ? <><Spinner />Adding...</> : calAdded ? <><Check size={12} strokeWidth={2.2} aria-hidden="true" />Added</> : 'Add to Google Calendar'}
                   </button>
                 </div>
               </div>
@@ -709,7 +713,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
                         </span>
                       </div>
                     </div>
-                    <button onClick={() => removePastRole(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 16, lineHeight: 1, padding: '2px 4px', flexShrink: 0 }}>×</button>
+                    <button onClick={() => removePastRole(i)} aria-label="Remove past role" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', lineHeight: 1, padding: '2px 4px', flexShrink: 0 }}><X size={14} strokeWidth={1.8} aria-hidden="true" /></button>
                   </div>
                 ))}
               </div>
@@ -872,7 +876,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
               {(notesSummary || c.notes) && (
                 <div style={{ background: 'linear-gradient(135deg, rgba(139,127,255,0.08), rgba(99,179,255,0.05))', border: '1px solid rgba(139,127,255,0.2)', borderRadius: 14, padding: '14px 16px', marginBottom: 16 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: notesSummary ? 10 : 0 }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#c4b8ff' }}>✦ AI Summary</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#c4b8ff', display: 'flex', alignItems: 'center', gap: 6 }}><Sparkles size={13} strokeWidth={1.8} aria-hidden="true" /> AI Summary</div>
                     <Button size="sm" onClick={generateNotesSummary} disabled={summaryLoading}>
                       {summaryLoading ? <><Spinner />Generating...</> : notesSummary ? 'Regenerate' : 'Generate Summary'}
                     </Button>
@@ -955,7 +959,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
 
           <div style={{ borderTop: '1px solid var(--border)', margin: '16px 0' }} />
           <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 6 }}>Import PDF</div>
-          <Notice variant="blue" style={{ marginBottom: 10 }}>LinkedIn profile → More → Save to PDF → drop below</Notice>
+          <Notice variant="blue" style={{ marginBottom: 10 }}>LinkedIn profile, More, Save to PDF, then drop below</Notice>
           <div
             onDragOver={e => { e.preventDefault(); setPdfDragging(true) }}
             onDragLeave={() => setPdfDragging(false)}
@@ -1026,7 +1030,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
               )}
               {parsed.interests?.length > 0 && (
                 <div style={{ marginBottom: 12 }}>
-                  <SectionLabel>✦ Interests</SectionLabel>
+                  <SectionLabel>Interests</SectionLabel>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>{parsed.interests.map((x, i) => <Chip key={i} kind="interest">{x}</Chip>)}</div>
                 </div>
               )}
@@ -1122,7 +1126,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
             <div style={{ marginTop: 20 }}>
               <div style={{ borderTop: '1px solid var(--border)', margin: '16px 0' }} />
               <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
-                ✦ Ask anything about this brief
+                Ask anything about this brief
               </div>
 
               {/* Messages */}

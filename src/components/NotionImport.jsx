@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { ArrowRight, X } from 'lucide-react'
 
 const PROMPT = `You are extracting contact information from networking notes.
 From the text below, identify every distinct person mentioned. For each person return a JSON object.
@@ -121,7 +122,7 @@ export default function NotionImport({ onImport, onClose, endpoint }) {
             <div style={{ fontSize: 18, fontWeight: 800, fontFamily: 'var(--font-display)' }}>Import Contact</div>
             <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 2 }}>Paste notes or add manually</div>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 22, lineHeight: 1 }}>✕</button>
+          <button onClick={onClose} aria-label="Close import" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', lineHeight: 1, display: 'flex', alignItems: 'center' }}><X size={18} strokeWidth={1.8} aria-hidden="true" /></button>
         </div>
 
         {/* Tab bar */}
@@ -176,7 +177,8 @@ export default function NotionImport({ onImport, onClose, endpoint }) {
                 Back
               </button>
               <button onClick={confirm} style={{ flex: 2, background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 10, padding: '12px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>
-                Add {preview.length} Contact{preview.length !== 1 ? 's' : ''} →
+                Add {preview.length} Contact{preview.length !== 1 ? 's' : ''}
+                <ArrowRight size={15} strokeWidth={1.8} style={{ verticalAlign: -2, marginLeft: 6 }} aria-hidden="true" />
               </button>
             </div>
           </>
@@ -205,7 +207,8 @@ export default function NotionImport({ onImport, onClose, endpoint }) {
                 style={{ ...inputStyle, resize: 'none', lineHeight: 1.6 }} />
             </label>
             <button onClick={addManual} disabled={!manualName.trim()} style={{ width: '100%', background: manualName.trim() ? 'var(--accent)' : 'var(--surface-3)', color: manualName.trim() ? '#fff' : 'var(--text-tertiary)', border: 'none', borderRadius: 12, padding: '13px', fontSize: 15, fontWeight: 700, cursor: manualName.trim() ? 'pointer' : 'default', fontFamily: 'var(--font-display)', marginTop: 4 }}>
-              Add Contact →
+              Add Contact
+              <ArrowRight size={15} strokeWidth={1.8} style={{ verticalAlign: -2, marginLeft: 6 }} aria-hidden="true" />
             </button>
           </div>
         )}

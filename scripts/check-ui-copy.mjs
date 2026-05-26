@@ -6,6 +6,7 @@ const ignoredDirs = new Set(['node_modules', 'dist', 'build'])
 const sourceExtensions = new Set(['.js', '.jsx', '.ts', '.tsx', '.css', '.html'])
 const emojiRegex = /\p{Extended_Pictographic}/u
 const emDashRegex = /—/
+const decorativeGlyphRegex = /[★‹›✦✕✓↺▾▸→←↗⬆×]/
 
 function extensionOf(file) {
   const match = file.match(/\.[^.]+$/)
@@ -35,6 +36,9 @@ for (const file of walk(root)) {
     if (emDashRegex.test(line)) {
       failures.push(`${file}:${index + 1}: em dash found`)
     }
+    if (decorativeGlyphRegex.test(line)) {
+      failures.push(`${file}:${index + 1}: decorative glyph found, use lucide-react or plain text`)
+    }
   })
 }
 
@@ -43,4 +47,4 @@ if (failures.length) {
   process.exit(1)
 }
 
-console.log('UI copy audit passed: no emoji glyphs or em dashes found in src/.')
+console.log('UI copy audit passed: no emoji, em dash, or decorative icon glyphs found in src/.')

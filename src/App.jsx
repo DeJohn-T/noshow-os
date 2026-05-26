@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react'
 import {
   Bell,
   CalendarDays,
+  ArrowRight,
   Check,
   CheckCircle2,
   ChevronLeft,
@@ -308,7 +309,7 @@ function TodoList({ todos, onToggle, onDelete }) {
                 <Check size={12} color="var(--accent)" strokeWidth={2.2} aria-hidden="true" />
               </button>
               <span style={{ flex: 1, fontSize: 13, color: 'var(--text-primary)' }}>{t.text}</span>
-              <button onClick={() => onDelete(t.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 16, lineHeight: 1, padding: '2px 4px' }}>×</button>
+              <button onClick={() => onDelete(t.id)} aria-label="Delete task" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', lineHeight: 1, padding: '2px 4px' }}><X size={14} strokeWidth={1.8} aria-hidden="true" /></button>
             </div>
           ))}
         </div>
@@ -321,7 +322,7 @@ function TodoList({ todos, onToggle, onDelete }) {
                 <Check size={12} color="#fff" strokeWidth={2.2} aria-hidden="true" />
               </button>
               <span style={{ flex: 1, fontSize: 13, color: 'var(--text-tertiary)' }}>{t.text}</span>
-              <button onClick={() => onDelete(t.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 16, lineHeight: 1, padding: '2px 4px' }}>×</button>
+              <button onClick={() => onDelete(t.id)} aria-label="Delete task" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', lineHeight: 1, padding: '2px 4px' }}><X size={14} strokeWidth={1.8} aria-hidden="true" /></button>
             </div>
           ))}
         </div>
@@ -385,7 +386,7 @@ function SkillsInput({ skills, onChange, onPendingChange }) {
         {skills.map(s => (
           <span key={s} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--accent-dim)', border: '1px solid var(--accent-glow)', color: '#c4bfff', borderRadius: 100, padding: '5px 12px', fontSize: 13 }}>
             {s}
-            <button onClick={() => remove(s)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(196,191,255,0.5)', fontSize: 14, lineHeight: 1, padding: 0 }}>×</button>
+            <button onClick={() => remove(s)} aria-label={`Remove ${s}`} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(196,191,255,0.5)', lineHeight: 1, padding: 0 }}><X size={13} strokeWidth={1.8} aria-hidden="true" /></button>
           </span>
         ))}
       </div>
@@ -556,7 +557,7 @@ function BrainDumpPanel({ onClose, user }) {
               <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.5 }}>{n.text}</div>
               <div style={{ fontSize: 10, color: 'var(--text-tertiary)', marginTop: 3 }}>{n.ts}</div>
             </div>
-            <button onClick={() => remove(n.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 15, lineHeight: 1, padding: '2px 4px', flexShrink: 0 }}>×</button>
+            <button onClick={() => remove(n.id)} aria-label="Delete note" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', lineHeight: 1, padding: '2px 4px', flexShrink: 0 }}><X size={14} strokeWidth={1.8} aria-hidden="true" /></button>
           </div>
         ))}
       </div>
@@ -1018,7 +1019,7 @@ function ScheduledTasksPanel({ tasks, contacts, onAdd, onToggle, onDelete }) {
                     {dateLabel && <span style={{ fontSize: 11, color: overdue ? '#f87171' : 'var(--text-tertiary)' }}> {dateLabel}{overdue ? ' · overdue' : ''}</span>}
                   </div>
                 </div>
-                <button onClick={() => onDelete(task.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 16, lineHeight: 1, padding: 4 }}>×</button>
+                <button onClick={() => onDelete(task.id)} aria-label="Delete scheduled task" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', lineHeight: 1, padding: 4 }}><X size={14} strokeWidth={1.8} aria-hidden="true" /></button>
               </div>
             )
           })}
@@ -1173,7 +1174,7 @@ function ResumeTab({ resume, profile, onUpdateResume }) {
                 <div>
                   <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Quick wins</div>
                   {analysis.quickWins?.map((w, i) => (
-                    <div key={i} style={{ fontSize: 13, color: 'var(--text-primary)', marginBottom: 6, lineHeight: 1.6 }}>→ {w}</div>
+                    <div key={i} style={{ fontSize: 13, color: 'var(--text-primary)', marginBottom: 6, lineHeight: 1.6, display: 'flex', gap: 8, alignItems: 'flex-start' }}><ArrowRight size={14} strokeWidth={1.8} style={{ marginTop: 3, flexShrink: 0, color: 'var(--accent)' }} aria-hidden="true" />{w}</div>
                   ))}
                 </div>
                 <div>
@@ -1643,6 +1644,20 @@ export default function App() {
   ]
 
   const modalBg = { position: 'fixed', inset: 0, background: 'rgba(8,16,24,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', zIndex: 100, backdropFilter: 'blur(12px)' }
+  const quickNoteButtonStyle = {
+    position: 'fixed',
+    ...(isMobile ? { top: 72, right: 14, width: 44, height: 44 } : { bottom: 24, right: 24, width: 52, height: 52 }),
+    borderRadius: '50%',
+    background: 'linear-gradient(135deg, #7c6fff, #4ade80)',
+    border: 'none',
+    cursor: 'pointer',
+    boxShadow: '0 4px 20px rgba(124,111,255,0.5)',
+    zIndex: 199,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'transform 0.15s',
+  }
 
   return (
     <AppShell activeTab={tab} onTabChange={setTab} onAddContact={() => setShowAdd(true)} onEditProfile={() => setShowEdit(true)} profile={profile}>
@@ -1950,7 +1965,7 @@ export default function App() {
                 style={{ width: '100%', background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 12, padding: '10px 14px 10px 38px', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)', boxSizing: 'border-box' }}
               />
               <Search size={15} strokeWidth={1.8} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)', pointerEvents: 'none' }} aria-hidden="true" />
-              {contactSearch && <button onClick={() => setContactSearch('')} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 16 }}>×</button>}
+              {contactSearch && <button onClick={() => setContactSearch('')} aria-label="Clear contact search" style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center' }}><X size={14} strokeWidth={1.8} aria-hidden="true" /></button>}
             </div>
             <button onClick={() => setShowNotionImport(true)} style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6, padding: '10px 14px', background: 'var(--surface-3)', color: 'var(--text-secondary)', border: '1px solid var(--border-strong)', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap' }}>
               <FileText size={14} strokeWidth={1.8} aria-hidden="true" />
@@ -2112,7 +2127,7 @@ export default function App() {
                                 )}
                                 {person.nextAction === 'done' && (
                                   <span style={{ fontSize: 10, color: '#4ade80', background: 'rgba(74,222,128,0.08)', padding: '1px 6px', borderRadius: 10 }}>
-                                    ✓ Done
+                                    <Check size={11} strokeWidth={2.2} style={{ verticalAlign: -2, marginRight: 3 }} aria-hidden="true" /> Done
                                   </span>
                                 )}
                               </div>
@@ -2287,7 +2302,8 @@ export default function App() {
       {/* ── Floating brain dump button ─── */}
       <button
         onClick={() => setShowBrainDump(b => !b)}
-        style={{ position: 'fixed', bottom: 24, right: 24, width: 52, height: 52, borderRadius: '50%', background: 'linear-gradient(135deg, #7c6fff, #4ade80)', border: 'none', cursor: 'pointer', boxShadow: '0 4px 20px rgba(124,111,255,0.5)', zIndex: 199, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, transition: 'transform 0.15s' }}
+        aria-label="Quick notes"
+        style={quickNoteButtonStyle}
         onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
         onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
         title="Quick notes"

@@ -1,6 +1,6 @@
 // components/Onboarding.jsx
 import React, { useState, useRef, useEffect } from 'react'
-import { Contact, FileText, Upload } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Contact, FileText, Sparkles, Upload, X } from 'lucide-react'
 import { extractTextFromPDF } from '../lib/pdfParser'
 import { parseResumePDF } from '../lib/ai'
 
@@ -187,7 +187,7 @@ function SkillsInput({ skills, onChange }) {
         {skills.map(s => (
           <span key={s} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(124,111,255,0.15)', border: '1px solid rgba(124,111,255,0.3)', color: '#c4bfff', borderRadius: 100, padding: '5px 12px', fontSize: 13 }}>
             {s}
-            <button onClick={() => onChange(skills.filter(x => x !== s))} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(196,191,255,0.5)', fontSize: 14, lineHeight: 1, padding: 0 }}>×</button>
+            <button onClick={() => onChange(skills.filter(x => x !== s))} aria-label={`Remove ${s}`} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(196,191,255,0.5)', lineHeight: 1, padding: 0 }}><X size={13} strokeWidth={1.8} aria-hidden="true" /></button>
           </span>
         ))}
       </div>
@@ -332,7 +332,7 @@ export function Onboarding({ onComplete, existingProfile }) {
           style={inputStyle} onFocus={e => e.target.style.borderBottomColor = '#7c6fff'} onBlur={e => e.target.style.borderBottomColor = 'rgba(255,255,255,0.15)'} />
       </AnimatedField>
       <AnimatedField show={!!name.trim()} delay={50}>
-        <button onClick={goNext} style={{ ...btnPrimary, marginTop: 36 }}>Continue →</button>
+        <button onClick={goNext} style={{ ...btnPrimary, marginTop: 36 }}>Continue <ArrowRight size={16} strokeWidth={1.8} style={{ verticalAlign: -3, marginLeft: 6 }} aria-hidden="true" /></button>
       </AnimatedField>
     </div>,
 
@@ -344,7 +344,7 @@ export function Onboarding({ onComplete, existingProfile }) {
       <AnimatedField show={true} delay={100}>
         {notInCollege ? (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: 'rgba(124,111,255,0.12)', border: '1px solid rgba(124,111,255,0.3)', borderRadius: 12, marginBottom: 32 }}>
-            <span style={{ fontSize: 15, color: '#c4bfff' }}>✓ Not currently enrolled</span>
+            <span style={{ fontSize: 15, color: '#c4bfff', display: 'inline-flex', alignItems: 'center', gap: 6 }}><Check size={15} strokeWidth={2.2} aria-hidden="true" /> Not currently enrolled</span>
             <button onClick={() => { setNotInCollege(false); setSchool('') }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(196,191,255,0.5)', fontSize: 13, fontFamily: "'Syne', sans-serif" }}>undo</button>
           </div>
         ) : (
@@ -361,7 +361,7 @@ export function Onboarding({ onComplete, existingProfile }) {
             <button
               onClick={() => { setNotInCollege(true); setSchool(''); setMajor('') }}
               style={{ marginTop: 14, background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '7px 14px', fontSize: 13, color: 'rgba(255,255,255,0.35)', cursor: 'pointer', fontFamily: "'Syne', sans-serif' " }}>
-              Not currently enrolled →
+              Not currently enrolled <ArrowRight size={14} strokeWidth={1.8} style={{ verticalAlign: -2, marginLeft: 5 }} aria-hidden="true" />
             </button>
           </div>
         )}
@@ -381,8 +381,8 @@ export function Onboarding({ onComplete, existingProfile }) {
 
       <AnimatedField show={canContinueSchool} delay={120}>
         <div style={{ display: 'flex', gap: 12, marginTop: notInCollege ? 8 : 40 }}>
-          <button onClick={goBack} style={btnSecondary}>← Back</button>
-          <button onClick={goNext} style={btnPrimary}>Continue →</button>
+          <button onClick={goBack} style={btnSecondary}><ArrowLeft size={15} strokeWidth={1.8} style={{ verticalAlign: -3, marginRight: 5 }} aria-hidden="true" />Back</button>
+          <button onClick={goNext} style={btnPrimary}>Continue <ArrowRight size={16} strokeWidth={1.8} style={{ verticalAlign: -3, marginLeft: 6 }} aria-hidden="true" /></button>
         </div>
       </AnimatedField>
     </div>,
@@ -400,8 +400,8 @@ export function Onboarding({ onComplete, existingProfile }) {
       </AnimatedField>
       <AnimatedField show={goals.length > 3} delay={80}>
         <div style={{ display: 'flex', gap: 12, marginTop: 40 }}>
-          <button onClick={goBack} style={btnSecondary}>← Back</button>
-          <button onClick={goNext} style={btnPrimary}>Continue →</button>
+          <button onClick={goBack} style={btnSecondary}><ArrowLeft size={15} strokeWidth={1.8} style={{ verticalAlign: -3, marginRight: 5 }} aria-hidden="true" />Back</button>
+          <button onClick={goNext} style={btnPrimary}>Continue <ArrowRight size={16} strokeWidth={1.8} style={{ verticalAlign: -3, marginLeft: 6 }} aria-hidden="true" /></button>
         </div>
       </AnimatedField>
     </div>,
@@ -416,8 +416,8 @@ export function Onboarding({ onComplete, existingProfile }) {
       </AnimatedField>
       <AnimatedField show={true} delay={200}>
         <div style={{ display: 'flex', gap: 12, marginTop: 44 }}>
-          <button onClick={goBack} style={btnSecondary}>← Back</button>
-          <button onClick={goNext} style={btnPrimary}>Continue →</button>
+          <button onClick={goBack} style={btnSecondary}><ArrowLeft size={15} strokeWidth={1.8} style={{ verticalAlign: -3, marginRight: 5 }} aria-hidden="true" />Back</button>
+          <button onClick={goNext} style={btnPrimary}>Continue <ArrowRight size={16} strokeWidth={1.8} style={{ verticalAlign: -3, marginLeft: 6 }} aria-hidden="true" /></button>
         </div>
       </AnimatedField>
     </div>,
@@ -430,14 +430,14 @@ export function Onboarding({ onComplete, existingProfile }) {
       <AnimatedField show={true} delay={100}>
         <PDFDrop hint="Drop your resume PDF here" onFile={handleResumeFile} fileName={resumeName} parsing={parsingResume} />
         {resumeParsed && !resumeParsed.error && (
-          <div style={{ marginTop: 12, fontSize: 13, color: 'rgba(74,222,128,0.8)' }}>✓ Parsed successfully - your skills have been updated</div>
+          <div style={{ marginTop: 12, fontSize: 13, color: 'rgba(74,222,128,0.8)', display: 'flex', alignItems: 'center', gap: 6 }}><Check size={14} strokeWidth={2.2} aria-hidden="true" /> Parsed successfully - your skills have been updated</div>
         )}
       </AnimatedField>
       <AnimatedField show={true} delay={200}>
         <div style={{ display: 'flex', gap: 12, marginTop: 36 }}>
-          <button onClick={goBack} style={btnSecondary}>← Back</button>
+          <button onClick={goBack} style={btnSecondary}><ArrowLeft size={15} strokeWidth={1.8} style={{ verticalAlign: -3, marginRight: 5 }} aria-hidden="true" />Back</button>
           <button onClick={finish} disabled={parsingResume} style={{ ...btnPrimary, opacity: parsingResume ? 0.5 : 1 }}>
-            {resumeName ? "Let's go ✦" : 'Skip & finish →'}
+            {resumeName ? <>Let's go <Sparkles size={15} strokeWidth={1.8} style={{ verticalAlign: -3, marginLeft: 6 }} aria-hidden="true" /></> : <>Skip and finish <ArrowRight size={16} strokeWidth={1.8} style={{ verticalAlign: -3, marginLeft: 6 }} aria-hidden="true" /></>}
           </button>
         </div>
       </AnimatedField>
