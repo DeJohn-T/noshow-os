@@ -2,12 +2,15 @@ import React from 'react'
 import {
   BriefcaseBusiness,
   CalendarDays,
+  CircleAlert,
+  CheckCircle2,
   Contact,
   FileText,
   Home,
   Network,
   Plus,
   Settings,
+  Sparkles,
 } from 'lucide-react'
 import { Button, IconButton, StatusBadge } from './UI'
 import { formatDate } from '../lib/utils'
@@ -136,6 +139,39 @@ export function TodayDesk({ contact, stats, onOpenContact, onOpenContacts, onAdd
     )
   }
 
+  const hasParsedProfile = contact.parsedProfile && !contact.parsedProfile.error
+  const hasBrief = !!contact.brief
+  const prepStatus = !hasParsedProfile
+    ? {
+        icon: CircleAlert,
+        title: 'LinkedIn PDF needed',
+        body: 'Upload their profile PDF before you generate the brief.',
+        accent: 'var(--amber)',
+        background: 'rgba(251,191,36,0.08)',
+        border: 'rgba(251,191,36,0.22)',
+        action: 'Open dossier',
+      }
+    : hasBrief
+      ? {
+          icon: CheckCircle2,
+          title: 'Brief ready',
+          body: 'Questions, mutual ground, and follow-up context are ready.',
+          accent: 'var(--green-text)',
+          background: 'rgba(74,222,128,0.08)',
+          border: 'rgba(74,222,128,0.22)',
+          action: 'Open dossier',
+        }
+      : {
+          icon: Sparkles,
+          title: 'Ready to generate',
+          body: 'PDF is parsed. Open the dossier and generate the prep brief.',
+          accent: 'var(--cyan)',
+          background: 'rgba(143,227,255,0.08)',
+          border: 'rgba(143,227,255,0.22)',
+          action: 'Open to generate',
+        }
+  const PrepStatusIcon = prepStatus.icon
+
   return (
     <section className="dossier-panel" style={{ overflow: 'hidden' }}>
       <div style={{ padding: 24, borderBottom: '1px solid var(--border)' }}>
@@ -161,15 +197,17 @@ export function TodayDesk({ contact, stats, onOpenContact, onOpenContacts, onAdd
           <div style={{ color: 'var(--accent)', fontWeight: 700 }}>{stats?.total || 0} contacts</div>
         </div>
       </div>
-      <div className="paper-panel" style={{ margin: 16, borderRadius: 12, padding: 18 }}>
-        <div className="section-kicker" style={{ color: 'rgba(16,25,35,0.62)', marginBottom: 10 }}>Prep artifact</div>
-        <div style={{ fontFamily: 'Georgia, serif', fontSize: 18, lineHeight: 1.55, marginBottom: 14 }}>
-          {contact.brief ? 'Open the dossier to review the generated brief, questions, mutual ground, and follow-up context.' : 'Upload a LinkedIn PDF and generate the prep brief before the call.'}
+      <div style={{ margin: 16, borderRadius: 12, padding: '12px 14px', background: prepStatus.background, border: `1px solid ${prepStatus.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 220, flex: 1 }}>
+          <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(244,247,249,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <PrepStatusIcon size={17} color={prepStatus.accent} strokeWidth={1.9} aria-hidden="true" />
+          </div>
+          <div>
+            <div className="section-kicker" style={{ color: prepStatus.accent, marginBottom: 4 }}>{prepStatus.title}</div>
+            <div style={{ color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.45 }}>{prepStatus.body}</div>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <Button variant="primary" onClick={() => onOpenContact(contact)}>Open dossier</Button>
-          {!contact.brief && <Button onClick={() => onOpenContact(contact)}>Open to generate</Button>}
-        </div>
+        <Button variant={hasBrief ? 'default' : 'primary'} onClick={() => onOpenContact(contact)}>{prepStatus.action}</Button>
       </div>
     </section>
   )
