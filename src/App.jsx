@@ -22,6 +22,7 @@ import {
   Settings2,
   Sparkles,
   Target,
+  Upload,
   X,
   Zap,
 } from 'lucide-react'
@@ -1076,22 +1077,44 @@ function ResumeTab({ resume, profile, onUpdateResume }) {
   }
 
   const scoreColor = s => s >= 85 ? '#4ade80' : s >= 70 ? '#fbbf24' : s >= 50 ? '#fb923c' : '#f87171'
+  const resumeStats = [
+    { label: 'Experience', value: parsed?.experience?.length || 0, icon: ListChecks, accent: 'var(--green-text)' },
+    { label: 'Skills', value: parsed?.skills?.length || 0, icon: Zap, accent: 'var(--cyan)' },
+    { label: 'Projects', value: parsed?.projects?.length || 0, icon: NotebookText, accent: 'var(--amber)' },
+    { label: 'Education', value: parsed?.education?.length || 0, icon: Target, accent: 'var(--rose)' },
+  ]
+  const topSkills = parsed?.skills?.slice(0, 10) || []
+  const resumeHeadline = parsed?.summary || 'Upload a resume to turn your background into a usable career signal for prep briefs, job targeting, and networking follow-through.'
+  const hasParsedContent = !!parsed
 
   return (
-    <div style={{ maxWidth: 820, margin: '0 auto', padding: '1.5rem' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
-        <div>
-          <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-display)', marginBottom: 4 }}>Resume</div>
-          <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-            {resume ? `Uploaded: ${profile?.resumeName || 'resume.pdf'}` : 'No resume uploaded yet'}
+    <div style={{ maxWidth: 1120, margin: '0 auto', padding: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 18, alignItems: 'stretch', marginBottom: 18 }}>
+        <div className="dossier-panel" style={{ padding: 22, position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(197,255,90,0.08), transparent 32%, rgba(143,227,255,0.09))', pointerEvents: 'none' }} />
+          <div style={{ position: 'relative' }}>
+            <div className="section-kicker" style={{ color: 'var(--accent)', marginBottom: 12 }}>Career signal</div>
+            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(34px, 5vw, 62px)', lineHeight: 0.94, letterSpacing: 0, margin: '0 0 12px' }}>Resume OS</h1>
+            <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: 1.7, maxWidth: 700 }}>{resumeHeadline}</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 18 }}>
+              <span style={{ fontSize: 12, color: resume ? 'var(--green-text)' : 'var(--text-tertiary)', border: `1px solid ${resume ? 'rgba(74,222,128,0.28)' : 'var(--border)'}`, background: resume ? 'rgba(74,222,128,0.08)' : 'rgba(244,247,249,0.04)', borderRadius: 100, padding: '5px 10px' }}>{resume ? 'Resume uploaded' : 'Resume needed'}</span>
+              {hasParsedContent && <span style={{ fontSize: 12, color: 'var(--cyan)', border: '1px solid rgba(143,227,255,0.25)', background: 'rgba(143,227,255,0.08)', borderRadius: 100, padding: '5px 10px' }}>Parsed profile ready</span>}
+              {profile?.resumeName && <span style={{ fontSize: 12, color: 'var(--text-secondary)', border: '1px solid var(--border)', background: 'rgba(244,247,249,0.04)', borderRadius: 100, padding: '5px 10px' }}>{profile.resumeName}</span>}
+            </div>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+
+        <div className="dossier-panel" style={{ padding: 18, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 16 }}>
+          <div>
+            <div className="section-kicker" style={{ color: 'var(--amber)', marginBottom: 10 }}>Control room</div>
+            <div style={{ color: 'var(--text-primary)', fontWeight: 700, marginBottom: 6 }}>{resume ? 'Keep this source sharp' : 'Add your source document'}</div>
+            <div style={{ color: 'var(--text-tertiary)', fontSize: 13, lineHeight: 1.6 }}>{resume ? 'Refresh the PDF or run analysis when your resume changes.' : 'Drop a PDF and NoShow OS will pull out the useful career context.'}</div>
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <input ref={fileRef} type="file" accept="application/pdf" style={{ display: 'none' }} onChange={handleReupload} />
           <button onClick={() => fileRef.current?.click()} disabled={uploading}
             style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: 'var(--surface-2)', color: 'var(--text-secondary)', border: '1px solid var(--border-strong)', borderRadius: 10, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
-            {uploading ? <Spinner /> : '↑'} {resume ? 'Replace resume' : 'Upload resume'}
+            {uploading ? <Spinner /> : <Upload size={14} strokeWidth={1.8} aria-hidden="true" />} {resume ? 'Replace resume' : 'Upload resume'}
           </button>
           {resume && (
             <button onClick={handleAnalyze} disabled={analyzing}
@@ -1099,27 +1122,45 @@ function ResumeTab({ resume, profile, onUpdateResume }) {
               {analyzing ? <><Spinner />Analyzing...</> : <><Sparkles size={14} strokeWidth={1.8} aria-hidden="true" /> AI Analysis</>}
             </button>
           )}
+          </div>
         </div>
       </div>
+
+      {resume && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))', gap: 12, marginBottom: 20 }}>
+          {resumeStats.map(stat => {
+            const Icon = stat.icon
+            return (
+              <div key={stat.label} style={{ background: 'rgba(244,247,249,0.04)', border: '1px solid var(--border)', borderRadius: 12, padding: 14, minHeight: 92 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                  <span className="section-kicker">{stat.label}</span>
+                  <Icon size={17} color={stat.accent} strokeWidth={1.8} aria-hidden="true" />
+                </div>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: 30, lineHeight: 1, fontWeight: 800, color: stat.accent }}>{stat.value}</div>
+              </div>
+            )
+          })}
+        </div>
+      )}
 
       {!resume ? (
         /* No resume - show upload prompt + tips */
         <div>
-          <div style={{ background: 'var(--surface-2)', border: '2px dashed var(--border-strong)', borderRadius: 16, padding: '3rem 2rem', textAlign: 'center', marginBottom: 28 }}
+          <div style={{ background: 'linear-gradient(135deg, rgba(143,227,255,0.08), rgba(197,255,90,0.06))', border: '1px dashed rgba(143,227,255,0.32)', borderRadius: 16, padding: '3rem 2rem', textAlign: 'center', marginBottom: 28, boxShadow: 'var(--shadow-md)' }}
             onDragOver={e => e.preventDefault()}
             onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f) { const ev = { target: { files: [f] } }; handleReupload(ev) } }}>
-            <FileText size={36} style={{ marginBottom: 12 }} aria-hidden="true" />
-            <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 6 }}>Drop your resume here</div>
-            <div style={{ fontSize: 13, color: 'var(--text-tertiary)', marginBottom: 20 }}>PDF only · we'll parse it and give you personalized feedback</div>
+            <FileText size={38} style={{ marginBottom: 12, color: 'var(--cyan)' }} aria-hidden="true" />
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 800, marginBottom: 6 }}>Drop your resume here</div>
+            <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 20 }}>PDF only. NoShow OS will parse it and give you personalized feedback.</div>
             <button onClick={() => fileRef.current?.click()}
               style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 24px', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
               Choose file
             </button>
           </div>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 14 }}>Resume tips</div>
+          <div className="section-kicker" style={{ color: 'var(--amber)', marginBottom: 14 }}>Resume tips</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
             {RESUME_TIPS.map((tip, i) => (
-              <div key={i} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px 18px' }}>
+              <div key={i} style={{ background: 'linear-gradient(180deg, rgba(22,35,48,0.96), rgba(16,25,35,0.96))', border: '1px solid var(--border)', borderRadius: 14, padding: '16px 18px' }}>
                 <FileText size={20} style={{ marginBottom: 8, color: 'var(--accent)' }} aria-hidden="true" />
                 <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>{tip.title}</div>
                 <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.7 }}>{tip.body}</div>
@@ -1131,6 +1172,20 @@ function ResumeTab({ resume, profile, onUpdateResume }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           {/* AI Analysis result */}
           {analyzeError && <div style={{ fontSize: 13, color: 'var(--red-text)', padding: '10px 14px', background: 'rgba(239,68,68,0.08)', borderRadius: 10, border: '1px solid var(--red-border)' }}>{analyzeError}</div>}
+          {topSkills.length > 0 && (
+            <div className="dossier-panel" style={{ padding: 18, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16, alignItems: 'center' }}>
+              <div>
+                <div className="section-kicker" style={{ color: 'var(--cyan)', marginBottom: 10 }}>Skill focus</div>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: 24, lineHeight: 1.1, fontWeight: 800, marginBottom: 8 }}>What the resume is saying first</div>
+                <div style={{ color: 'var(--text-tertiary)', fontSize: 13, lineHeight: 1.6 }}>The first skills become the fastest scan for recruiters, coffee chat prep, and job matching.</div>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {topSkills.map((skill, i) => (
+                  <span key={`${skill}-${i}`} style={{ fontSize: 12, padding: '6px 12px', borderRadius: 100, border: `1px solid ${i < 4 ? 'rgba(197,255,90,0.34)' : 'rgba(143,227,255,0.24)'}`, background: i < 4 ? 'rgba(197,255,90,0.1)' : 'rgba(143,227,255,0.08)', color: i < 4 ? 'var(--accent)' : 'var(--cyan)', fontWeight: 700 }}>{skill}</span>
+                ))}
+              </div>
+            </div>
+          )}
           {analysis && (
             <div style={{ background: 'linear-gradient(135deg, rgba(139,127,255,0.07), rgba(99,179,255,0.04))', border: '1px solid rgba(139,127,255,0.2)', borderRadius: 16, padding: '20px 22px' }}>
               {/* Score */}
@@ -1147,7 +1202,7 @@ function ResumeTab({ resume, profile, onUpdateResume }) {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
                 {/* Strengths */}
                 <div>
                   <div style={{ fontSize: 11, fontWeight: 600, color: '#4ade80', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Strengths</div>
@@ -1170,7 +1225,7 @@ function ResumeTab({ resume, profile, onUpdateResume }) {
               </div>
 
               {/* Quick wins + ATS */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
                 <div>
                   <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Quick wins</div>
                   {analysis.quickWins?.map((w, i) => (
@@ -1191,36 +1246,42 @@ function ResumeTab({ resume, profile, onUpdateResume }) {
 
           {/* Parsed resume data */}
           {parsed && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: 16 }}>
               {/* Summary */}
               {parsed.summary && (
-                <div style={{ gridColumn: '1 / -1', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px 18px' }}>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Summary</div>
-                  <div style={{ fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.8 }}>{parsed.summary}</div>
+                <div className="paper-panel" style={{ gridColumn: '1 / -1', borderRadius: 14, padding: '20px 22px' }}>
+                  <div className="section-kicker" style={{ color: 'rgba(16,25,35,0.62)', marginBottom: 10 }}>Summary</div>
+                  <div style={{ fontFamily: 'Georgia, serif', fontSize: 18, color: 'var(--text-ink)', lineHeight: 1.65 }}>{parsed.summary}</div>
                 </div>
               )}
               {/* Experience */}
               {parsed.experience?.length > 0 && (
-                <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px 18px' }}>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Experience</div>
+                <div className="dossier-panel" style={{ padding: '18px 20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                    <ListChecks size={16} color="var(--green-text)" strokeWidth={1.8} aria-hidden="true" />
+                    <div className="section-kicker" style={{ color: 'var(--green-text)' }}>Experience</div>
+                  </div>
                   {parsed.experience.map((e, i) => (
-                    <div key={i} style={{ fontSize: 13, color: 'var(--text-primary)', marginBottom: 8, lineHeight: 1.6, paddingBottom: 8, borderBottom: i < parsed.experience.length - 1 ? '1px solid var(--border)' : 'none' }}>{e}</div>
+                    <div key={i} style={{ fontSize: 13, color: 'var(--text-primary)', marginBottom: 10, lineHeight: 1.65, padding: '0 0 10px 14px', borderLeft: '2px solid rgba(74,222,128,0.28)', borderBottom: i < parsed.experience.length - 1 ? '1px solid var(--border)' : 'none' }}>{e}</div>
                   ))}
                 </div>
               )}
               {/* Skills */}
               {parsed.skills?.length > 0 && (
-                <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px 18px' }}>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Skills</div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                <div className="dossier-panel" style={{ padding: '18px 20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                    <Zap size={16} color="var(--cyan)" strokeWidth={1.8} aria-hidden="true" />
+                    <div className="section-kicker" style={{ color: 'var(--cyan)' }}>Skills</div>
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
                     {parsed.skills.map((s, i) => (
-                      <span key={i} style={{ fontSize: 12, padding: '4px 12px', background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 100, fontWeight: 500 }}>{s}</span>
+                      <span key={i} style={{ fontSize: 12, padding: '5px 12px', background: i < 8 ? 'rgba(143,227,255,0.1)' : 'var(--surface-3)', color: i < 8 ? 'var(--cyan)' : 'var(--text-primary)', border: `1px solid ${i < 8 ? 'rgba(143,227,255,0.28)' : 'var(--border-strong)'}`, borderRadius: 100, fontWeight: 600 }}>{s}</span>
                     ))}
                   </div>
                   {/* Education */}
                   {parsed.education?.length > 0 && (
-                    <div style={{ marginTop: 16 }}>
-                      <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Education</div>
+                    <div style={{ marginTop: 18, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+                      <div className="section-kicker" style={{ color: 'var(--rose)', marginBottom: 8 }}>Education</div>
                       {parsed.education.map((e, i) => (
                         <div key={i} style={{ fontSize: 13, color: 'var(--text-primary)', marginBottom: 6, lineHeight: 1.6 }}>{e}</div>
                       ))}
@@ -1230,11 +1291,14 @@ function ResumeTab({ resume, profile, onUpdateResume }) {
               )}
               {/* Projects */}
               {parsed.projects?.length > 0 && (
-                <div style={{ gridColumn: '1 / -1', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px 18px' }}>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Projects</div>
+                <div className="dossier-panel" style={{ gridColumn: '1 / -1', padding: '18px 20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                    <NotebookText size={16} color="var(--amber)" strokeWidth={1.8} aria-hidden="true" />
+                    <div className="section-kicker" style={{ color: 'var(--amber)' }}>Projects</div>
+                  </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
                     {parsed.projects.map((p, i) => (
-                      <div key={i} style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.6, padding: '10px 12px', background: 'var(--surface-3)', borderRadius: 10 }}>{p}</div>
+                      <div key={i} style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.6, padding: '12px 14px', background: i % 2 === 0 ? 'rgba(251,191,36,0.08)' : 'rgba(244,114,182,0.08)', border: `1px solid ${i % 2 === 0 ? 'rgba(251,191,36,0.22)' : 'rgba(244,114,182,0.22)'}`, borderRadius: 12 }}>{p}</div>
                     ))}
                   </div>
                 </div>
@@ -1244,11 +1308,11 @@ function ResumeTab({ resume, profile, onUpdateResume }) {
 
           {/* Static tips at the bottom */}
           <div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 14 }}>General tips</div>
+            <div className="section-kicker" style={{ color: 'var(--amber)', marginBottom: 14 }}>General tips</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
               {RESUME_TIPS.map((tip, i) => (
-                <div key={i} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px 18px' }}>
-                  <FileText size={20} style={{ marginBottom: 8, color: 'var(--accent)' }} aria-hidden="true" />
+                <div key={i} style={{ background: i % 2 === 0 ? 'rgba(197,255,90,0.06)' : 'rgba(143,227,255,0.06)', border: `1px solid ${i % 2 === 0 ? 'rgba(197,255,90,0.18)' : 'rgba(143,227,255,0.18)'}`, borderRadius: 14, padding: '16px 18px' }}>
+                  <FileText size={20} style={{ marginBottom: 8, color: i % 2 === 0 ? 'var(--accent)' : 'var(--cyan)' }} aria-hidden="true" />
                   <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>{tip.title}</div>
                   <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.7 }}>{tip.body}</div>
                 </div>
@@ -1630,7 +1694,7 @@ export default function App() {
   const soonChats = upcoming.filter(c => c.chatDate === todayStr || c.chatDate === tomorrowStr)
   const streak = calcStreak(contacts)
   const networkScore = calcNetworkScore(contacts)
-  const todayDeskContact = upcoming[0] || contacts.find(c => c.parsedProfile && !c.parsedProfile.error && !c.brief) || contacts[0] || null
+  const todayDeskContact = upcoming[0] || null
 
   const filteredContacts = contactSearch.trim()
     ? contacts.filter(c => [c.name, c.role, c.company].filter(Boolean).join(' ').toLowerCase().includes(contactSearch.toLowerCase()))
@@ -1682,7 +1746,7 @@ export default function App() {
       {tab === 'home' && (
         <div className="brief-desk-grid">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <TodayDesk contact={todayDeskContact} stats={stats} onOpenContact={setDetail} />
+            <TodayDesk contact={todayDeskContact} stats={stats} onOpenContact={setDetail} onOpenContacts={() => setTab('contacts')} onAddContact={() => setShowAdd(true)} />
 
             {homeConfig.statCards && (
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, minmax(0, 1fr))', gap: 12 }}>

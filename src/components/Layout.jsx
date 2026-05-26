@@ -110,13 +110,28 @@ export function RightOrbit({ children }) {
   return <aside style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{children}</aside>
 }
 
-export function TodayDesk({ contact, stats, onOpenContact }) {
+export function TodayDesk({ contact, stats, onOpenContact, onOpenContacts, onAddContact }) {
   if (!contact) {
     return (
-      <section className="dossier-panel" style={{ padding: 24 }}>
+      <section className="dossier-panel" style={{ padding: 24, overflow: 'hidden' }}>
         <div className="section-kicker" style={{ color: 'var(--accent)', marginBottom: 12 }}>Today desk</div>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(32px, 5vw, 58px)', lineHeight: 0.95, letterSpacing: 0, marginBottom: 14 }}>Build the next conversation</h1>
-        <p style={{ color: 'var(--text-secondary)', maxWidth: 620, lineHeight: 1.7 }}>Add a contact, schedule a chat, or open a recent connection to prepare the next useful conversation.</p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 20, alignItems: 'end' }}>
+          <div>
+            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(32px, 5vw, 58px)', lineHeight: 0.95, letterSpacing: 0, marginBottom: 14 }}>No meeting queued</h1>
+            <p style={{ color: 'var(--text-secondary)', maxWidth: 620, lineHeight: 1.7, margin: 0 }}>Schedule a chat or choose who you want to prepare for. The desk only promotes upcoming meetings now, so completed contacts stay out of the lead spot.</p>
+          </div>
+          <div style={{ display: 'grid', gap: 10 }}>
+            <div style={{ background: 'rgba(244,247,249,0.04)', border: '1px solid var(--border)', borderRadius: 12, padding: 14 }}>
+              <div className="section-kicker" style={{ marginBottom: 8 }}>Network</div>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: 32, lineHeight: 1, fontWeight: 800, color: 'var(--cyan)' }}>{stats?.total || 0}</div>
+              <div style={{ color: 'var(--text-tertiary)', fontSize: 12, marginTop: 6 }}>contacts ready when you are</div>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              <Button variant="primary" onClick={onOpenContacts}><Contact size={14} strokeWidth={1.8} aria-hidden="true" /> Open contacts</Button>
+              <Button onClick={onAddContact}><Plus size={14} strokeWidth={1.8} aria-hidden="true" /> Add contact</Button>
+            </div>
+          </div>
+        </div>
       </section>
     )
   }
