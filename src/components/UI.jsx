@@ -101,6 +101,28 @@ export function Avatar({ name, company, size = 38 }) {
   )
 }
 
+export function CompanyLogoBackdrop({ company, opacity = 0.45, size = 160 }) {
+  const domain = getDomain(company)
+  if (!domain) return null
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: 'absolute',
+        inset: -24,
+        backgroundImage: `url(https://logo.clearbit.com/${domain})`,
+        backgroundSize: size,
+        backgroundPosition: 'right -6px center',
+        backgroundRepeat: 'no-repeat',
+        filter: 'blur(18px) saturate(1.8)',
+        opacity,
+        pointerEvents: 'none',
+        zIndex: 0,
+      }}
+    />
+  )
+}
+
 // --- Status Badge ---
 export function CompanyLogo({ company, size = 18 }) {
   const domain = getDomain(company)

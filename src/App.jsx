@@ -32,7 +32,7 @@ import { ContactDetail } from './components/ContactDetail'
 import { Onboarding } from './components/Onboarding'
 import { JobSearch } from './components/JobSearch'
 import { AppShell, MetricTile, OrbitPanel, RightOrbit, TodayDesk } from './components/Layout'
-import { Avatar, StatusBadge, GlobalStyles, Spinner, Button } from './components/UI'
+import { Avatar, CompanyLogoBackdrop, StatusBadge, GlobalStyles, Spinner, Button } from './components/UI'
 import { loadContacts, saveContacts, loadProfile, saveProfile, loadQuotes, saveQuotes, loadTodos, saveTodos, loadBrainDump, saveBrainDump, loadUsers, saveUsers, getCurrentUser, setCurrentUser, clearCurrentUser, loadScheduledTasks, saveScheduledTasks, loadJobRecs, saveJobRecs, exportBackup, importBackup } from './lib/storage'
 import { generateQuotes, analyzeResume, generateJobRecs, extractInsights, parseLinkedInPDF, parseResumePDF } from './lib/ai'
 import { extractTextFromPDF } from './lib/pdfParser'
@@ -2290,12 +2290,16 @@ export default function App() {
                         const color = statusMeta(person.status).accent
                         return (
                           <div key={person.id} onClick={() => setDetail(person)}
-                            style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', gap: isMobile ? 10 : 12, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 14, padding: isMobile ? '12px' : '12px 14px', cursor: 'pointer', transition: 'border-color 0.15s' }}
+                            style={{ position: 'relative', overflow: 'hidden', display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', gap: isMobile ? 10 : 12, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 14, padding: isMobile ? '12px' : '12px 14px', cursor: 'pointer', transition: 'border-color 0.15s' }}
                             onMouseEnter={e => e.currentTarget.style.borderColor = color + '66'}
                             onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
                           >
-                            <Avatar name={person.name} company={person.company} size={isMobile ? 34 : 38} />
-                            <div style={{ flex: 1, minWidth: 0 }}>
+                            <CompanyLogoBackdrop company={person.company} opacity={0.45} size={isMobile ? 132 : 170} />
+                            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(16,25,35,0.91), rgba(16,25,35,0.58) 62%, rgba(16,25,35,0.76))', zIndex: 0, pointerEvents: 'none' }} />
+                            <div style={{ position: 'relative', zIndex: 1, flexShrink: 0 }}>
+                              <Avatar name={person.name} company={person.company} size={isMobile ? 34 : 38} />
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0, position: 'relative', zIndex: 1 }}>
                               <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', marginBottom: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{person.name}</div>
                               <div style={{ fontSize: 12, color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {[person.role, person.company].filter(Boolean).join(' · ') || 'No role set'}
@@ -2316,7 +2320,7 @@ export default function App() {
                                 )
                               })()}
                             </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0, maxWidth: isMobile ? 96 : 'none' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0, maxWidth: isMobile ? 96 : 'none', position: 'relative', zIndex: 1 }}>
                               <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20, background: color + '22', color, border: `1px solid ${color}44`, whiteSpace: 'nowrap' }}>
                                 {statusLabel(person.status)}
                               </span>

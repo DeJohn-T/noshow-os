@@ -2,43 +2,12 @@
 
 import React, { useState } from 'react'
 import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, UserPlus } from 'lucide-react'
-import { Avatar, StatusBadge } from './UI'
+import { Avatar, CompanyLogoBackdrop, StatusBadge } from './UI'
 import { formatDate, normalizeStatus, statusMeta } from '../lib/utils'
-
-function getLogoUrl(company) {
-  if (!company) return null
-  const domain = company
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, '')
-    .trim()
-    .split(/\s+/)
-    .join('')
-    + '.com'
-  return `https://logo.clearbit.com/${domain}`
-}
 
 function getStatusColor(status) {
   const meta = statusMeta(status)
   return { bg: meta.bg, border: meta.border, accent: meta.accent }
-}
-
-function LogoBg({ company }) {
-  const url = getLogoUrl(company)
-  if (!url) return null
-  return (
-    <div style={{
-      position: 'absolute',
-      inset: 0,
-      backgroundImage: `url(${url})`,
-      backgroundSize: '120px',
-      backgroundPosition: 'right -10px center',
-      backgroundRepeat: 'no-repeat',
-      filter: 'blur(18px)',
-      opacity: 0.07,
-      zIndex: 0,
-      borderRadius: 'inherit',
-    }} />
-  )
 }
 
 export function ContactList({ contacts, onSelect, isMobile = false }) {
@@ -87,7 +56,8 @@ export function ContactList({ contacts, onSelect, isMobile = false }) {
             }}
           >
             <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: statusColors.accent }} />
-            <LogoBg company={c.company} />
+            <CompanyLogoBackdrop company={c.company} opacity={0.45} size={isMobile ? 128 : 150} />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(16,25,35,0.88), rgba(16,25,35,0.58) 64%, rgba(16,25,35,0.74))', zIndex: 0, pointerEvents: 'none' }} />
             <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', gap: isMobile ? 10 : 12, width: '100%', paddingLeft: 3 }}>
               <Avatar name={c.name} company={c.company} size={isMobile ? 34 : 38} />
               <div style={{ flex: 1, minWidth: 0 }}>
