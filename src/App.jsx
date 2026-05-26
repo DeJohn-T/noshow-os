@@ -13,6 +13,7 @@ import {
   FileText,
   Flame,
   FolderInput,
+  GripVertical,
   Lightbulb,
   ListChecks,
   MessageSquareText,
@@ -151,7 +152,7 @@ function HighlightsBox({ highlights, onAdd, onRemove, onReorder }) {
                   }}
                   onDragEnd={() => { setDragIdx(null); setOverIdx(null) }}
                   style={{ display: 'flex', alignItems: 'center', gap: 8, background: overIdx === i ? 'rgba(251,191,36,0.1)' : 'rgba(255,255,255,0.04)', borderRadius: 8, padding: '7px 10px', border: `1px solid ${overIdx === i ? 'rgba(251,191,36,0.3)' : 'transparent'}`, cursor: 'grab', opacity: dragIdx === i ? 0.4 : 1, transition: 'all 0.1s' }}>
-                  <span style={{ color: 'rgba(251,191,36,0.4)', fontSize: 12, flexShrink: 0 }}>⠿</span>
+                  <GripVertical size={14} strokeWidth={1.8} style={{ color: 'rgba(251,191,36,0.4)', flexShrink: 0 }} aria-hidden="true" />
                   <span style={{ flex: 1, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{h}</span>
                   <button onClick={() => { onRemove(i); if (idx >= items.length - 1) setIdx(Math.max(0, items.length - 2)) }}
                     aria-label="Remove highlight"
