@@ -456,6 +456,7 @@ function calcNetworkScore(contacts) {
   return contacts.reduce((score, c) => {
     score += 5
     const status = normalizeStatus(c.status)
+    if (status === 'interested') score += 3
     if (status === 'scheduled') score += 8
     if (['follow up', 'circle back'].includes(status)) score += 10
     if (isFinalStatus(status)) score += 15
@@ -1749,8 +1750,8 @@ export default function App() {
     const nextStatus = normalizeStatus(c.status)
     const prevStatus = normalizeStatus(prev?.status)
     if (prev && prevStatus !== nextStatus) {
-      const typeMap = { scheduled: 'meeting_scheduled', 'follow up': 'meeting_completed', 'followed up': 'followed_up', schedule: 'status_schedule', 'circle back': 'status_circle_back', 'one & done': 'status_one_done', complete: 'status_complete' }
-      const noteMap = { scheduled: 'Meeting scheduled', 'follow up': 'Follow-up needed', 'followed up': 'Followed up', schedule: 'Moved to schedule', 'circle back': 'Circle back later', 'one & done': 'Marked one and done', complete: 'Marked complete' }
+      const typeMap = { interested: 'status_interested', scheduled: 'meeting_scheduled', 'follow up': 'meeting_completed', 'followed up': 'followed_up', schedule: 'status_schedule', 'circle back': 'status_circle_back', 'one & done': 'status_one_done', complete: 'status_complete' }
+      const noteMap = { interested: 'Marked interested', scheduled: 'Meeting scheduled', 'follow up': 'Follow-up needed', 'followed up': 'Followed up', schedule: 'Moved to schedule', 'circle back': 'Circle back later', 'one & done': 'Marked one and done', complete: 'Marked complete' }
       activity = logActivity(activity, typeMap[nextStatus] || 'status_changed', noteMap[nextStatus] || statusLabel(nextStatus))
     }
     if (prev && c.followUpText && !prev.followUpText) {
@@ -1788,6 +1789,7 @@ export default function App() {
   const stats = contacts.reduce((acc, contact) => {
     const status = normalizeStatus(contact.status)
     acc.total += 1
+    if (status === 'interested') acc.interested += 1
     if (status === 'schedule') acc.schedule += 1
     if (status === 'scheduled') acc.scheduled += 1
     if (status === 'follow up') acc.followUp += 1
@@ -1797,7 +1799,7 @@ export default function App() {
     if (status === 'complete') acc.complete += 1
     if (isFinalStatus(status)) acc.done += 1
     return acc
-  }, { total: 0, schedule: 0, scheduled: 0, followUp: 0, circleBack: 0, oneAndDone: 0, followedUp: 0, complete: 0, done: 0 })
+  }, { total: 0, interested: 0, schedule: 0, scheduled: 0, followUp: 0, circleBack: 0, oneAndDone: 0, followedUp: 0, complete: 0, done: 0 })
 
   const todayStr = new Date().toISOString().split('T')[0]
   const upcoming = contacts.filter(x => x.chatDate && normalizeStatus(x.status) === 'scheduled' && x.chatDate >= todayStr).sort((a, b) => new Date(a.chatDate + 'T12:00:00') - new Date(b.chatDate + 'T12:00:00'))
@@ -1817,11 +1819,21 @@ export default function App() {
     : contacts
 
   const HOME_METRICS = [
+    { label: 'Interested', value: stats.interested, icon: Target, accent: '#c4b8ff', onClick: () => { setContactFilter('interested'); setTab('contacts') } },
     { label: 'Schedule', value: stats.schedule, icon: ContactIcon, accent: 'var(--cyan)', onClick: () => { setContactFilter('schedule'); setTab('contacts') } },
     { label: 'Scheduled', value: stats.scheduled, icon: CalendarDays, accent: 'var(--green-text)', onClick: () => setTab('upcoming') },
     { label: 'Follow up', value: stats.followUp, icon: MessageSquareText, accent: 'var(--rose)', onClick: () => { setContactFilter('follow up'); setTab('contacts') } },
     { label: 'Circle back', value: stats.circleBack, icon: Clock3, accent: '#93c5fd', onClick: () => { setContactFilter('circle back'); setTab('contacts') } },
     { label: 'Done', value: stats.done, icon: CheckCircle2, accent: 'var(--accent)', onClick: () => { setContactFilter('done'); setTab('contacts') } },
+  ]
+
+  const CONTACT_STATUS_CARDS = [
+    { label: 'Interested', value: stats.interested, color: '#c4b8ff', filter: 'interested' },
+    { label: 'Schedule', value: stats.schedule, color: '#8fe3ff', filter: 'schedule' },
+    { label: 'Scheduled', value: stats.scheduled, color: '#a7f3ba', filter: 'scheduled' },
+    { label: 'Follow up', value: stats.followUp, color: '#ff7aa8', filter: 'follow up' },
+    { label: 'Circle back', value: stats.circleBack, color: '#93c5fd', filter: 'circle back' },
+    { label: 'Done', value: stats.done, color: '#c5ff5a', filter: 'done' },
   ]
 
   const modalBg = { position: 'fixed', inset: 0, background: 'rgba(8,16,24,0.8)', display: 'flex', alignItems: isMobile ? 'flex-end' : 'center', justifyContent: 'center', padding: isMobile ? '0' : '1rem', zIndex: 100, backdropFilter: 'blur(12px)' }
@@ -1866,7 +1878,7 @@ export default function App() {
             <TodayDesk contact={todayDeskContact} stats={stats} onOpenContact={setDetail} onOpenContacts={() => setTab('contacts')} onAddContact={() => setShowAdd(true)} />
 
             {homeConfig.statCards && (
-              <div className="home-action-grid" style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, minmax(0, 1fr))' : 'repeat(5, minmax(0, 1fr))', gap: 12 }}>
+              <div className="home-action-grid" style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, minmax(0, 1fr))' : 'repeat(6, minmax(0, 1fr))', gap: 12 }}>
                 {HOME_METRICS.map(metric => (
                   <MetricTile key={metric.label} {...metric} className="home-action-tile" />
                 ))}
@@ -2093,21 +2105,15 @@ export default function App() {
             )}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, minmax(0, 1fr))' : 'repeat(6, 1fr)', gap: isMobile ? 8 : 10, marginBottom: '1rem' }}>
-            {[
-              ['All', stats.total, '#917aff', 'all'],
-              ['Schedule', stats.schedule, '#8fe3ff', 'schedule'],
-              ['Follow up', stats.followUp, '#ff7aa8', 'follow up'],
-              ['Circle back', stats.circleBack, '#93c5fd', 'circle back'],
-              ['Scheduled', stats.scheduled, '#a7f3ba', 'scheduled'],
-              ['Done', stats.done, '#c5ff5a', 'done'],
-            ].map(([l, v, color, filter]) => (
-              <div key={l} onClick={() => setContactFilter(contactFilter === filter ? 'all' : filter)}
-                style={{ background: contactFilter === filter ? `${color}15` : 'var(--surface-2)', border: `1px solid ${contactFilter === filter ? `${color}44` : 'var(--border)'}`, borderRadius: 'var(--radius-lg)', padding: isMobile ? '12px 8px' : '1rem', textAlign: 'center', position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'all 0.15s' }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: color }} />
-                <div style={{ fontSize: isMobile ? 24 : 26, fontWeight: 700, fontFamily: 'var(--font-display)', color }}>{v}</div>
-                <div style={{ fontSize: isMobile ? 10 : 11, color: contactFilter === filter ? color : 'var(--text-tertiary)', marginTop: 4, fontWeight: contactFilter === filter ? 600 : 400, lineHeight: 1.2 }}>{l}</div>
-              </div>
+          <div className="contact-status-grid">
+            {[{ label: 'All', value: stats.total, color: '#917aff', filter: 'all', all: true }, ...CONTACT_STATUS_CARDS].map(card => (
+              <button key={card.label} onClick={() => setContactFilter(contactFilter === card.filter ? 'all' : card.filter)}
+                className={`contact-status-card ${card.all ? 'contact-status-card-all' : ''}`}
+                style={{ '--status-color': card.color, background: contactFilter === card.filter ? `${card.color}15` : 'var(--surface-2)', borderColor: contactFilter === card.filter ? `${card.color}44` : 'var(--border)' }}>
+                <span className="contact-status-rule" style={{ background: card.color }} />
+                <span className="contact-status-value" style={{ color: card.color }}>{card.value}</span>
+                <span className="contact-status-label" style={{ color: contactFilter === card.filter ? card.color : 'var(--text-tertiary)' }}>{card.label}</span>
+              </button>
             ))}
           </div>
 
@@ -2222,6 +2228,7 @@ export default function App() {
             // Grouped by status view (recently added feel)
             if (contactView === 'grouped' && !contactSearch.trim()) {
               const cats = [
+                { status: 'interested', label: 'Interested', color: '#c4b8ff' },
                 { status: 'schedule', label: 'Schedule', color: '#8fe3ff' },
                 { status: 'scheduled', label: 'Scheduled', color: '#a7f3ba' },
                 { status: 'follow up', label: 'Follow up', color: '#ff7aa8' },
@@ -2295,7 +2302,7 @@ export default function App() {
                               </div>
                               {(() => {
                                 const fmtD = d => new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                                const ACT_LABELS = { connected: 'Connected', meeting_scheduled: 'Scheduled', meeting_completed: 'Met', followed_up: 'Followed up', follow_up_written: 'Follow-up sent', status_schedule: 'Moved to schedule', status_circle_back: 'Circle back', status_one_done: 'One and done', status_complete: 'Complete' }
+                                const ACT_LABELS = { connected: 'Connected', meeting_scheduled: 'Scheduled', meeting_completed: 'Met', followed_up: 'Followed up', follow_up_written: 'Follow-up sent', status_interested: 'Interested', status_schedule: 'Moved to schedule', status_circle_back: 'Circle back', status_one_done: 'One and done', status_complete: 'Complete' }
                                 const items = (person.activity || []).filter(a => ACT_LABELS[a.type])
                                 const connected = person.connectedDate || (person.id ? new Date(person.id).toISOString().split('T')[0] : null)
                                 if (!items.length && !connected) return null

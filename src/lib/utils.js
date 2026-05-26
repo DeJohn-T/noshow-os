@@ -19,6 +19,7 @@ export function formatDate(dateStr) {
 }
 
 export const STATUS_OPTIONS = [
+  { value: 'interested', label: 'Interested', accent: '#c4b8ff', bg: 'rgba(196, 184, 255, 0.12)', border: 'rgba(196, 184, 255, 0.28)' },
   { value: 'schedule', label: 'Schedule', accent: '#8fe3ff', bg: 'rgba(143, 227, 255, 0.12)', border: 'rgba(143, 227, 255, 0.28)' },
   { value: 'scheduled', label: 'Scheduled', accent: '#a7f3ba', bg: 'rgba(128, 226, 155, 0.13)', border: 'rgba(128, 226, 155, 0.28)' },
   { value: 'follow up', label: 'Follow up', accent: '#ff7aa8', bg: 'rgba(255, 122, 168, 0.14)', border: 'rgba(255, 122, 168, 0.3)' },
