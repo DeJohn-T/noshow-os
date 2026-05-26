@@ -324,7 +324,7 @@ function InsightCard({ contact, parsed }) {
   )
 }
 
-export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule, resume, profileSkills }) {
+export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule, resume, profileSkills, isMobile = false }) {
   const [c, setC] = useState(contact)
   const [tab, setTab] = useState('Overview')
   const [notesSummary, setNotesSummary] = useState(contact.notesSummary || '')
@@ -530,14 +530,14 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
   const searchUrl = `https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent([c.name, c.company].filter(Boolean).join(' '))}`
 
   return (
-    <div style={{ background: 'var(--surface-2)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--border-strong)', padding: '1.75rem 2rem', width: '100%', maxWidth: 780, maxHeight: '88vh', overflowY: 'auto', boxShadow: 'var(--shadow-lg)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: '1.25rem' }}>
-        <Avatar name={c.name} company={c.company} size={48} />
+    <div style={{ background: 'var(--surface-2)', borderRadius: isMobile ? '20px 20px 0 0' : 'var(--radius-xl)', border: '1px solid var(--border-strong)', padding: isMobile ? '1rem' : '1.75rem 2rem', width: '100%', maxWidth: isMobile ? '100%' : 780, height: isMobile ? 'calc(100dvh - 12px)' : 'auto', maxHeight: isMobile ? 'calc(100dvh - 12px)' : '88vh', overflowY: 'auto', boxShadow: 'var(--shadow-lg)' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: isMobile ? 10 : 14, marginBottom: '1.25rem' }}>
+        <Avatar name={c.name} company={c.company} size={isMobile ? 42 : 48} />
         <div style={{ flex: 1, minWidth: 0 }}>
           {editingInfo ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               <input value={editName} onChange={e => setEditName(e.target.value)} placeholder="Name" style={{ background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--accent)', borderRadius: 8, padding: '5px 10px', fontSize: 14, fontWeight: 700, outline: 'none', fontFamily: 'var(--font-display)', width: '100%', boxSizing: 'border-box' }} />
-              <div style={{ display: 'flex', gap: 6 }}>
+              <div style={{ display: 'flex', gap: 6, flexDirection: isMobile ? 'column' : 'row' }}>
                 <input value={editRole} onChange={e => setEditRole(e.target.value)} placeholder="Role" style={{ background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '5px 10px', fontSize: 12, outline: 'none', fontFamily: 'var(--font-sans)', flex: 1, boxSizing: 'border-box' }} />
                 <input value={editCompany} onChange={e => setEditCompany(e.target.value)} placeholder="Company" style={{ background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '5px 10px', fontSize: 12, outline: 'none', fontFamily: 'var(--font-sans)', flex: 1, boxSizing: 'border-box' }} />
               </div>
@@ -554,7 +554,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
             </div>
           ) : (
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', gap: 6, flexDirection: isMobile ? 'column' : 'row' }}>
                 <div style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-display)' }}>{c.name}</div>
                 <button onClick={() => { setEditName(c.name); setEditRole(c.role || ''); setEditCompany(c.company || ''); setEditingInfo(true); setTab('Edit') }}
                   style={{ background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 6, cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 11, padding: '2px 8px', lineHeight: 1.6, fontFamily: 'var(--font-sans)', fontWeight: 500 }}>
@@ -585,7 +585,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
           <InsightCard contact={c} parsed={parsed} />
 
           {/* Quick info cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10, marginBottom: 16 }}>
             <div style={{ background: 'linear-gradient(135deg, rgba(139,127,255,0.1), rgba(139,127,255,0.03))', border: '1px solid rgba(139,127,255,0.25)', borderRadius: 14, padding: '14px 16px' }}>
               <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#c4b8ff', marginBottom: 8 }}> Role</div>
               <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{c.role || 'Not set'}</div>
@@ -617,7 +617,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
                 return <span style={{ fontSize: 11, color: 'var(--success)', fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: 4 }}><Check size={12} strokeWidth={2.2} aria-hidden="true" /> Followed up {d}</span>
               })()}
             </div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: (c.nextAction === 'follow-up' || c.nextAction === 'circle-back') ? 14 : 0 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, minmax(0, 1fr))', gap: 8, marginBottom: (c.nextAction === 'follow-up' || c.nextAction === 'circle-back') ? 14 : 0 }}>
               {[
                 { key: 'follow-up', icon: Bell, label: 'Follow Up', sub: 'Pick a date below', color: '#a78bfa' },
                 { key: 'circle-back', icon: MessageCircle, label: 'Circle Back', sub: 'Pick a date below', color: '#60a5fa' },
@@ -629,7 +629,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
                   if (opt.key === 'circle-back') { const d = new Date(); d.setDate(d.getDate() + 90); setCalDate(d.toISOString().split('T')[0]) }
                   const updated = { ...c, ...updates }; setC(updated); saveAll(updates)
                 }} style={{
-                  flex: 1, minWidth: 90, background: c.nextAction === opt.key ? `${opt.color}22` : 'var(--surface-2)',
+                  minWidth: 0, background: c.nextAction === opt.key ? `${opt.color}22` : 'var(--surface-2)',
                   border: `1.5px solid ${c.nextAction === opt.key ? opt.color : 'var(--border)'}`,
                   borderRadius: 12, padding: '10px 8px', cursor: 'pointer', textAlign: 'center', transition: 'all 0.15s',
                 }}>
@@ -643,7 +643,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
             {/* Date picker - shown when Follow Up or Circle Back selected */}
             {(c.nextAction === 'follow-up' || c.nextAction === 'circle-back') && (
               <div style={{ borderTop: '1px solid var(--border)', paddingTop: 12, marginTop: 2 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'center', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 8 : 0, marginBottom: 8 }}>
                   <div style={{ fontSize: 11, color: 'var(--text-tertiary)', fontWeight: 600 }}>
                     {c.nextAction === 'follow-up' ? ' When do you want to follow up?' : ' When do you want to circle back?'}
                   </div>
@@ -655,19 +655,19 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
                     <Check size={12} strokeWidth={2.2} style={{ verticalAlign: -2, marginRight: 4 }} aria-hidden="true" /> Already did it
                   </button>
                 </div>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(130px, 1fr) 100px auto auto', gap: 8, alignItems: 'center' }}>
                   <input type="date" value={calDate} onChange={e => setCalDate(e.target.value)}
-                    style={{ background: 'var(--surface-2)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '7px 10px', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)', flex: 1, minWidth: 130 }} />
+                    style={{ background: 'var(--surface-2)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '7px 10px', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)', minWidth: 0, width: '100%' }} />
                   <input type="time" value={calTime} onChange={e => setCalTime(e.target.value)}
-                    style={{ background: 'var(--surface-2)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '7px 10px', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)', width: 100 }} />
+                    style={{ background: 'var(--surface-2)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '7px 10px', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)', width: isMobile ? '100%' : 100 }} />
                   <button onClick={() => {
                     const updates = { followUpDate: calDate }
                     const updated = { ...c, ...updates }; setC(updated); saveAll(updates)
-                  }} style={{ background: 'var(--surface-2)', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 8, padding: '7px 12px', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap' }}>
+                  }} style={{ background: 'var(--surface-2)', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 8, padding: '7px 12px', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap', width: isMobile ? '100%' : 'auto' }}>
                     Save date
                   </button>
                   <button onClick={addToGoogleCalendar} disabled={calLoading2 || calAdded}
-                    style={{ background: calAdded ? 'rgba(74,222,128,0.2)' : 'rgba(99,179,255,0.15)', color: calAdded ? '#4ade80' : '#93c5fd', border: `1px solid ${calAdded ? 'rgba(74,222,128,0.3)' : 'rgba(99,179,255,0.3)'}`, borderRadius: 8, padding: '7px 12px', fontSize: 12, cursor: calLoading2 ? 'default' : 'pointer', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}>
+                    style={{ background: calAdded ? 'rgba(74,222,128,0.2)' : 'rgba(99,179,255,0.15)', color: calAdded ? '#4ade80' : '#93c5fd', border: `1px solid ${calAdded ? 'rgba(74,222,128,0.3)' : 'rgba(99,179,255,0.3)'}`, borderRadius: 8, padding: '7px 12px', fontSize: 12, cursor: calLoading2 ? 'default' : 'pointer', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, whiteSpace: 'nowrap', width: isMobile ? '100%' : 'auto' }}>
                     {calLoading2 ? <><Spinner />Adding...</> : calAdded ? <><Check size={12} strokeWidth={2.2} aria-hidden="true" />Added</> : 'Add to Google Calendar'}
                   </button>
                 </div>
@@ -719,7 +719,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
               </div>
               {addingRole && (
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 6 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 6, marginBottom: 6 }}>
                     <input value={newRoleTitle} onChange={e => setNewRoleTitle(e.target.value)} placeholder="Role / Title" autoFocus
                       style={{ background: 'var(--surface-2)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 7, padding: '7px 10px', fontSize: 12, outline: 'none', fontFamily: 'var(--font-sans)' }} />
                     <input value={newRoleCompany} onChange={e => setNewRoleCompany(e.target.value)} placeholder="Company"
@@ -848,9 +848,9 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
           </div>
 
           {/* Actions */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Button variant="danger" size="sm" onClick={() => onDelete(c.id)}>Delete contact</Button>
-            <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'center', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 10 : 0 }}>
+            <Button variant="danger" size="sm" onClick={() => onDelete(c.id)} style={{ justifyContent: 'center', width: isMobile ? '100%' : 'auto' }}>Delete contact</Button>
+            <div style={{ display: 'flex', gap: 8, flexDirection: isMobile ? 'column-reverse' : 'row' }}>
               <Button size="sm" onClick={onClose}>Close</Button>
               <Button variant="primary" size="sm" onClick={() => saveAll({}, true)}>Save</Button>
             </div>
@@ -875,7 +875,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
               {/* AI Summary */}
               {(notesSummary || c.notes) && (
                 <div style={{ background: 'linear-gradient(135deg, rgba(139,127,255,0.08), rgba(99,179,255,0.05))', border: '1px solid rgba(139,127,255,0.2)', borderRadius: 14, padding: '14px 16px', marginBottom: 16 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: notesSummary ? 10 : 0 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'center', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 10 : 0, marginBottom: notesSummary ? 10 : 0 }}>
                     <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#c4b8ff', display: 'flex', alignItems: 'center', gap: 6 }}><Sparkles size={13} strokeWidth={1.8} aria-hidden="true" /> AI Summary</div>
                     <Button size="sm" onClick={generateNotesSummary} disabled={summaryLoading}>
                       {summaryLoading ? <><Spinner />Generating...</> : notesSummary ? 'Regenerate' : 'Generate Summary'}
@@ -916,9 +916,9 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
             </div>
           )}
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-            <Button size="sm" onClick={onClose}>Close</Button>
-            <Button variant="primary" size="sm" onClick={() => saveAll({}, true)}>Save</Button>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, flexDirection: isMobile ? 'column-reverse' : 'row' }}>
+            <Button size="sm" onClick={onClose} style={{ justifyContent: 'center', width: isMobile ? '100%' : 'auto' }}>Close</Button>
+            <Button variant="primary" size="sm" onClick={() => saveAll({}, true)} style={{ justifyContent: 'center', width: isMobile ? '100%' : 'auto' }}>Save</Button>
           </div>
         </div>
       )}
@@ -928,15 +928,15 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
         <div>
           <div style={{ marginBottom: 16 }}>
             <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 6 }}>LinkedIn</div>
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ display: 'flex', gap: 8, flexDirection: isMobile ? 'column' : 'row' }}>
               <input value={linkedinUrl} onChange={e => setLinkedinUrl(e.target.value)} placeholder="https://linkedin.com/in/handle" style={{ flex: 1, background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 'var(--radius-md)', padding: '7px 11px', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)' }} />
-              <Button size="sm" variant="primary" onClick={() => { saveAll({ linkedinUrl }); window.open(linkedinUrl || searchUrl, '_blank') }}>
+              <Button size="sm" variant="primary" onClick={() => { saveAll({ linkedinUrl }); window.open(linkedinUrl || searchUrl, '_blank') }} style={{ justifyContent: 'center', width: isMobile ? '100%' : 'auto' }}>
                 {linkedinUrl ? 'Open ' : 'Search '}
               </Button>
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+          <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexDirection: isMobile ? 'column' : 'row' }}>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 6 }}>Email</div>
               <input
@@ -1049,9 +1049,9 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
 
               <MutualSection parsed={parsed} resume={resume} profileSkills={profileSkills} />
 
-              <div style={{ marginTop: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ marginTop: 12, display: 'flex', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'center', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 10 : 0 }}>
                 <ExportButton text={formatLinkedInExport(parsed, c)} contactName={c.name} label="linkedin-profile" />
-                <Button size="sm" variant="primary" onClick={() => saveAll()}>Save profile</Button>
+                <Button size="sm" variant="primary" onClick={() => saveAll()} style={{ justifyContent: 'center', width: isMobile ? '100%' : 'auto' }}>Save profile</Button>
               </div>
             </div>
           )}
@@ -1092,7 +1092,7 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
               {parsed.education?.length > 0 && <div style={{ marginBottom: 12 }}><SectionLabel> Education</SectionLabel><div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>{parsed.education.map((x, i) => <Chip key={i} kind="education">{x}</Chip>)}</div></div>}
               {parsed.skills?.length > 0 && <div style={{ marginBottom: 12 }}><SectionLabel> Skills</SectionLabel><div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>{parsed.skills.map((x, i) => <Chip key={i} kind="skill">{x}</Chip>)}</div></div>}
               <div style={{ marginTop: 12 }}>
-                <Button size="sm" variant="primary" onClick={() => saveAll()}>Save</Button>
+                <Button size="sm" variant="primary" onClick={() => saveAll()} style={{ justifyContent: 'center', width: isMobile ? '100%' : 'auto' }}>Save</Button>
               </div>
             </div>
           )}
@@ -1108,14 +1108,14 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
             {resume ? ' Your resume included.' : ''}
           </Notice>
 
-          <Button variant="primary" size="sm" onClick={handleGenerateBrief} disabled={briefLoading}>
+          <Button variant="primary" size="sm" onClick={handleGenerateBrief} disabled={briefLoading} style={{ justifyContent: 'center', width: isMobile ? '100%' : 'auto' }}>
             {briefLoading ? <><Spinner />Generating...</> : brief ? 'Regenerate ' : 'Generate prep brief '}
           </Button>
 
           {brief && <BriefDisplay brief={brief} />}
 
           {brief && (
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12, flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'stretch' : 'center' }}>
               <button onClick={() => navigator.clipboard.writeText(brief)} style={{ fontSize: 12, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', gap: 4 }}> Copy</button>
               <ExportButton text={brief} contactName={c.name} label="prep-brief" />
             </div>
@@ -1158,15 +1158,15 @@ export function ContactDetail({ contact, onUpdate, onDelete, onClose, onSchedule
               )}
 
               {/* Input */}
-              <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ display: 'flex', gap: 8, flexDirection: isMobile ? 'column' : 'row' }}>
                 <input
                   value={chatInput}
                   onChange={e => setChatInput(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleChatSend() } }}
                   placeholder="Add more context, ask a question, tweak the brief..."
-                  style={{ flex: 1, background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 'var(--radius-md)', padding: '8px 12px', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)' }}
+                  style={{ flex: 1, background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 'var(--radius-md)', padding: '8px 12px', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)', minWidth: 0 }}
                 />
-                <Button variant="primary" size="sm" onClick={handleChatSend} disabled={!chatInput.trim() || chatLoading}>
+                <Button variant="primary" size="sm" onClick={handleChatSend} disabled={!chatInput.trim() || chatLoading} style={{ justifyContent: 'center', width: isMobile ? '100%' : 'auto' }}>
                   Send
                 </Button>
               </div>

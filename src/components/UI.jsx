@@ -419,7 +419,7 @@ export function Spinner() {
 // --- Tabs ---
 export function Tabs({ tabs, active, onChange }) {
   return (
-    <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: '1.25rem' }}>
+    <div className="tab-bar-scroll" style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: '1.25rem', overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
       {tabs.map(t => (
         <button
           key={t}
@@ -435,6 +435,8 @@ export function Tabs({ tabs, active, onChange }) {
             cursor: 'pointer',
             marginBottom: -1,
             transition: 'color 0.15s',
+            whiteSpace: 'nowrap',
+            flexShrink: 0,
           }}
         >
           {t}

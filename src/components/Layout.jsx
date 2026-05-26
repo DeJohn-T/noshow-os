@@ -68,13 +68,13 @@ export function LeftRail({ activeTab, onTabChange, onAddContact, onEditProfile, 
 export function MobileTopBar({ activeTab, onTabChange, onAddContact, onEditProfile, profile }) {
   return (
     <header className="mobile-top-bar">
-      <button onClick={() => onTabChange('home')} style={{ border: 'none', background: 'transparent', color: 'var(--text-primary)', fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 15, lineHeight: 0.95, cursor: 'pointer' }}>
+      <button className="mobile-brand" onClick={() => onTabChange('home')} style={{ border: 'none', background: 'transparent', color: 'var(--text-primary)', fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 15, lineHeight: 0.95, cursor: 'pointer' }}>
         NoShow OS
       </button>
-      <select value={activeTab} onChange={e => onTabChange(e.target.value)} aria-label="Current view" style={{ minWidth: 112, background: 'var(--surface)', color: 'var(--text-primary)', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontFamily: 'var(--font-sans)' }}>
+      <select className="mobile-view-select" value={activeTab} onChange={e => onTabChange(e.target.value)} aria-label="Current view" style={{ minWidth: 112, background: 'var(--surface)', color: 'var(--text-primary)', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontFamily: 'var(--font-sans)' }}>
         {NAV_ITEMS.map(item => <option key={item.key} value={item.key}>{item.label}</option>)}
       </select>
-      <div style={{ display: 'flex', gap: 6 }}>
+      <div className="mobile-actions" style={{ display: 'flex', gap: 6 }}>
         <IconButton label="Add contact" icon={Plus} onClick={onAddContact} />
         <IconButton label={profile?.name ? `${profile.name} profile` : 'Edit profile'} icon={Settings} onClick={onEditProfile} />
       </div>
@@ -116,11 +116,11 @@ export function RightOrbit({ children }) {
 export function TodayDesk({ contact, stats, onOpenContact, onOpenContacts, onAddContact }) {
   if (!contact) {
     return (
-      <section className="dossier-panel" style={{ padding: 24, overflow: 'hidden' }}>
+      <section className="dossier-panel today-desk today-desk-empty" style={{ padding: 24, overflow: 'hidden' }}>
         <div className="section-kicker" style={{ color: 'var(--accent)', marginBottom: 12 }}>Today desk</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 20, alignItems: 'end' }}>
           <div>
-            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(32px, 5vw, 58px)', lineHeight: 0.95, letterSpacing: 0, marginBottom: 14 }}>No meeting queued</h1>
+            <h1 className="today-desk-title" style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(32px, 5vw, 58px)', lineHeight: 0.95, letterSpacing: 0, marginBottom: 14 }}>No meeting queued</h1>
             <p style={{ color: 'var(--text-secondary)', maxWidth: 620, lineHeight: 1.7, margin: 0 }}>Schedule a chat or choose who you want to prepare for. The desk only promotes upcoming meetings now, so completed contacts stay out of the lead spot.</p>
           </div>
           <div style={{ display: 'grid', gap: 10 }}>
@@ -173,17 +173,17 @@ export function TodayDesk({ contact, stats, onOpenContact, onOpenContacts, onAdd
   const PrepStatusIcon = prepStatus.icon
 
   return (
-    <section className="dossier-panel" style={{ overflow: 'hidden' }}>
-      <div style={{ padding: 24, borderBottom: '1px solid var(--border)' }}>
+    <section className="dossier-panel today-desk" style={{ overflow: 'hidden' }}>
+      <div className="today-desk-header" style={{ padding: 24, borderBottom: '1px solid var(--border)' }}>
         <div className="section-kicker" style={{ color: 'var(--accent)', marginBottom: 12 }}>Today desk</div>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(34px, 5vw, 62px)', lineHeight: 0.94, letterSpacing: 0, marginBottom: 14 }}>Prep for {contact.name}</h1>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', color: 'var(--text-secondary)', fontSize: 13 }}>
+        <h1 className="today-desk-title" style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(34px, 5vw, 62px)', lineHeight: 0.94, letterSpacing: 0, marginBottom: 14 }}>Prep for {contact.name}</h1>
+        <div className="today-desk-meta" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', color: 'var(--text-secondary)', fontSize: 13 }}>
           <span>{[contact.role, contact.company].filter(Boolean).join(' at ') || 'No role set'}</span>
           {contact.chatDate && <span>{formatDate(contact.chatDate)}{contact.chatTime ? ` at ${contact.chatTime}` : ''}</span>}
           <StatusBadge status={contact.status} />
         </div>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(105px, 1fr))', gap: 1, background: 'transparent' }}>
+      <div className="today-status-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(105px, 1fr))', gap: 1, background: 'transparent' }}>
         <div style={{ background: 'var(--surface)', padding: 16 }}>
           <div className="section-kicker" style={{ marginBottom: 8 }}>Brief</div>
           <div style={{ color: contact.brief ? 'var(--green-text)' : 'var(--text-secondary)', fontWeight: 700 }}>{contact.brief ? 'Generated' : 'Not generated'}</div>
@@ -197,7 +197,7 @@ export function TodayDesk({ contact, stats, onOpenContact, onOpenContacts, onAdd
           <div style={{ color: 'var(--accent)', fontWeight: 700 }}>{stats?.total || 0} contacts</div>
         </div>
       </div>
-      <div style={{ margin: 16, borderRadius: 12, padding: '12px 14px', background: prepStatus.background, border: `1px solid ${prepStatus.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+      <div className="today-prep-status" style={{ margin: 16, borderRadius: 12, padding: '12px 14px', background: prepStatus.background, border: `1px solid ${prepStatus.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 220, flex: 1 }}>
           <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(244,247,249,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <PrepStatusIcon size={17} color={prepStatus.accent} strokeWidth={1.9} aria-hidden="true" />

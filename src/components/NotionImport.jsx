@@ -20,7 +20,7 @@ Rules:
 - Do not include yourself/the narrator as a contact
 - Do not return "Unknown" as a name - use something descriptive if the name is not clear`
 
-export default function NotionImport({ onImport, onClose, endpoint }) {
+export default function NotionImport({ onImport, onClose, endpoint, isMobile = false }) {
   const [tab, setTab] = useState('paste')
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(false)
@@ -115,7 +115,7 @@ export default function NotionImport({ onImport, onClose, endpoint }) {
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 300 }}
       onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={{ width: '100%', maxWidth: 600, background: 'var(--surface-1)', borderRadius: '20px 20px 0 0', padding: '1.5rem 1.5rem 2.5rem', maxHeight: '90vh', overflowY: 'auto' }}>
+      <div style={{ width: '100%', maxWidth: isMobile ? '100%' : 600, background: 'var(--surface-2)', border: '1px solid var(--border-strong)', borderRadius: '20px 20px 0 0', padding: isMobile ? '1.15rem 1.15rem calc(1.6rem + env(safe-area-inset-bottom))' : '1.5rem 1.5rem 2.5rem', maxHeight: isMobile ? 'calc(100dvh - 12px)' : '90vh', overflowY: 'auto' }}>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
           <div>
@@ -191,7 +191,7 @@ export default function NotionImport({ onImport, onClose, endpoint }) {
               <div style={{ fontSize: 11, color: 'var(--text-tertiary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5 }}>Name *</div>
               <input value={manualName} onChange={e => setManualName(e.target.value)} placeholder="Full name" style={inputStyle} autoFocus />
             </label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10 }}>
               <label>
                 <div style={{ fontSize: 11, color: 'var(--text-tertiary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5 }}>Role</div>
                 <input value={manualRole} onChange={e => setManualRole(e.target.value)} placeholder="e.g. Software Engineer" style={inputStyle} />

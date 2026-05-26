@@ -471,7 +471,7 @@ const VIBES = [
   { label: 'Awkward', value: 'awkward', color: '#f472b6', bg: 'rgba(244,114,182,0.12)', border: 'rgba(244,114,182,0.3)' },
 ]
 
-function DebriefModal({ contact, onSave, onClose }) {
+function DebriefModal({ contact, onSave, onClose, isMobile = false }) {
   const [vibe, setVibe] = useState('')
   const [note, setNote] = useState('')
   const [followUpDays, setFollowUpDays] = useState(null)
@@ -482,7 +482,7 @@ function DebriefModal({ contact, onSave, onClose }) {
   }
 
   return (
-    <div style={{ background: 'var(--surface-2)', borderRadius: 20, border: '1px solid var(--border-strong)', padding: '1.75rem', width: '100%', maxWidth: 420, boxShadow: 'var(--shadow-lg)' }}>
+    <div style={{ background: 'var(--surface-2)', borderRadius: isMobile ? '20px 20px 0 0' : 20, border: '1px solid var(--border-strong)', padding: isMobile ? '1.15rem' : '1.75rem', width: '100%', maxWidth: isMobile ? '100%' : 420, boxShadow: 'var(--shadow-lg)', maxHeight: isMobile ? 'calc(100dvh - 12px)' : 'none', overflowY: 'auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div style={{ fontSize: 17, fontWeight: 700, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: 8 }}>
           <MessageSquareText size={18} strokeWidth={1.8} aria-hidden="true" />
@@ -510,16 +510,16 @@ function DebriefModal({ contact, onSave, onClose }) {
           </button>
         ))}
       </div>
-      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-        <button onClick={onClose} style={{ background: 'var(--surface-3)', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 8, padding: '9px 18px', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Skip</button>
-        <button onClick={handleSave} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 22px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>Save debrief</button>
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', flexDirection: isMobile ? 'column-reverse' : 'row' }}>
+        <button onClick={onClose} style={{ background: 'var(--surface-3)', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 8, padding: '9px 18px', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-sans)', width: isMobile ? '100%' : 'auto' }}>Skip</button>
+        <button onClick={handleSave} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 22px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)', width: isMobile ? '100%' : 'auto' }}>Save debrief</button>
       </div>
     </div>
   )
 }
 
 // ─── Brain Dump Panel ────────────────────────────────────────────────────────────
-function BrainDumpPanel({ onClose, user }) {
+function BrainDumpPanel({ onClose, user, isMobile = false }) {
   const [notes, setNotes] = useState(() => loadBrainDump(user))
   const [input, setInput] = useState('')
 
@@ -535,7 +535,7 @@ function BrainDumpPanel({ onClose, user }) {
   }
 
   return (
-    <div style={{ position: 'fixed', bottom: 80, right: 20, width: 320, background: 'var(--surface-2)', border: '1px solid var(--border-strong)', borderRadius: 20, padding: '1.25rem', boxShadow: 'var(--shadow-lg)', zIndex: 200 }}>
+    <div style={{ position: 'fixed', bottom: isMobile ? 0 : 80, right: isMobile ? 0 : 20, left: isMobile ? 0 : 'auto', width: isMobile ? '100%' : 320, background: 'var(--surface-2)', border: '1px solid var(--border-strong)', borderRadius: isMobile ? '20px 20px 0 0' : 20, padding: isMobile ? '1rem 1rem calc(1.1rem + env(safe-area-inset-bottom))' : '1.25rem', boxShadow: 'var(--shadow-lg)', zIndex: 200, maxHeight: isMobile ? '72dvh' : 'auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: 8 }}>
           <NotebookText size={18} strokeWidth={1.8} aria-hidden="true" /> Quick Notes
@@ -819,7 +819,7 @@ function EditProfileModal({ profile, onSave, onClose, onLogout, isMobile }) {
   const inp = { width: '100%', background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '9px 12px', fontSize: 14, outline: 'none', fontFamily: 'var(--font-sans)', marginBottom: 16 }
 
   return (
-    <div style={{ background: 'var(--surface-2)', borderRadius: 20, border: '1px solid var(--border-strong)', padding: '1.75rem', width: '100%', maxWidth: 460, boxShadow: 'var(--shadow-lg)', maxHeight: '85vh', overflowY: 'auto' }}>
+    <div style={{ background: 'var(--surface-2)', borderRadius: isMobile ? '20px 20px 0 0' : 20, border: '1px solid var(--border-strong)', padding: isMobile ? '1.15rem' : '1.75rem', width: '100%', maxWidth: isMobile ? '100%' : 460, boxShadow: 'var(--shadow-lg)', maxHeight: isMobile ? 'calc(100dvh - 12px)' : '85vh', overflowY: 'auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-display)' }}>Edit Profile</div>
         <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 22, lineHeight: 1 }}><X size={16} strokeWidth={1.8} aria-hidden="true" /></button>
@@ -834,16 +834,16 @@ function EditProfileModal({ profile, onSave, onClose, onLogout, isMobile }) {
       <textarea value={goals} onChange={e => setGoals(e.target.value)} rows={3} style={{ ...inp, resize: 'vertical', lineHeight: 1.6 }} />
       <label style={{ display: 'block', fontSize: 11, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Skills</label>
       <SkillsInput skills={skills} onChange={setSkills} onPendingChange={setPendingSkill} />
-      <div style={{ display: 'flex', gap: 10, justifyContent: 'space-between', alignItems: 'center', marginTop: 20 }}>
+      <div style={{ display: 'flex', gap: 10, justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'center', flexDirection: isMobile ? 'column' : 'row', marginTop: 20 }}>
         {isMobile && onLogout
           ? <button onClick={onLogout} style={{ background: 'none', border: 'none', color: 'var(--text-tertiary)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-sans)', padding: '10px 4px' }}>Log out</button>
           : <div />}
-        <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={onClose} style={{ background: 'var(--surface-3)', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 18px', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Cancel</button>
+        <div style={{ display: 'flex', gap: 10, flexDirection: isMobile ? 'column-reverse' : 'row', width: isMobile ? '100%' : 'auto' }}>
+          <button onClick={onClose} style={{ background: 'var(--surface-3)', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 18px', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-sans)', width: isMobile ? '100%' : 'auto' }}>Cancel</button>
           <button onClick={() => {
             const finalSkills = pendingSkill.trim() && !skills.includes(pendingSkill.trim()) ? [...skills, pendingSkill.trim()] : skills
             onSave({ ...profile, name: name.trim(), school: school.trim(), major: major.trim(), goals: goals.trim(), skills: finalSkills })
-          }} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>Save</button>
+          }} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)', width: isMobile ? '100%' : 'auto' }}>Save</button>
         </div>
       </div>
     </div>
@@ -853,7 +853,7 @@ function EditProfileModal({ profile, onSave, onClose, onLogout, isMobile }) {
 // ─── Add Contact Modal ──────────────────────────────────────────────────────────
 export const HOW_WE_MET = [] // user-defined - see getHowWeMetSuggestions()
 
-function AddModal({ onAdd, onClose, contacts = [] }) {
+function AddModal({ onAdd, onClose, contacts = [], isMobile = false }) {
   const [name, setName] = useState('')
   const [role, setRole] = useState('')
   const [company, setCompany] = useState('')
@@ -862,14 +862,14 @@ function AddModal({ onAdd, onClose, contacts = [] }) {
   // Pull suggestions from existing contacts' howWeMet values
   const suggestions = [...new Set(contacts.map(c => c.howWeMet).filter(Boolean))].slice(0, 8)
   return (
-    <div style={{ background: 'var(--surface-2)', borderRadius: 20, border: '1px solid var(--border-strong)', padding: '1.75rem', width: '100%', maxWidth: 440, boxShadow: 'var(--shadow-lg)' }}>
+    <div style={{ background: 'var(--surface-2)', borderRadius: isMobile ? '20px 20px 0 0' : 20, border: '1px solid var(--border-strong)', padding: isMobile ? '1.15rem' : '1.75rem', width: '100%', maxWidth: isMobile ? '100%' : 440, boxShadow: 'var(--shadow-lg)', maxHeight: isMobile ? 'calc(100dvh - 12px)' : 'none', overflowY: 'auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div style={{ fontSize: 17, fontWeight: 700, fontFamily: 'var(--font-display)' }}>New contact</div>
         <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 22, lineHeight: 1 }}><X size={16} strokeWidth={1.8} aria-hidden="true" /></button>
       </div>
       <label style={{ display: 'block', fontSize: 11, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Full name</label>
       <input value={name} onChange={e => setName(e.target.value)} placeholder="Alex Chen" autoFocus style={inp} />
-      <div style={{ display: 'flex', gap: 12 }}>
+      <div style={{ display: 'flex', gap: 12, flexDirection: isMobile ? 'column' : 'row' }}>
         <div style={{ flex: 1 }}>
           <label style={{ display: 'block', fontSize: 11, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Role</label>
           <input value={role} onChange={e => setRole(e.target.value)} placeholder="Senior SWE" style={inp} />
@@ -891,10 +891,10 @@ function AddModal({ onAdd, onClose, contacts = [] }) {
           ))}
         </div>
       )}
-      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-        <button onClick={onClose} style={{ background: 'var(--surface-3)', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 18px', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Cancel</button>
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', flexDirection: isMobile ? 'column-reverse' : 'row' }}>
+        <button onClick={onClose} style={{ background: 'var(--surface-3)', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 18px', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-sans)', width: isMobile ? '100%' : 'auto' }}>Cancel</button>
         <button onClick={() => { if (name.trim()) onAdd({ name, role, company, howWeMet }) }} disabled={!name.trim()}
-          style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontSize: 14, fontWeight: 600, cursor: name.trim() ? 'pointer' : 'not-allowed', opacity: name.trim() ? 1 : 0.4, fontFamily: 'var(--font-display)' }}>
+          style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontSize: 14, fontWeight: 600, cursor: name.trim() ? 'pointer' : 'not-allowed', opacity: name.trim() ? 1 : 0.4, fontFamily: 'var(--font-display)', width: isMobile ? '100%' : 'auto' }}>
           Add contact
         </button>
       </div>
@@ -903,7 +903,7 @@ function AddModal({ onAdd, onClose, contacts = [] }) {
 }
 
 // ─── Schedule Meeting Modal ─────────────────────────────────────────────────────
-function ScheduleModal({ contacts, onSchedule, onClose, prefillDate }) {
+function ScheduleModal({ contacts, onSchedule, onClose, prefillDate, isMobile = false }) {
   const [contactId, setContactId] = useState(contacts[0]?.id || '')
   const [date, setDate] = useState(prefillDate || '')
   const [time, setTime] = useState('10:00')
@@ -924,7 +924,7 @@ function ScheduleModal({ contacts, onSchedule, onClose, prefillDate }) {
   }
 
   return (
-    <div style={{ background: 'var(--surface-2)', borderRadius: 20, border: '1px solid var(--border-strong)', padding: '1.75rem', width: '100%', maxWidth: 420, boxShadow: 'var(--shadow-lg)' }}>
+    <div style={{ background: 'var(--surface-2)', borderRadius: isMobile ? '20px 20px 0 0' : 20, border: '1px solid var(--border-strong)', padding: isMobile ? '1.15rem' : '1.75rem', width: '100%', maxWidth: isMobile ? '100%' : 420, boxShadow: 'var(--shadow-lg)', maxHeight: isMobile ? 'calc(100dvh - 12px)' : 'none', overflowY: 'auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div style={{ fontSize: 17, fontWeight: 700, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: 8 }}>
           <CalendarDays size={18} strokeWidth={1.8} aria-hidden="true" />
@@ -936,7 +936,7 @@ function ScheduleModal({ contacts, onSchedule, onClose, prefillDate }) {
       <select value={contactId} onChange={e => setContactId(e.target.value)} style={{ ...inp, cursor: 'pointer' }}>
         {contacts.map(c => <option key={c.id} value={c.id}>{c.name}{c.company ? ` - ${c.company}` : ''}</option>)}
       </select>
-      <div style={{ display: 'flex', gap: 12 }}>
+      <div style={{ display: 'flex', gap: 12, flexDirection: isMobile ? 'column' : 'row' }}>
         <div style={{ flex: 1 }}>
           <label style={{ display: 'block', fontSize: 11, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Date</label>
           <input type="date" value={date} onChange={e => setDate(e.target.value)} style={inp} />
@@ -946,9 +946,9 @@ function ScheduleModal({ contacts, onSchedule, onClose, prefillDate }) {
           <input type="time" value={time} onChange={e => setTime(e.target.value)} style={inp} />
         </div>
       </div>
-      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-        <button onClick={onClose} style={{ background: 'var(--surface-3)', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 18px', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Cancel</button>
-        <button onClick={handleSchedule} disabled={!date} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontSize: 14, fontWeight: 600, cursor: date ? 'pointer' : 'not-allowed', opacity: date ? 1 : 0.4, fontFamily: 'var(--font-display)' }}>
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', flexDirection: isMobile ? 'column-reverse' : 'row' }}>
+        <button onClick={onClose} style={{ background: 'var(--surface-3)', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 18px', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-sans)', width: isMobile ? '100%' : 'auto' }}>Cancel</button>
+        <button onClick={handleSchedule} disabled={!date} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontSize: 14, fontWeight: 600, cursor: date ? 'pointer' : 'not-allowed', opacity: date ? 1 : 0.4, fontFamily: 'var(--font-display)', width: isMobile ? '100%' : 'auto' }}>
           Schedule
         </button>
       </div>
@@ -957,7 +957,7 @@ function ScheduleModal({ contacts, onSchedule, onClose, prefillDate }) {
 }
 
 // ─── Scheduled Tasks Panel ───────────────────────────────────────────────────────
-function ScheduledTasksPanel({ tasks, contacts, onAdd, onToggle, onDelete }) {
+function ScheduledTasksPanel({ tasks, contacts, onAdd, onToggle, onDelete, isMobile = false }) {
   const [text, setText] = useState('')
   const [date, setDate] = useState('')
   const [forWho, setForWho] = useState('')
@@ -984,20 +984,20 @@ function ScheduledTasksPanel({ tasks, contacts, onAdd, onToggle, onDelete }) {
       </div>
 
       {/* Add task form */}
-      <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 16px', marginBottom: 14 }}>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+      <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 14, padding: isMobile ? 12 : '14px 16px', marginBottom: 14 }}>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end', flexDirection: isMobile ? 'column' : 'row' }}>
           <input value={text} onChange={e => setText(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAdd()}
             placeholder="Task description..."
-            style={{ flex: 2, minWidth: 160, background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '8px 12px', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)' }} />
+            style={{ flex: 2, minWidth: isMobile ? 0 : 160, width: isMobile ? '100%' : 'auto', background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '8px 12px', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)' }} />
           <input type="date" value={date} onChange={e => setDate(e.target.value)}
-            style={{ flex: 1, minWidth: 130, background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '8px 12px', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)' }} />
+            style={{ flex: 1, minWidth: isMobile ? 0 : 130, width: isMobile ? '100%' : 'auto', background: 'var(--surface-3)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '8px 12px', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)' }} />
           <select value={forWho} onChange={e => setForWho(e.target.value)}
-            style={{ flex: 1, minWidth: 130, background: 'var(--surface-3)', color: forWho ? 'var(--text-primary)' : 'var(--text-tertiary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '8px 12px', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)' }}>
+            style={{ flex: 1, minWidth: isMobile ? 0 : 130, width: isMobile ? '100%' : 'auto', background: 'var(--surface-3)', color: forWho ? 'var(--text-primary)' : 'var(--text-tertiary)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '8px 12px', fontSize: 13, outline: 'none', fontFamily: 'var(--font-sans)' }}>
             <option value="">For who? (optional)</option>
             {contacts.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
           </select>
           <button onClick={handleAdd} disabled={!text.trim()}
-            style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 16px', fontSize: 13, fontWeight: 600, cursor: text.trim() ? 'pointer' : 'not-allowed', opacity: text.trim() ? 1 : 0.4, fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap' }}>
+            style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 16px', fontSize: 13, fontWeight: 600, cursor: text.trim() ? 'pointer' : 'not-allowed', opacity: text.trim() ? 1 : 0.4, fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap', width: isMobile ? '100%' : 'auto' }}>
             + Add
           </button>
         </div>
@@ -1814,7 +1814,7 @@ export default function App() {
     { label: 'Followed Up', value: stats.followedUp, icon: MessageSquareText, accent: 'var(--rose)', onClick: () => setTab('contacts') },
   ]
 
-  const modalBg = { position: 'fixed', inset: 0, background: 'rgba(8,16,24,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', zIndex: 100, backdropFilter: 'blur(12px)' }
+  const modalBg = { position: 'fixed', inset: 0, background: 'rgba(8,16,24,0.8)', display: 'flex', alignItems: isMobile ? 'flex-end' : 'center', justifyContent: 'center', padding: isMobile ? '0' : '1rem', zIndex: 100, backdropFilter: 'blur(12px)' }
   const quickNoteButtonStyle = {
     position: 'fixed',
     ...(isMobile ? { bottom: 'calc(94px + env(safe-area-inset-bottom))', right: 16, width: 46, height: 46 } : { bottom: 24, right: 24, width: 52, height: 52 }),
@@ -2025,12 +2025,12 @@ export default function App() {
       )}
       {/* ── CONTACTS ─────────────────────────────────────────────────────────────── */}
       {tab === 'contacts' && (
-        <div style={{ maxWidth: 760, margin: '0 auto', padding: isMobile ? '1rem' : '1.5rem 1.5rem' }}>
+        <div style={{ maxWidth: isMobile ? '100%' : 760, margin: '0 auto', padding: isMobile ? '0 0 calc(6rem + env(safe-area-inset-bottom))' : '1.5rem 1.5rem' }}>
 
           {/* Personalized Tips */}
-          <div style={{ background: 'linear-gradient(135deg, rgba(139,127,255,0.12), rgba(74,222,128,0.06))', border: '1px solid rgba(139,127,255,0.3)', borderRadius: 20, padding: '1.25rem 1.5rem', marginBottom: '1rem', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ background: 'linear-gradient(135deg, rgba(139,127,255,0.12), rgba(74,222,128,0.06))', border: '1px solid rgba(139,127,255,0.3)', borderRadius: isMobile ? 16 : 20, padding: isMobile ? '14px' : '1.25rem 1.5rem', marginBottom: '1rem', position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', top: -30, right: -30, width: 130, height: 130, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,127,255,0.15) 0%, transparent 70%)', pointerEvents: 'none' }} />
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: allInsights.length ? 12 : 8 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 8 : 0, marginBottom: allInsights.length ? 12 : 8 }}>
               <div style={{ fontSize: 12, color: '#a78bfa', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: 6 }}>
                 <Sparkles size={14} strokeWidth={1.8} aria-hidden="true" /> Wisdom from your network
               </div>
@@ -2044,7 +2044,7 @@ export default function App() {
             </div>
             {allInsights.length > 0 ? (
               <div style={{ opacity: insightFade ? 1 : 0, transform: insightFade ? 'none' : 'translateY(6px)', transition: 'all 0.25s ease' }}>
-                <div style={{ fontSize: 16, color: 'var(--text-primary)', lineHeight: 1.7, fontWeight: 500, marginBottom: 6 }}>
+                <div style={{ fontSize: isMobile ? 14 : 16, color: 'var(--text-primary)', lineHeight: 1.7, fontWeight: 500, marginBottom: 6 }}>
                   "{allInsights[insightIdx % allInsights.length]?.text}"
                 </div>
                 <div style={{ fontSize: 13, color: '#a78bfa', display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -2073,13 +2073,13 @@ export default function App() {
             )}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, 1fr)', gap: isMobile ? 8 : 10, marginBottom: '1rem' }}>
             {[['All', stats.total, '#917aff', 'all'], ['Scheduled', stats.scheduled, '#4ade80', 'scheduled'], ['Completed', stats.completed, '#fbbf24', 'completed'], ['Followed up', stats.followedUp, '#f472b6', 'followed up']].map(([l, v, color, filter]) => (
               <div key={l} onClick={() => setContactFilter(contactFilter === filter ? 'all' : filter)}
-                style={{ background: contactFilter === filter ? `${color}15` : 'var(--surface-2)', border: `1px solid ${contactFilter === filter ? `${color}44` : 'var(--border)'}`, borderRadius: 'var(--radius-lg)', padding: '1rem', textAlign: 'center', position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'all 0.15s' }}>
+                style={{ background: contactFilter === filter ? `${color}15` : 'var(--surface-2)', border: `1px solid ${contactFilter === filter ? `${color}44` : 'var(--border)'}`, borderRadius: 'var(--radius-lg)', padding: isMobile ? '12px 8px' : '1rem', textAlign: 'center', position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'all 0.15s' }}>
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: color }} />
-                <div style={{ fontSize: 26, fontWeight: 700, fontFamily: 'var(--font-display)', color }}>{v}</div>
-                <div style={{ fontSize: 11, color: contactFilter === filter ? color : 'var(--text-tertiary)', marginTop: 4, fontWeight: contactFilter === filter ? 600 : 400 }}>{l}</div>
+                <div style={{ fontSize: isMobile ? 24 : 26, fontWeight: 700, fontFamily: 'var(--font-display)', color }}>{v}</div>
+                <div style={{ fontSize: isMobile ? 10 : 11, color: contactFilter === filter ? color : 'var(--text-tertiary)', marginTop: 4, fontWeight: contactFilter === filter ? 600 : 400, lineHeight: 1.2 }}>{l}</div>
               </div>
             ))}
           </div>
@@ -2098,7 +2098,7 @@ export default function App() {
             )
             if (!due.length) return null
             return (
-              <div style={{ background: 'linear-gradient(135deg, rgba(244,114,182,0.1), rgba(251,191,36,0.06))', border: '1px solid rgba(244,114,182,0.3)', borderRadius: 16, padding: '14px 16px', marginBottom: '1rem' }}>
+              <div style={{ background: 'linear-gradient(135deg, rgba(244,114,182,0.1), rgba(251,191,36,0.06))', border: '1px solid rgba(244,114,182,0.3)', borderRadius: 16, padding: isMobile ? '12px' : '14px 16px', marginBottom: '1rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 700, color: '#f9a8d4', display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -2127,8 +2127,8 @@ export default function App() {
           })()}
 
           {/* Search bar + Add button */}
-          <div style={{ display: 'flex', gap: 8, marginBottom: '1rem', alignItems: 'center' }}>
-            <div style={{ position: 'relative', flex: 1 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'minmax(0, 1fr) auto auto auto', gap: 8, marginBottom: '1rem', alignItems: 'center' }}>
+            <div style={{ position: 'relative', gridColumn: isMobile ? '1 / -1' : 'auto' }}>
               <input
                 value={contactSearch}
                 onChange={e => setContactSearch(e.target.value)}
@@ -2138,19 +2138,19 @@ export default function App() {
               <Search size={15} strokeWidth={1.8} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)', pointerEvents: 'none' }} aria-hidden="true" />
               {contactSearch && <button onClick={() => setContactSearch('')} aria-label="Clear contact search" style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center' }}><X size={14} strokeWidth={1.8} aria-hidden="true" /></button>}
             </div>
-            <button onClick={() => setShowNotionImport(true)} style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6, padding: '10px 14px', background: 'var(--surface-3)', color: 'var(--text-secondary)', border: '1px solid var(--border-strong)', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap' }}>
+            <button onClick={() => setShowNotionImport(true)} style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 14px', background: 'var(--surface-3)', color: 'var(--text-secondary)', border: '1px solid var(--border-strong)', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap', width: '100%' }}>
               <FileText size={14} strokeWidth={1.8} aria-hidden="true" />
               Import
             </button>
             {/* View toggle */}
-            <div style={{ display: 'flex', background: 'var(--surface-3)', border: '1px solid var(--border-strong)', borderRadius: 10, overflow: 'hidden', flexShrink: 0 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', background: 'var(--surface-3)', border: '1px solid var(--border-strong)', borderRadius: 10, overflow: 'hidden', flexShrink: 0, width: '100%' }}>
               {[['az', ListChecks, 'A-Z Directory'], ['grouped', Settings2, 'By Status'], ['connection', NetworkIcon, 'By How We Met']].map(([v, Icon, title]) => (
-                <button key={v} onClick={() => setContactView(v)} title={title} style={{ padding: '9px 11px', background: contactView === v ? 'var(--accent-dim)' : 'transparent', color: contactView === v ? 'var(--accent)' : 'var(--text-tertiary)', border: 'none', cursor: 'pointer', fontSize: 14, lineHeight: 1 }}>
+                <button key={v} onClick={() => setContactView(v)} title={title} style={{ padding: '9px 11px', background: contactView === v ? 'var(--accent-dim)' : 'transparent', color: contactView === v ? 'var(--accent)' : 'var(--text-tertiary)', border: 'none', cursor: 'pointer', fontSize: 14, lineHeight: 1, display: 'flex', justifyContent: 'center' }}>
                   <Icon size={15} strokeWidth={1.8} aria-hidden="true" />
                 </button>
               ))}
             </div>
-            <button onClick={() => setShowAdd(true)} style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px', background: 'var(--accent)', color: 'var(--accent-fg)', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap' }}>
+            <button onClick={() => setShowAdd(true)} style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 16px', background: 'var(--accent)', color: 'var(--accent-fg)', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap', gridColumn: isMobile ? '1 / -1' : 'auto', width: '100%' }}>
               + Add Contact
             </button>
           </div>
@@ -2185,7 +2185,7 @@ export default function App() {
                         <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--accent)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
                           {meta.label} <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-tertiary)', marginLeft: 4 }}>({catContacts.length})</span>
                         </div>
-                        <ContactList contacts={catContacts} onSelect={setDetail} />
+                        <ContactList contacts={catContacts} onSelect={setDetail} isMobile={isMobile} />
                       </div>
                     )
                   })}
@@ -2213,7 +2213,7 @@ export default function App() {
                         <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: cat.color, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
                           {cat.label} <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-tertiary)', marginLeft: 4 }}>({catContacts.length})</span>
                         </div>
-                        <ContactList contacts={catContacts} onSelect={setDetail} />
+                        <ContactList contacts={catContacts} onSelect={setDetail} isMobile={isMobile} />
                       </div>
                     )
                   })}
@@ -2255,11 +2255,11 @@ export default function App() {
                         const color = STATUS_COLORS[person.status] || '#917aff'
                         return (
                           <div key={person.id} onClick={() => setDetail(person)}
-                            style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 14, padding: '12px 14px', cursor: 'pointer', transition: 'border-color 0.15s' }}
+                            style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', gap: isMobile ? 10 : 12, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 14, padding: isMobile ? '12px' : '12px 14px', cursor: 'pointer', transition: 'border-color 0.15s' }}
                             onMouseEnter={e => e.currentTarget.style.borderColor = color + '66'}
                             onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
                           >
-                            <Avatar name={person.name} company={person.company} size={38} />
+                            <Avatar name={person.name} company={person.company} size={isMobile ? 34 : 38} />
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', marginBottom: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{person.name}</div>
                               <div style={{ fontSize: 12, color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -2281,22 +2281,22 @@ export default function App() {
                                 )
                               })()}
                             </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0, maxWidth: isMobile ? 96 : 'none' }}>
                               <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20, background: color + '22', color, border: `1px solid ${color}44`, whiteSpace: 'nowrap' }}>
                                 {STATUS_LABELS[person.status] || person.status}
                               </span>
                               <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                                {hasUpcoming && (
+                                {hasUpcoming && !isMobile && (
                                   <span style={{ fontSize: 10, color: '#4ade80', background: 'rgba(74,222,128,0.1)', padding: '1px 6px', borderRadius: 10 }}>
                                      {new Date(person.chatDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                                   </span>
                                 )}
-                                {followUpDue && (
+                                {followUpDue && !isMobile && (
                                   <span style={{ fontSize: 10, color: '#f9a8d4', background: 'rgba(244,114,182,0.1)', padding: '1px 6px', borderRadius: 10 }}>
                                      Follow-up due
                                   </span>
                                 )}
-                                {person.nextAction === 'done' && (
+                                {person.nextAction === 'done' && !isMobile && (
                                   <span style={{ fontSize: 10, color: '#4ade80', background: 'rgba(74,222,128,0.08)', padding: '1px 6px', borderRadius: 10 }}>
                                     <Check size={11} strokeWidth={2.2} style={{ verticalAlign: -2, marginRight: 3 }} aria-hidden="true" /> Done
                                   </span>
@@ -2321,21 +2321,21 @@ export default function App() {
 
       {/* ── UPCOMING ─────────────────────────────────────────────────────────────── */}
       {tab === 'upcoming' && (
-        <div style={{ maxWidth: 900, margin: '0 auto', padding: isMobile ? '1rem' : '1.5rem 1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div style={{ maxWidth: isMobile ? '100%' : 900, margin: '0 auto', padding: isMobile ? '0 0 calc(6rem + env(safe-area-inset-bottom))' : '1.5rem 1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'center', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 12 : 0, marginBottom: 16 }}>
             <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: 10 }}>
               <CalendarDays size={22} strokeWidth={1.8} aria-hidden="true" />
               Calendar
             </div>
-            <button onClick={() => setShowSchedule(true)} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)' }}>
+            <button onClick={() => setShowSchedule(true)} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-display)', width: isMobile ? '100%' : 'auto' }}>
               + Schedule Meeting
             </button>
           </div>
-          <MonthCalendar contacts={contacts} onSelect={setDetail} onDayClick={(dateStr) => { setCalendarDate(dateStr); setShowSchedule(true) }} />
+          <MonthCalendar contacts={contacts} onSelect={setDetail} onDayClick={(dateStr) => { setCalendarDate(dateStr); setShowSchedule(true) }} isMobile={isMobile} />
 
           <div style={{ marginTop: 18 }}>
             <div style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-display)', marginBottom: 10 }}>Upcoming Meetings</div>
-            <UpcomingList contacts={contacts} onSelect={setDetail} onSchedule={(c) => { setCalendarDate(''); setShowSchedule(true) }} />
+            <UpcomingList contacts={contacts} onSelect={setDetail} onSchedule={(c) => { setCalendarDate(''); setShowSchedule(true) }} isMobile={isMobile} />
           </div>
 
           {/* ── Follow-up Reminders ── */}
@@ -2354,17 +2354,17 @@ export default function App() {
                     const overdue = c.followUpDate < todayStr2
                     const dateLabel = new Date(c.followUpDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
                     return (
-                      <div key={c.id} onClick={() => setDetail(c)} style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'var(--surface-2)', border: `1px solid ${overdue ? 'rgba(248,113,113,0.3)' : 'var(--border)'}`, borderRadius: 12, padding: '12px 16px', cursor: 'pointer' }}>
+                      <div key={c.id} onClick={() => setDetail(c)} style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', gap: 12, background: 'var(--surface-2)', border: `1px solid ${overdue ? 'rgba(248,113,113,0.3)' : 'var(--border)'}`, borderRadius: 12, padding: isMobile ? '12px' : '12px 16px', cursor: 'pointer' }}>
                         <Avatar name={c.name} company={c.company} size={32} />
-                        <div style={{ flex: 1 }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: 13, fontWeight: 600 }}>{c.name}</div>
-                          <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{c.role || ''}{c.company ? ` · ${c.company}` : ''}</div>
+                          <div style={{ fontSize: 11, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.role || ''}{c.company ? ` · ${c.company}` : ''}</div>
                         </div>
                         <div style={{ textAlign: 'right' }}>
                           <div style={{ fontSize: 12, fontWeight: 600, color: overdue ? '#f87171' : '#38bdf8' }}>{overdue ? 'Overdue' : 'Due'}</div>
                           <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{dateLabel}</div>
                         </div>
-                        {c.followUpNote && <div style={{ fontSize: 11, color: 'var(--text-secondary)', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>"{c.followUpNote}"</div>}
+                        {c.followUpNote && !isMobile && <div style={{ fontSize: 11, color: 'var(--text-secondary)', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>"{c.followUpNote}"</div>}
                       </div>
                     )
                   })}
@@ -2374,13 +2374,13 @@ export default function App() {
           })()}
 
           {/* ── Scheduled Tasks ── */}
-          <ScheduledTasksPanel tasks={scheduledTasks} contacts={contacts} onAdd={addScheduledTask} onToggle={toggleScheduledTask} onDelete={deleteScheduledTask} />
+          <ScheduledTasksPanel tasks={scheduledTasks} contacts={contacts} onAdd={addScheduledTask} onToggle={toggleScheduledTask} onDelete={deleteScheduledTask} isMobile={isMobile} />
         </div>
       )}
 
       {/* ── JOBS ─────────────────────────────────────────────────────────────────── */}
       {tab === 'jobs' && (
-        <div style={{ maxWidth: 760, margin: '0 auto', padding: isMobile ? '1rem' : '1.5rem 1.5rem' }}>
+        <div style={{ maxWidth: isMobile ? '100%' : 760, margin: '0 auto', padding: isMobile ? '0 0 calc(6rem + env(safe-area-inset-bottom))' : '1.5rem 1.5rem' }}>
           <div style={{ marginBottom: 16 }}>
             <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-display)', marginBottom: 6 }}>Job Matches</div>
             <div style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
@@ -2388,7 +2388,7 @@ export default function App() {
               {skills.length > 0 && ` Skills: ${skills.slice(0, 3).join(', ')}${skills.length > 3 ? '...' : ''}.`}
             </div>
           </div>
-          <JobSearch profile={profile} resume={resume} skills={skills} cachedJobs={jobRecs} setCachedJobs={setJobRecs} isLoading={jobRecsLoading} setIsLoading={setJobRecsLoading} currentUser={currentUser} />
+          <JobSearch profile={profile} resume={resume} skills={skills} cachedJobs={jobRecs} setCachedJobs={setJobRecs} isLoading={jobRecsLoading} setIsLoading={setJobRecsLoading} currentUser={currentUser} isMobile={isMobile} />
         </div>
       )}
 
@@ -2444,7 +2444,7 @@ export default function App() {
       {/* ── Modals ────────────────────────────────────────────────────────────────── */}
       {showAdd && (
         <div style={modalBg} onClick={e => { if (e.target === e.currentTarget) setShowAdd(false) }}>
-          <AddModal onAdd={addContact} onClose={() => setShowAdd(false)} contacts={contacts} />
+          <AddModal onAdd={addContact} onClose={() => setShowAdd(false)} contacts={contacts} isMobile={isMobile} />
         </div>
       )}
       {showEdit && (
@@ -2454,12 +2454,12 @@ export default function App() {
       )}
       {showSchedule && contacts.length > 0 && (
         <div style={modalBg} onClick={e => { if (e.target === e.currentTarget) setShowSchedule(false) }}>
-          <ScheduleModal contacts={contacts} onSchedule={handleScheduleFromModal} onClose={() => { setShowSchedule(false); setCalendarDate('') }} prefillDate={calendarDate} />
+          <ScheduleModal contacts={contacts} onSchedule={handleScheduleFromModal} onClose={() => { setShowSchedule(false); setCalendarDate('') }} prefillDate={calendarDate} isMobile={isMobile} />
         </div>
       )}
       {detail && (
-        <div style={{ ...modalBg, alignItems: 'flex-start', padding: '3rem 1rem 1rem', overflowY: 'auto' }} onClick={e => { if (e.target === e.currentTarget) setDetail(null) }}>
-          <ContactDetail contact={detail} onUpdate={updateContact} onDelete={deleteContact} onClose={() => setDetail(null)} onSchedule={handleSchedule} resume={resume} profileSkills={skills} />
+        <div style={{ ...modalBg, alignItems: isMobile ? 'flex-end' : 'flex-start', padding: isMobile ? '0' : '3rem 1rem 1rem', overflowY: 'auto' }} onClick={e => { if (e.target === e.currentTarget) setDetail(null) }}>
+          <ContactDetail contact={detail} onUpdate={updateContact} onDelete={deleteContact} onClose={() => setDetail(null)} onSchedule={handleSchedule} resume={resume} profileSkills={skills} isMobile={isMobile} />
         </div>
       )}
       {debriefContact && (
@@ -2472,6 +2472,7 @@ export default function App() {
               setDebriefContact(null)
             }}
             onClose={() => setDebriefContact(null)}
+            isMobile={isMobile}
           />
         </div>
       )}
@@ -2487,7 +2488,7 @@ export default function App() {
       >
         <Zap size={22} strokeWidth={1.8} aria-hidden="true" />
       </button>
-      {showBrainDump && <BrainDumpPanel onClose={() => setShowBrainDump(false)} user={currentUser} />}
+      {showBrainDump && <BrainDumpPanel onClose={() => setShowBrainDump(false)} user={currentUser} isMobile={isMobile} />}
 
       {showNotionImport && (
         <NotionImport
@@ -2497,6 +2498,7 @@ export default function App() {
             persist(merged)
           }}
           onClose={() => setShowNotionImport(false)}
+          isMobile={isMobile}
         />
       )}
     </AppShell>

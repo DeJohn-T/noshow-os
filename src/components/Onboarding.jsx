@@ -269,6 +269,7 @@ function PDFDrop({ hint, onFile, fileName, parsing }) {
 // ─── Main Onboarding ───────────────────────────────────────────────────────────
 
 export function Onboarding({ onComplete, existingProfile }) {
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768)
   const [name, setName] = useState(existingProfile?.name || '')
   const [school, setSchool] = useState(existingProfile?.school || '')
   const [notInCollege, setNotInCollege] = useState(existingProfile?.school === 'Not enrolled')
@@ -281,6 +282,12 @@ export function Onboarding({ onComplete, existingProfile }) {
   const [parsingResume, setParsingResume] = useState(false)
   const [step, setStep] = useState(0)
   const [animOut, setAnimOut] = useState(false)
+
+  useEffect(() => {
+    const fn = () => setIsMobile(window.innerWidth < 768)
+    window.addEventListener('resize', fn)
+    return () => window.removeEventListener('resize', fn)
+  }, [])
 
   function goNext() { setAnimOut(true); setTimeout(() => { setStep(s => s + 1); setAnimOut(false) }, 180) }
   function goBack() { setAnimOut(true); setTimeout(() => { setStep(s => s - 1); setAnimOut(false) }, 180) }
@@ -315,9 +322,11 @@ export function Onboarding({ onComplete, existingProfile }) {
     borderBottom: '2px solid rgba(255,255,255,0.15)', padding: '10px 0',
     fontSize: 20, outline: 'none', fontFamily: "'Syne', sans-serif", transition: 'border-color 0.2s',
   }
-  const btnPrimary = { background: '#7c6fff', color: '#fff', border: 'none', borderRadius: 10, padding: '12px 28px', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: "'Syne', sans-serif" }
-  const btnSecondary = { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', border: 'none', borderRadius: 10, padding: '12px 20px', fontSize: 14, cursor: 'pointer', fontFamily: "'Syne', sans-serif" }
+  const btnPrimary = { background: '#7c6fff', color: '#fff', border: 'none', borderRadius: 10, padding: '12px 28px', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: "'Syne', sans-serif", width: isMobile ? '100%' : 'auto' }
+  const btnSecondary = { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', border: 'none', borderRadius: 10, padding: '12px 20px', fontSize: 14, cursor: 'pointer', fontFamily: "'Syne', sans-serif", width: isMobile ? '100%' : 'auto' }
   const stepStyle = { opacity: animOut ? 0 : 1, transform: animOut ? 'translateY(14px)' : 'none', transition: 'all 0.18s ease' }
+  const headlineStyle = { fontSize: isMobile ? 32 : 38, fontWeight: 800, lineHeight: 1.08, marginBottom: 10 }
+  const navRowStyle = { display: 'flex', gap: 12, flexDirection: isMobile ? 'column-reverse' : 'row' }
 
   const canContinueSchool = notInCollege || school.trim().length > 1
 
@@ -325,7 +334,7 @@ export function Onboarding({ onComplete, existingProfile }) {
     // Step 0: Name
     <div key="name" style={stepStyle}>
       <div style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 14 }}>Welcome</div>
-      <div style={{ fontSize: 38, fontWeight: 800, lineHeight: 1.1, marginBottom: 10 }}>What should<br />we call you?</div>
+      <div style={headlineStyle}>What should<br />we call you?</div>
       <div style={{ fontSize: 15, color: 'rgba(255,255,255,0.35)', marginBottom: 44 }}>Show up prepared. Every time.</div>
       <AnimatedField show={true} delay={100}>
         <input autoFocus value={name} onChange={e => setName(e.target.value)} onKeyDown={e => e.key === 'Enter' && name.trim() && goNext()} placeholder="Your name..."
@@ -339,7 +348,7 @@ export function Onboarding({ onComplete, existingProfile }) {
     // Step 1: School + Major
     <div key="school" style={stepStyle}>
       <div style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 14 }}>Background</div>
-      <div style={{ fontSize: 38, fontWeight: 800, lineHeight: 1.1, marginBottom: 44 }}>Where are<br />you studying?</div>
+      <div style={{ ...headlineStyle, marginBottom: isMobile ? 30 : 44 }}>Where are<br />you studying?</div>
 
       <AnimatedField show={true} delay={100}>
         {notInCollege ? (
@@ -380,7 +389,7 @@ export function Onboarding({ onComplete, existingProfile }) {
       </AnimatedField>
 
       <AnimatedField show={canContinueSchool} delay={120}>
-        <div style={{ display: 'flex', gap: 12, marginTop: notInCollege ? 8 : 40 }}>
+        <div style={{ ...navRowStyle, marginTop: notInCollege ? 8 : 40 }}>
           <button onClick={goBack} style={btnSecondary}><ArrowLeft size={15} strokeWidth={1.8} style={{ verticalAlign: -3, marginRight: 5 }} aria-hidden="true" />Back</button>
           <button onClick={goNext} style={btnPrimary}>Continue <ArrowRight size={16} strokeWidth={1.8} style={{ verticalAlign: -3, marginLeft: 6 }} aria-hidden="true" /></button>
         </div>
@@ -390,7 +399,7 @@ export function Onboarding({ onComplete, existingProfile }) {
     // Step 2: Goal
     <div key="goals" style={stepStyle}>
       <div style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 14 }}>Your focus</div>
-      <div style={{ fontSize: 38, fontWeight: 800, lineHeight: 1.1, marginBottom: 10 }}>What are you<br />working toward?</div>
+      <div style={headlineStyle}>What are you<br />working toward?</div>
       <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.3)', marginBottom: 44 }}>Be specific - this personalizes everything.</div>
       <AnimatedField show={true} delay={100}>
         <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>Your goal</div>
@@ -399,7 +408,7 @@ export function Onboarding({ onComplete, existingProfile }) {
           onFocus={e => e.target.style.borderBottomColor = '#7c6fff'} onBlur={e => e.target.style.borderBottomColor = 'rgba(255,255,255,0.15)'} />
       </AnimatedField>
       <AnimatedField show={goals.length > 3} delay={80}>
-        <div style={{ display: 'flex', gap: 12, marginTop: 40 }}>
+        <div style={{ ...navRowStyle, marginTop: 40 }}>
           <button onClick={goBack} style={btnSecondary}><ArrowLeft size={15} strokeWidth={1.8} style={{ verticalAlign: -3, marginRight: 5 }} aria-hidden="true" />Back</button>
           <button onClick={goNext} style={btnPrimary}>Continue <ArrowRight size={16} strokeWidth={1.8} style={{ verticalAlign: -3, marginLeft: 6 }} aria-hidden="true" /></button>
         </div>
@@ -409,13 +418,13 @@ export function Onboarding({ onComplete, existingProfile }) {
     // Step 3: Skills
     <div key="skills" style={stepStyle}>
       <div style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 14 }}>Your skills</div>
-      <div style={{ fontSize: 38, fontWeight: 800, lineHeight: 1.1, marginBottom: 10 }}>What do you<br />bring to the table?</div>
+      <div style={headlineStyle}>What do you<br />bring to the table?</div>
       <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.3)', marginBottom: 40 }}>Start typing - suggestions appear automatically.</div>
       <AnimatedField show={true} delay={100}>
         <SkillsInput skills={skills} onChange={setSkills} />
       </AnimatedField>
       <AnimatedField show={true} delay={200}>
-        <div style={{ display: 'flex', gap: 12, marginTop: 44 }}>
+        <div style={{ ...navRowStyle, marginTop: 44 }}>
           <button onClick={goBack} style={btnSecondary}><ArrowLeft size={15} strokeWidth={1.8} style={{ verticalAlign: -3, marginRight: 5 }} aria-hidden="true" />Back</button>
           <button onClick={goNext} style={btnPrimary}>Continue <ArrowRight size={16} strokeWidth={1.8} style={{ verticalAlign: -3, marginLeft: 6 }} aria-hidden="true" /></button>
         </div>
@@ -425,7 +434,7 @@ export function Onboarding({ onComplete, existingProfile }) {
     // Step 4: Resume
     <div key="resume" style={stepStyle}>
       <div style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 14 }}>Almost done</div>
-      <div style={{ fontSize: 38, fontWeight: 800, lineHeight: 1.1, marginBottom: 10 }}>Upload your<br />resume</div>
+      <div style={headlineStyle}>Upload your<br />resume</div>
       <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.3)', marginBottom: 40 }}>Personalizes job matches and prep briefs. You can skip this.</div>
       <AnimatedField show={true} delay={100}>
         <PDFDrop hint="Drop your resume PDF here" onFile={handleResumeFile} fileName={resumeName} parsing={parsingResume} />
@@ -434,7 +443,7 @@ export function Onboarding({ onComplete, existingProfile }) {
         )}
       </AnimatedField>
       <AnimatedField show={true} delay={200}>
-        <div style={{ display: 'flex', gap: 12, marginTop: 36 }}>
+        <div style={{ ...navRowStyle, marginTop: 36 }}>
           <button onClick={goBack} style={btnSecondary}><ArrowLeft size={15} strokeWidth={1.8} style={{ verticalAlign: -3, marginRight: 5 }} aria-hidden="true" />Back</button>
           <button onClick={finish} disabled={parsingResume} style={{ ...btnPrimary, opacity: parsingResume ? 0.5 : 1 }}>
             {resumeName ? <>Let's go <Sparkles size={15} strokeWidth={1.8} style={{ verticalAlign: -3, marginLeft: 6 }} aria-hidden="true" /></> : <>Skip and finish <ArrowRight size={16} strokeWidth={1.8} style={{ verticalAlign: -3, marginLeft: 6 }} aria-hidden="true" /></>}
@@ -445,11 +454,11 @@ export function Onboarding({ onComplete, existingProfile }) {
   ]
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(160deg, #0f1923 0%, #142030 50%, #0f1923 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', fontFamily: "'Syne', sans-serif", color: '#fff', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(160deg, #0f1923 0%, #142030 50%, #0f1923 100%)', display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'center', padding: isMobile ? '1.25rem 1rem calc(2rem + env(safe-area-inset-bottom))' : '2rem', fontFamily: "'Syne', sans-serif", color: '#fff', position: 'relative', overflowY: 'auto', overflowX: 'hidden' }}>
       <div style={{ position: 'fixed', inset: 0, opacity: 0.02, backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(124,111,255,1) 1px, transparent 0)', backgroundSize: '48px 48px', pointerEvents: 'none' }} />
       <div style={{ position: 'fixed', top: '15%', left: '50%', transform: 'translateX(-50%)', width: 700, height: 700, borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,111,255,0.07) 0%, transparent 70%)', pointerEvents: 'none' }} />
       <div style={{ width: '100%', maxWidth: 500, position: 'relative' }}>
-        <div style={{ display: 'flex', gap: 5, marginBottom: 56 }}>
+        <div style={{ display: 'flex', gap: 5, marginBottom: isMobile ? 38 : 56 }}>
           {[0,1,2,3,4].map(i => (
             <div key={i} style={{ height: 3, borderRadius: 2, flex: i === step ? 4 : 1, background: i <= step ? '#7c6fff' : 'rgba(255,255,255,0.08)', transition: 'all 0.35s ease' }} />
           ))}
