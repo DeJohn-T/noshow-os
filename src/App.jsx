@@ -645,7 +645,7 @@ function buildEdges(nodes, activeTypes) {
   return edges
 }
 
-function NetworkMap({ contacts, onSelect }) {
+function NetworkMap({ contacts, onSelect, isMobile = false }) {
   const [hovered, setHovered] = useState(null)
   const [activeTypes, setActiveTypes] = useState(new Set(['company', 'school', 'industry']))
   const MAX_EDGES = 25
@@ -665,10 +665,11 @@ function NetworkMap({ contacts, onSelect }) {
     </div>
   )
 
-  const W = 700, H = 400
+  const W = isMobile ? 420 : 700
+  const H = isMobile ? 360 : 400
   const cx = W / 2, cy = H / 2
   const count = contacts.length
-  const r = Math.min(cx - 70, cy - 60, 38 * Math.sqrt(count))
+  const r = Math.min(cx - (isMobile ? 58 : 70), cy - (isMobile ? 58 : 60), (isMobile ? 30 : 38) * Math.sqrt(count))
 
   const nodes = contacts.map((c, i) => ({
     ...c,
@@ -689,7 +690,7 @@ function NetworkMap({ contacts, onSelect }) {
   const hoveredNode = hovered ? nodes.find(n => n.id === hovered) : null
 
   return (
-    <div style={{ display: 'flex', gap: 16 }}>
+    <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 12 : 16 }}>
       {/* Map */}
       <div style={{ flex: 1, minWidth: 0 }}>
         {/* Toggles */}
@@ -704,7 +705,7 @@ function NetworkMap({ contacts, onSelect }) {
               </button>
             )
           })}
-          <span style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text-tertiary)', alignSelf: 'center' }}>
+          <span style={{ marginLeft: isMobile ? 0 : 'auto', width: isMobile ? '100%' : 'auto', fontSize: 10, color: 'var(--text-tertiary)', alignSelf: 'center' }}>
             {edges.length} link{edges.length !== 1 ? 's' : ''}{clipped ? ` (max ${MAX_EDGES})` : ''}
           </span>
         </div>
@@ -716,9 +717,10 @@ function NetworkMap({ contacts, onSelect }) {
               <div style={{ width: 7, height: 7, borderRadius: '50%', background: c }} /> {s}
             </div>
           ))}
-          {isFiltering && <div style={{ fontSize: 10, color: 'var(--text-tertiary)', marginLeft: 'auto' }}>Hover a node to highlight its connections</div>}
+          {isFiltering && !isMobile && <div style={{ fontSize: 10, color: 'var(--text-tertiary)', marginLeft: 'auto' }}>Hover a node to highlight its connections</div>}
         </div>
 
+        <div style={{ background: isMobile ? 'rgba(244,247,249,0.03)' : 'transparent', border: isMobile ? '1px solid var(--border)' : 'none', borderRadius: isMobile ? 16 : 0, padding: isMobile ? 8 : 0, overflow: 'hidden' }}>
         <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ display: 'block', overflow: 'visible' }}>
           {/* Render dimmed edges first, then active ones on top */}
           {edges.map((e, i) => {
@@ -755,19 +757,20 @@ function NetworkMap({ contacts, onSelect }) {
                 <text x={n.x} y={n.y + 4} textAnchor="middle" fontSize={isHov ? 11 : 10} fill={nc} fontWeight="700" fontFamily="var(--font-display)">
                   {n.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
                 </text>
-                <text x={n.x} y={n.y + 33} textAnchor="middle" fontSize={9} fill={isHov ? 'var(--text-primary)' : 'var(--text-secondary)'} fontWeight={isHov ? '600' : '400'} fontFamily="var(--font-sans)">
+                {!isMobile && <text x={n.x} y={n.y + 33} textAnchor="middle" fontSize={9} fill={isHov ? 'var(--text-primary)' : 'var(--text-secondary)'} fontWeight={isHov ? '600' : '400'} fontFamily="var(--font-sans)">
                   {n.name.split(' ')[0]}
-                </text>
+                </text>}
               </g>
             )
           })}
         </svg>
+        </div>
       </div>
 
       {/* Hover info panel */}
-      <div style={{ width: 280, flexShrink: 0 }}>
+      <div style={{ width: isMobile ? '100%' : 280, flexShrink: 0 }}>
         {hoveredNode ? (
-          <div style={{ background: 'var(--surface-3)', border: '1px solid var(--border-strong)', borderRadius: 14, padding: '18px', height: '100%', boxSizing: 'border-box' }}>
+          <div style={{ background: 'var(--surface-3)', border: '1px solid var(--border-strong)', borderRadius: 14, padding: isMobile ? 14 : 18, height: isMobile ? 'auto' : '100%', boxSizing: 'border-box' }}>
             <div style={{ fontWeight: 700, fontSize: 16, fontFamily: 'var(--font-display)', color: STATUS_COLORS[hoveredNode.status] || 'var(--text-primary)', marginBottom: 4 }}>{hoveredNode.name}</div>
             <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 14, lineHeight: 1.5 }}>
               {[hoveredNode.role, hoveredNode.company].filter(Boolean).join(' · ') || 'No role set'}
@@ -795,9 +798,9 @@ function NetworkMap({ contacts, onSelect }) {
             )}
           </div>
         ) : (
-          <div style={{ background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 14, padding: '18px', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            <NetworkIcon size={28} style={{ opacity: 0.3 }} aria-hidden="true" />
-            <div style={{ fontSize: 12, color: 'var(--text-tertiary)', textAlign: 'center', lineHeight: 1.6 }}>Hover a node to see their connections</div>
+          <div style={{ background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 14, padding: isMobile ? '12px 14px' : 18, height: isMobile ? 'auto' : '100%', boxSizing: 'border-box', display: 'flex', flexDirection: isMobile ? 'row' : 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <NetworkIcon size={isMobile ? 18 : 28} style={{ opacity: 0.3, flexShrink: 0 }} aria-hidden="true" />
+            <div style={{ fontSize: 12, color: 'var(--text-tertiary)', textAlign: isMobile ? 'left' : 'center', lineHeight: 1.6 }}>{isMobile ? 'Tap a node to open the contact.' : 'Hover a node to see their connections'}</div>
           </div>
         )}
       </div>
@@ -1040,7 +1043,7 @@ const RESUME_TIPS = [
   { title: 'Ruthless formatting', body: 'Consistent fonts, aligned margins, no photos. Save as PDF. Name it "FirstLast_Resume.pdf" - not "resume_FINAL_v3.pdf".' },
 ]
 
-function ResumeTab({ resume, profile, onUpdateResume }) {
+function ResumeTab({ resume, profile, onUpdateResume, isMobile = false }) {
   const [analysis, setAnalysis] = useState(null)
   const [analyzing, setAnalyzing] = useState(false)
   const [analyzeError, setAnalyzeError] = useState('')
@@ -1084,19 +1087,21 @@ function ResumeTab({ resume, profile, onUpdateResume }) {
     { label: 'Education', value: parsed?.education?.length || 0, icon: Target, accent: 'var(--rose)' },
   ]
   const topSkills = parsed?.skills?.slice(0, 10) || []
-  const resumeHeadline = parsed?.summary || 'Upload a resume to turn your background into a usable career signal for prep briefs, job targeting, and networking follow-through.'
+  const resumeHeadline = parsed
+    ? `${parsed.experience?.length || 0} experience entries, ${parsed.skills?.length || 0} skills, and ${parsed.projects?.length || 0} projects are ready for prep briefs and job matching.`
+    : 'Upload a resume to turn your background into a usable career signal for prep briefs, job targeting, and networking follow-through.'
   const hasParsedContent = !!parsed
 
   return (
-    <div style={{ maxWidth: 1120, margin: '0 auto', padding: '1.5rem' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 18, alignItems: 'stretch', marginBottom: 18 }}>
-        <div className="dossier-panel" style={{ padding: 22, position: 'relative', overflow: 'hidden' }}>
+    <div style={{ maxWidth: 1120, margin: '0 auto', padding: isMobile ? '0 0 calc(6rem + env(safe-area-inset-bottom))' : '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1.45fr) minmax(280px, 0.75fr)', gap: isMobile ? 12 : 18, alignItems: 'stretch', marginBottom: isMobile ? 12 : 18 }}>
+        <div className="dossier-panel" style={{ padding: isMobile ? 18 : 22, position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(197,255,90,0.08), transparent 32%, rgba(143,227,255,0.09))', pointerEvents: 'none' }} />
           <div style={{ position: 'relative' }}>
             <div className="section-kicker" style={{ color: 'var(--accent)', marginBottom: 12 }}>Career signal</div>
-            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(34px, 5vw, 62px)', lineHeight: 0.94, letterSpacing: 0, margin: '0 0 12px' }}>Resume OS</h1>
-            <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: 1.7, maxWidth: 700 }}>{resumeHeadline}</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 18 }}>
+            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: isMobile ? 34 : 'clamp(34px, 5vw, 62px)', lineHeight: 0.96, letterSpacing: 0, margin: '0 0 12px' }}>Resume OS</h1>
+            <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: isMobile ? 1.55 : 1.7, maxWidth: 700, fontSize: isMobile ? 14 : 15 }}>{resumeHeadline}</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: isMobile ? 14 : 18 }}>
               <span style={{ fontSize: 12, color: resume ? 'var(--green-text)' : 'var(--text-tertiary)', border: `1px solid ${resume ? 'rgba(74,222,128,0.28)' : 'var(--border)'}`, background: resume ? 'rgba(74,222,128,0.08)' : 'rgba(244,247,249,0.04)', borderRadius: 100, padding: '5px 10px' }}>{resume ? 'Resume uploaded' : 'Resume needed'}</span>
               {hasParsedContent && <span style={{ fontSize: 12, color: 'var(--cyan)', border: '1px solid rgba(143,227,255,0.25)', background: 'rgba(143,227,255,0.08)', borderRadius: 100, padding: '5px 10px' }}>Parsed profile ready</span>}
               {profile?.resumeName && <span style={{ fontSize: 12, color: 'var(--text-secondary)', border: '1px solid var(--border)', background: 'rgba(244,247,249,0.04)', borderRadius: 100, padding: '5px 10px' }}>{profile.resumeName}</span>}
@@ -1104,21 +1109,21 @@ function ResumeTab({ resume, profile, onUpdateResume }) {
           </div>
         </div>
 
-        <div className="dossier-panel" style={{ padding: 18, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 16 }}>
+        <div className="dossier-panel" style={{ padding: isMobile ? 16 : 18, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 16 }}>
           <div>
             <div className="section-kicker" style={{ color: 'var(--amber)', marginBottom: 10 }}>Control room</div>
             <div style={{ color: 'var(--text-primary)', fontWeight: 700, marginBottom: 6 }}>{resume ? 'Keep this source sharp' : 'Add your source document'}</div>
             <div style={{ color: 'var(--text-tertiary)', fontSize: 13, lineHeight: 1.6 }}>{resume ? 'Refresh the PDF or run analysis when your resume changes.' : 'Drop a PDF and NoShow OS will pull out the useful career context.'}</div>
           </div>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', flexDirection: isMobile ? 'column' : 'row' }}>
           <input ref={fileRef} type="file" accept="application/pdf" style={{ display: 'none' }} onChange={handleReupload} />
           <button onClick={() => fileRef.current?.click()} disabled={uploading}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: 'var(--surface-2)', color: 'var(--text-secondary)', border: '1px solid var(--border-strong)', borderRadius: 10, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, width: isMobile ? '100%' : 'auto', padding: '9px 16px', background: 'var(--surface-2)', color: 'var(--text-secondary)', border: '1px solid var(--border-strong)', borderRadius: 10, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
             {uploading ? <Spinner /> : <Upload size={14} strokeWidth={1.8} aria-hidden="true" />} {resume ? 'Replace resume' : 'Upload resume'}
           </button>
           {resume && (
             <button onClick={handleAnalyze} disabled={analyzing}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 18px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: analyzing ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-sans)', opacity: analyzing ? 0.7 : 1 }}>
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, width: isMobile ? '100%' : 'auto', padding: '9px 18px', background: 'var(--accent)', color: 'var(--accent-fg)', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: analyzing ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-sans)', opacity: analyzing ? 0.7 : 1 }}>
               {analyzing ? <><Spinner />Analyzing...</> : <><Sparkles size={14} strokeWidth={1.8} aria-hidden="true" /> AI Analysis</>}
             </button>
           )}
@@ -1127,16 +1132,16 @@ function ResumeTab({ resume, profile, onUpdateResume }) {
       </div>
 
       {resume && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))', gap: 12, marginBottom: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, minmax(0, 1fr))' : 'repeat(auto-fit, minmax(145px, 1fr))', gap: isMobile ? 10 : 12, marginBottom: isMobile ? 14 : 20 }}>
           {resumeStats.map(stat => {
             const Icon = stat.icon
             return (
-              <div key={stat.label} style={{ background: 'rgba(244,247,249,0.04)', border: '1px solid var(--border)', borderRadius: 12, padding: 14, minHeight: 92 }}>
+              <div key={stat.label} style={{ background: 'rgba(244,247,249,0.04)', border: '1px solid var(--border)', borderRadius: 12, padding: isMobile ? 12 : 14, minHeight: isMobile ? 82 : 92 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                   <span className="section-kicker">{stat.label}</span>
                   <Icon size={17} color={stat.accent} strokeWidth={1.8} aria-hidden="true" />
                 </div>
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: 30, lineHeight: 1, fontWeight: 800, color: stat.accent }}>{stat.value}</div>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: isMobile ? 28 : 30, lineHeight: 1, fontWeight: 800, color: stat.accent }}>{stat.value}</div>
               </div>
             )
           })}
@@ -1146,7 +1151,7 @@ function ResumeTab({ resume, profile, onUpdateResume }) {
       {!resume ? (
         /* No resume - show upload prompt + tips */
         <div>
-          <div style={{ background: 'linear-gradient(135deg, rgba(143,227,255,0.08), rgba(197,255,90,0.06))', border: '1px dashed rgba(143,227,255,0.32)', borderRadius: 16, padding: '3rem 2rem', textAlign: 'center', marginBottom: 28, boxShadow: 'var(--shadow-md)' }}
+          <div style={{ background: 'linear-gradient(135deg, rgba(143,227,255,0.08), rgba(197,255,90,0.06))', border: '1px dashed rgba(143,227,255,0.32)', borderRadius: 16, padding: isMobile ? '2rem 1rem' : '3rem 2rem', textAlign: 'center', marginBottom: 28, boxShadow: 'var(--shadow-md)' }}
             onDragOver={e => e.preventDefault()}
             onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f) { const ev = { target: { files: [f] } }; handleReupload(ev) } }}>
             <FileText size={38} style={{ marginBottom: 12, color: 'var(--cyan)' }} aria-hidden="true" />
@@ -1158,7 +1163,7 @@ function ResumeTab({ resume, profile, onUpdateResume }) {
             </button>
           </div>
           <div className="section-kicker" style={{ color: 'var(--amber)', marginBottom: 14 }}>Resume tips</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
             {RESUME_TIPS.map((tip, i) => (
               <div key={i} style={{ background: 'linear-gradient(180deg, rgba(22,35,48,0.96), rgba(16,25,35,0.96))', border: '1px solid var(--border)', borderRadius: 14, padding: '16px 18px' }}>
                 <FileText size={20} style={{ marginBottom: 8, color: 'var(--accent)' }} aria-hidden="true" />
@@ -1169,14 +1174,14 @@ function ResumeTab({ resume, profile, onUpdateResume }) {
           </div>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 14 : 20 }}>
           {/* AI Analysis result */}
           {analyzeError && <div style={{ fontSize: 13, color: 'var(--red-text)', padding: '10px 14px', background: 'rgba(239,68,68,0.08)', borderRadius: 10, border: '1px solid var(--red-border)' }}>{analyzeError}</div>}
           {topSkills.length > 0 && (
-            <div className="dossier-panel" style={{ padding: 18, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16, alignItems: 'center' }}>
+            <div className="dossier-panel" style={{ padding: isMobile ? 16 : 18, display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(260px, 1fr))', gap: isMobile ? 12 : 16, alignItems: 'center' }}>
               <div>
                 <div className="section-kicker" style={{ color: 'var(--cyan)', marginBottom: 10 }}>Skill focus</div>
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: 24, lineHeight: 1.1, fontWeight: 800, marginBottom: 8 }}>What the resume is saying first</div>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: isMobile ? 21 : 24, lineHeight: 1.1, fontWeight: 800, marginBottom: 8 }}>What the resume is saying first</div>
                 <div style={{ color: 'var(--text-tertiary)', fontSize: 13, lineHeight: 1.6 }}>The first skills become the fastest scan for recruiters, coffee chat prep, and job matching.</div>
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -1187,9 +1192,9 @@ function ResumeTab({ resume, profile, onUpdateResume }) {
             </div>
           )}
           {analysis && (
-            <div style={{ background: 'linear-gradient(135deg, rgba(139,127,255,0.07), rgba(99,179,255,0.04))', border: '1px solid rgba(139,127,255,0.2)', borderRadius: 16, padding: '20px 22px' }}>
+            <div style={{ background: 'linear-gradient(135deg, rgba(139,127,255,0.07), rgba(99,179,255,0.04))', border: '1px solid rgba(139,127,255,0.2)', borderRadius: 16, padding: isMobile ? '16px' : '20px 22px' }}>
               {/* Score */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+              <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'stretch' : 'center', gap: 16, marginBottom: 16 }}>
                 <div style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: 42, fontWeight: 800, fontFamily: 'var(--font-display)', color: scoreColor(analysis.score), lineHeight: 1 }}>{analysis.score}</div>
                   <div style={{ fontSize: 11, color: scoreColor(analysis.score), fontWeight: 600, marginTop: 2 }}>{analysis.scoreLabel}</div>
@@ -1246,36 +1251,36 @@ function ResumeTab({ resume, profile, onUpdateResume }) {
 
           {/* Parsed resume data */}
           {parsed && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(290px, 1fr))', gap: isMobile ? 12 : 16 }}>
               {/* Summary */}
               {parsed.summary && (
-                <div className="paper-panel" style={{ gridColumn: '1 / -1', borderRadius: 14, padding: '20px 22px' }}>
+                <div className="paper-panel" style={{ gridColumn: '1 / -1', borderRadius: 14, padding: isMobile ? '16px' : '20px 22px' }}>
                   <div className="section-kicker" style={{ color: 'rgba(16,25,35,0.62)', marginBottom: 10 }}>Summary</div>
-                  <div style={{ fontFamily: 'Georgia, serif', fontSize: 18, color: 'var(--text-ink)', lineHeight: 1.65 }}>{parsed.summary}</div>
+                  <div style={{ fontFamily: 'Georgia, serif', fontSize: isMobile ? 15 : 18, color: 'var(--text-ink)', lineHeight: isMobile ? 1.55 : 1.65 }}>{parsed.summary}</div>
                 </div>
               )}
               {/* Experience */}
               {parsed.experience?.length > 0 && (
-                <div className="dossier-panel" style={{ padding: '18px 20px' }}>
+                <div className="dossier-panel" style={{ padding: isMobile ? '16px' : '18px 20px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                     <ListChecks size={16} color="var(--green-text)" strokeWidth={1.8} aria-hidden="true" />
                     <div className="section-kicker" style={{ color: 'var(--green-text)' }}>Experience</div>
                   </div>
                   {parsed.experience.map((e, i) => (
-                    <div key={i} style={{ fontSize: 13, color: 'var(--text-primary)', marginBottom: 10, lineHeight: 1.65, padding: '0 0 10px 14px', borderLeft: '2px solid rgba(74,222,128,0.28)', borderBottom: i < parsed.experience.length - 1 ? '1px solid var(--border)' : 'none' }}>{e}</div>
+                    <div key={i} style={{ fontSize: isMobile ? 12 : 13, color: 'var(--text-primary)', marginBottom: 10, lineHeight: isMobile ? 1.55 : 1.65, padding: '0 0 10px 14px', borderLeft: '2px solid rgba(74,222,128,0.28)', borderBottom: i < parsed.experience.length - 1 ? '1px solid var(--border)' : 'none' }}>{e}</div>
                   ))}
                 </div>
               )}
               {/* Skills */}
               {parsed.skills?.length > 0 && (
-                <div className="dossier-panel" style={{ padding: '18px 20px' }}>
+                <div className="dossier-panel" style={{ padding: isMobile ? '16px' : '18px 20px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                     <Zap size={16} color="var(--cyan)" strokeWidth={1.8} aria-hidden="true" />
                     <div className="section-kicker" style={{ color: 'var(--cyan)' }}>Skills</div>
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
                     {parsed.skills.map((s, i) => (
-                      <span key={i} style={{ fontSize: 12, padding: '5px 12px', background: i < 8 ? 'rgba(143,227,255,0.1)' : 'var(--surface-3)', color: i < 8 ? 'var(--cyan)' : 'var(--text-primary)', border: `1px solid ${i < 8 ? 'rgba(143,227,255,0.28)' : 'var(--border-strong)'}`, borderRadius: 100, fontWeight: 600 }}>{s}</span>
+                      <span key={i} style={{ fontSize: isMobile ? 11 : 12, padding: isMobile ? '5px 10px' : '5px 12px', background: i < 8 ? 'rgba(143,227,255,0.1)' : 'var(--surface-3)', color: i < 8 ? 'var(--cyan)' : 'var(--text-primary)', border: `1px solid ${i < 8 ? 'rgba(143,227,255,0.28)' : 'var(--border-strong)'}`, borderRadius: 100, fontWeight: 600 }}>{s}</span>
                     ))}
                   </div>
                   {/* Education */}
@@ -1283,7 +1288,7 @@ function ResumeTab({ resume, profile, onUpdateResume }) {
                     <div style={{ marginTop: 18, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
                       <div className="section-kicker" style={{ color: 'var(--rose)', marginBottom: 8 }}>Education</div>
                       {parsed.education.map((e, i) => (
-                        <div key={i} style={{ fontSize: 13, color: 'var(--text-primary)', marginBottom: 6, lineHeight: 1.6 }}>{e}</div>
+                        <div key={i} style={{ fontSize: isMobile ? 12 : 13, color: 'var(--text-primary)', marginBottom: 6, lineHeight: 1.6 }}>{e}</div>
                       ))}
                     </div>
                   )}
@@ -1291,14 +1296,14 @@ function ResumeTab({ resume, profile, onUpdateResume }) {
               )}
               {/* Projects */}
               {parsed.projects?.length > 0 && (
-                <div className="dossier-panel" style={{ gridColumn: '1 / -1', padding: '18px 20px' }}>
+                <div className="dossier-panel" style={{ gridColumn: '1 / -1', padding: isMobile ? '16px' : '18px 20px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                     <NotebookText size={16} color="var(--amber)" strokeWidth={1.8} aria-hidden="true" />
                     <div className="section-kicker" style={{ color: 'var(--amber)' }}>Projects</div>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
                     {parsed.projects.map((p, i) => (
-                      <div key={i} style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.6, padding: '12px 14px', background: i % 2 === 0 ? 'rgba(251,191,36,0.08)' : 'rgba(244,114,182,0.08)', border: `1px solid ${i % 2 === 0 ? 'rgba(251,191,36,0.22)' : 'rgba(244,114,182,0.22)'}`, borderRadius: 12 }}>{p}</div>
+                      <div key={i} style={{ fontSize: isMobile ? 12 : 13, color: 'var(--text-primary)', lineHeight: 1.6, padding: '12px 14px', background: i % 2 === 0 ? 'rgba(251,191,36,0.08)' : 'rgba(244,114,182,0.08)', border: `1px solid ${i % 2 === 0 ? 'rgba(251,191,36,0.22)' : 'rgba(244,114,182,0.22)'}`, borderRadius: 12 }}>{p}</div>
                     ))}
                   </div>
                 </div>
@@ -1309,7 +1314,7 @@ function ResumeTab({ resume, profile, onUpdateResume }) {
           {/* Static tips at the bottom */}
           <div>
             <div className="section-kicker" style={{ color: 'var(--amber)', marginBottom: 14 }}>General tips</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
               {RESUME_TIPS.map((tip, i) => (
                 <div key={i} style={{ background: i % 2 === 0 ? 'rgba(197,255,90,0.06)' : 'rgba(143,227,255,0.06)', border: `1px solid ${i % 2 === 0 ? 'rgba(197,255,90,0.18)' : 'rgba(143,227,255,0.18)'}`, borderRadius: 14, padding: '16px 18px' }}>
                   <FileText size={20} style={{ marginBottom: 8, color: i % 2 === 0 ? 'var(--accent)' : 'var(--cyan)' }} aria-hidden="true" />
@@ -1710,7 +1715,7 @@ export default function App() {
   const modalBg = { position: 'fixed', inset: 0, background: 'rgba(8,16,24,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', zIndex: 100, backdropFilter: 'blur(12px)' }
   const quickNoteButtonStyle = {
     position: 'fixed',
-    ...(isMobile ? { top: 72, right: 14, width: 44, height: 44 } : { bottom: 24, right: 24, width: 52, height: 52 }),
+    ...(isMobile ? { bottom: 'calc(94px + env(safe-area-inset-bottom))', right: 16, width: 46, height: 46 } : { bottom: 24, right: 24, width: 52, height: 52 }),
     borderRadius: '50%',
     background: 'linear-gradient(135deg, #7c6fff, #4ade80)',
     border: 'none',
@@ -2290,6 +2295,7 @@ export default function App() {
         <ResumeTab
           resume={resume}
           profile={profile}
+          isMobile={isMobile}
           onUpdateResume={(resumeName, resumeText, resumeParsed) => {
             const updated = { ...profile, resumeName, resumeText, resumeParsed }
             saveProfile(currentUser, updated)
@@ -2300,28 +2306,28 @@ export default function App() {
 
       {/* ── NETWORK ──────────────────────────────────────────────────────────────── */}
       {tab === 'network' && (
-        <div style={{ maxWidth: 900, margin: '0 auto', padding: isMobile ? '1rem' : '1.5rem 1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <div style={{ maxWidth: 900, margin: '0 auto', padding: isMobile ? '0 0 calc(6rem + env(safe-area-inset-bottom))' : '1.5rem 1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', flexDirection: isMobile ? 'column' : 'row', gap: 10, marginBottom: isMobile ? 14 : 20 }}>
             <div>
-              <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-display)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 10 }}>
-                <NetworkIcon size={22} strokeWidth={1.8} aria-hidden="true" />
+              <div style={{ fontSize: isMobile ? 34 : 22, lineHeight: isMobile ? 1 : 1.2, fontWeight: 700, fontFamily: 'var(--font-display)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 10 }}>
+                <NetworkIcon size={isMobile ? 28 : 22} strokeWidth={1.8} aria-hidden="true" />
                 Your Network
               </div>
-              <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Connections between your contacts - lines = shared company or school</div>
+              <div style={{ fontSize: isMobile ? 14 : 13, color: 'var(--text-secondary)', lineHeight: 1.45, maxWidth: 620 }}>Connections between your contacts. Lines show shared company, school, or industry.</div>
             </div>
           </div>
-          <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 20, padding: '1.5rem' }}>
-            <NetworkMap contacts={contacts} onSelect={c => setDetail(c)} />
+          <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: isMobile ? 18 : 20, padding: isMobile ? 12 : '1.5rem' }}>
+            <NetworkMap contacts={contacts} onSelect={c => setDetail(c)} isMobile={isMobile} />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginTop: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, minmax(0, 1fr))' : 'repeat(3, 1fr)', gap: isMobile ? 8 : 10, marginTop: isMobile ? 12 : 16 }}>
             {[
               { label: 'Total contacts', value: contacts.length, color: '#a78bfa' },
               { label: 'Companies represented', value: new Set(contacts.map(c => c.company).filter(Boolean)).size, color: '#4ade80' },
               { label: 'Connections found', value: (() => { let e = 0; for (let i = 0; i < contacts.length; i++) for (let j = i + 1; j < contacts.length; j++) { const a = contacts[i], b = contacts[j]; if (a.company && b.company && a.company.toLowerCase() === b.company.toLowerCase()) e++ } return e })(), color: '#fbbf24' },
             ].map(({ label, value, color }) => (
-              <div key={label} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 14, padding: '1rem', textAlign: 'center' }}>
-                <div style={{ fontSize: 28, fontWeight: 800, fontFamily: 'var(--font-display)', color }}>{value}</div>
-                <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
+              <div key={label} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 14, padding: isMobile ? '12px 8px' : '1rem', textAlign: 'center', minWidth: 0 }}>
+                <div style={{ fontSize: isMobile ? 26 : 28, fontWeight: 800, fontFamily: 'var(--font-display)', color, lineHeight: 1 }}>{value}</div>
+                <div style={{ fontSize: isMobile ? 9 : 11, color: 'var(--text-tertiary)', marginTop: 6, textTransform: 'uppercase', letterSpacing: '0.06em', lineHeight: 1.35 }}>{label}</div>
               </div>
             ))}
           </div>
