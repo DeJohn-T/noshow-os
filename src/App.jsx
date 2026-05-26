@@ -1091,9 +1091,11 @@ function ResumeTab({ resume, profile, onUpdateResume, isMobile = false }) {
     ? `${parsed.experience?.length || 0} experience entries, ${parsed.skills?.length || 0} skills, and ${parsed.projects?.length || 0} projects are ready for prep briefs and job matching.`
     : 'Upload a resume to turn your background into a usable career signal for prep briefs, job targeting, and networking follow-through.'
   const hasParsedContent = !!parsed
+  const parsedGridColumns = isMobile ? '1fr' : 'minmax(0, 1.55fr) minmax(340px, 0.75fr)'
+  const hasResumeSideRail = !isMobile && parsed?.skills?.length > 0
 
   return (
-    <div style={{ maxWidth: 1120, margin: '0 auto', padding: isMobile ? '0 0 calc(6rem + env(safe-area-inset-bottom))' : '1.5rem' }}>
+    <div style={{ maxWidth: 1440, margin: '0 auto', padding: isMobile ? '0 0 calc(6rem + env(safe-area-inset-bottom))' : '1.25rem 1.5rem 1.5rem' }}>
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1.45fr) minmax(280px, 0.75fr)', gap: isMobile ? 12 : 18, alignItems: 'stretch', marginBottom: isMobile ? 12 : 18 }}>
         <div className="dossier-panel" style={{ padding: isMobile ? 18 : 22, position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(197,255,90,0.08), transparent 32%, rgba(143,227,255,0.09))', pointerEvents: 'none' }} />
@@ -1178,7 +1180,7 @@ function ResumeTab({ resume, profile, onUpdateResume, isMobile = false }) {
           {/* AI Analysis result */}
           {analyzeError && <div style={{ fontSize: 13, color: 'var(--red-text)', padding: '10px 14px', background: 'rgba(239,68,68,0.08)', borderRadius: 10, border: '1px solid var(--red-border)' }}>{analyzeError}</div>}
           {topSkills.length > 0 && (
-            <div className="dossier-panel" style={{ padding: isMobile ? 16 : 18, display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(260px, 1fr))', gap: isMobile ? 12 : 16, alignItems: 'center' }}>
+            <div className="dossier-panel" style={{ padding: isMobile ? 16 : 20, display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(260px, 0.7fr) minmax(0, 1.3fr)', gap: isMobile ? 12 : 22, alignItems: 'center' }}>
               <div>
                 <div className="section-kicker" style={{ color: 'var(--cyan)', marginBottom: 10 }}>Skill focus</div>
                 <div style={{ fontFamily: 'var(--font-display)', fontSize: isMobile ? 21 : 24, lineHeight: 1.1, fontWeight: 800, marginBottom: 8 }}>What the resume is saying first</div>
@@ -1251,29 +1253,31 @@ function ResumeTab({ resume, profile, onUpdateResume, isMobile = false }) {
 
           {/* Parsed resume data */}
           {parsed && (
-            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(290px, 1fr))', gap: isMobile ? 12 : 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: parsedGridColumns, gap: isMobile ? 12 : 16, alignItems: 'start' }}>
               {/* Summary */}
               {parsed.summary && (
-                <div className="paper-panel" style={{ gridColumn: '1 / -1', borderRadius: 14, padding: isMobile ? '16px' : '20px 22px' }}>
+                <div className="paper-panel" style={{ gridColumn: hasResumeSideRail ? '1 / 2' : '1 / -1', borderRadius: 14, padding: isMobile ? '16px' : '20px 24px' }}>
                   <div className="section-kicker" style={{ color: 'rgba(16,25,35,0.62)', marginBottom: 10 }}>Summary</div>
-                  <div style={{ fontFamily: 'Georgia, serif', fontSize: isMobile ? 15 : 18, color: 'var(--text-ink)', lineHeight: isMobile ? 1.55 : 1.65 }}>{parsed.summary}</div>
+                  <div style={{ fontFamily: 'Georgia, serif', fontSize: isMobile ? 15 : 17, color: 'var(--text-ink)', lineHeight: isMobile ? 1.55 : 1.6 }}>{parsed.summary}</div>
                 </div>
               )}
               {/* Experience */}
               {parsed.experience?.length > 0 && (
-                <div className="dossier-panel" style={{ padding: isMobile ? '16px' : '18px 20px' }}>
+                <div className="dossier-panel" style={{ gridColumn: hasResumeSideRail ? '1 / 2' : '1 / -1', padding: isMobile ? '16px' : '20px 22px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                     <ListChecks size={16} color="var(--green-text)" strokeWidth={1.8} aria-hidden="true" />
                     <div className="section-kicker" style={{ color: 'var(--green-text)' }}>Experience</div>
                   </div>
-                  {parsed.experience.map((e, i) => (
-                    <div key={i} style={{ fontSize: isMobile ? 12 : 13, color: 'var(--text-primary)', marginBottom: 10, lineHeight: isMobile ? 1.55 : 1.65, padding: '0 0 10px 14px', borderLeft: '2px solid rgba(74,222,128,0.28)', borderBottom: i < parsed.experience.length - 1 ? '1px solid var(--border)' : 'none' }}>{e}</div>
-                  ))}
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(0, 1fr))', columnGap: 18, rowGap: 12 }}>
+                    {parsed.experience.map((e, i) => (
+                      <div key={i} style={{ fontSize: isMobile ? 12 : 13, color: 'var(--text-primary)', lineHeight: isMobile ? 1.55 : 1.62, padding: '0 0 10px 14px', borderLeft: '2px solid rgba(74,222,128,0.28)', borderBottom: '1px solid var(--border)' }}>{e}</div>
+                    ))}
+                  </div>
                 </div>
               )}
               {/* Skills */}
               {parsed.skills?.length > 0 && (
-                <div className="dossier-panel" style={{ padding: isMobile ? '16px' : '18px 20px' }}>
+                <div className="dossier-panel" style={{ gridColumn: isMobile ? 'auto' : '2 / 3', gridRow: isMobile ? 'auto' : parsed.summary ? '1 / span 2' : 'auto', padding: isMobile ? '16px' : '20px 22px', position: isMobile ? 'static' : 'sticky', top: isMobile ? 'auto' : 20 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                     <Zap size={16} color="var(--cyan)" strokeWidth={1.8} aria-hidden="true" />
                     <div className="section-kicker" style={{ color: 'var(--cyan)' }}>Skills</div>
@@ -1296,12 +1300,12 @@ function ResumeTab({ resume, profile, onUpdateResume, isMobile = false }) {
               )}
               {/* Projects */}
               {parsed.projects?.length > 0 && (
-                <div className="dossier-panel" style={{ gridColumn: '1 / -1', padding: isMobile ? '16px' : '18px 20px' }}>
+                <div className="dossier-panel" style={{ gridColumn: '1 / -1', padding: isMobile ? '16px' : '20px 22px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                     <NotebookText size={16} color="var(--amber)" strokeWidth={1.8} aria-hidden="true" />
                     <div className="section-kicker" style={{ color: 'var(--amber)' }}>Projects</div>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 }}>
                     {parsed.projects.map((p, i) => (
                       <div key={i} style={{ fontSize: isMobile ? 12 : 13, color: 'var(--text-primary)', lineHeight: 1.6, padding: '12px 14px', background: i % 2 === 0 ? 'rgba(251,191,36,0.08)' : 'rgba(244,114,182,0.08)', border: `1px solid ${i % 2 === 0 ? 'rgba(251,191,36,0.22)' : 'rgba(244,114,182,0.22)'}`, borderRadius: 12 }}>{p}</div>
                     ))}
