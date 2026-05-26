@@ -332,7 +332,7 @@ body {
   }
 
   .app-main {
-    padding: 14px 14px calc(118px + env(safe-area-inset-bottom));
+    padding: 16px 16px calc(118px + env(safe-area-inset-bottom));
   }
 
   .mobile-top-bar {
@@ -348,12 +348,12 @@ body {
 
   .dossier-panel {
     background: var(--surface-2);
-    border-color: var(--border-strong);
+    border-color: rgba(216, 210, 197, 0.08);
   }
 
   .home-action-tile {
     background: var(--surface-2) !important;
-    border-color: var(--border-strong) !important;
+    border: none !important;
   }
 
   .section-kicker {
