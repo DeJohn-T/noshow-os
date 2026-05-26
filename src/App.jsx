@@ -1875,7 +1875,7 @@ export default function App() {
       {tab === 'home' && (
         <div className="brief-desk-grid home-shell">
           <div className="home-primary" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <TodayDesk contact={todayDeskContact} stats={stats} onOpenContact={setDetail} onOpenContacts={() => setTab('contacts')} onAddContact={() => setShowAdd(true)} />
+            <TodayDesk contact={todayDeskContact} stats={stats} onOpenContact={setDetail} onOpenContacts={() => setTab('contacts')} onAddContact={() => setShowAdd(true)} isMobile={isMobile} />
 
             {homeConfig.statCards && (
               <div className="home-action-grid" style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, minmax(0, 1fr))' : 'repeat(6, minmax(0, 1fr))', gap: 12 }}>

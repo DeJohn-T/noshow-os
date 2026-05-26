@@ -113,12 +113,12 @@ export function RightOrbit({ children, className = '' }) {
   return <aside className={className} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{children}</aside>
 }
 
-export function TodayDesk({ contact, stats, onOpenContact, onOpenContacts, onAddContact }) {
+export function TodayDesk({ contact, stats, onOpenContact, onOpenContacts, onAddContact, isMobile = false }) {
   if (!contact) {
     return (
       <section className="dossier-panel today-desk today-desk-empty" style={{ padding: 24, overflow: 'hidden' }}>
         <div className="section-kicker" style={{ color: 'var(--accent)', marginBottom: 12 }}>Today desk</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 20, alignItems: 'end' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(180px, 1fr))', gap: isMobile ? 14 : 20, alignItems: isMobile ? 'start' : 'end' }}>
           <div>
             <h1 className="today-desk-title" style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(32px, 5vw, 58px)', lineHeight: 0.95, letterSpacing: 0, marginBottom: 14 }}>No meeting queued</h1>
             <p style={{ color: 'var(--text-secondary)', maxWidth: 620, lineHeight: 1.7, margin: 0 }}>Schedule a chat or choose who you want to prepare for. The desk only promotes calls that are actually coming up soon.</p>
