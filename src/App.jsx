@@ -33,9 +33,8 @@ import { JobSearch } from './components/JobSearch'
 import { AppShell, MetricTile, OrbitPanel, RightOrbit, TodayDesk } from './components/Layout'
 import { Avatar, StatusBadge, GlobalStyles, Spinner, Button } from './components/UI'
 import { loadContacts, saveContacts, loadProfile, saveProfile, loadQuotes, saveQuotes, loadTodos, saveTodos, loadBrainDump, saveBrainDump, loadUsers, saveUsers, getCurrentUser, setCurrentUser, clearCurrentUser, loadScheduledTasks, saveScheduledTasks, loadJobRecs, saveJobRecs, exportBackup, importBackup } from './lib/storage'
-import { generateQuotes, analyzeResume, generateJobRecs, extractInsights } from './lib/ai'
+import { generateQuotes, analyzeResume, generateJobRecs, extractInsights, parseLinkedInPDF, parseResumePDF } from './lib/ai'
 import { extractTextFromPDF } from './lib/pdfParser'
-import { parseResumePDF } from './lib/ai'
 import { formatDate } from './lib/utils'
 import { supabase, fetchUserData, signInWithGoogle } from './lib/supabase.js'
 import NotionImport from './components/NotionImport.jsx'
@@ -1043,14 +1042,18 @@ const RESUME_TIPS = [
   { title: 'Ruthless formatting', body: 'Consistent fonts, aligned margins, no photos. Save as PDF. Name it "FirstLast_Resume.pdf" - not "resume_FINAL_v3.pdf".' },
 ]
 
-function ResumeTab({ resume, profile, onUpdateResume, isMobile = false }) {
+function ResumeTab({ resume, profile, onUpdateResume, onUpdateProfile, isMobile = false }) {
   const [analysis, setAnalysis] = useState(null)
   const [analyzing, setAnalyzing] = useState(false)
   const [analyzeError, setAnalyzeError] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [linkedinUploading, setLinkedinUploading] = useState(false)
+  const [linkedinError, setLinkedinError] = useState('')
   const fileRef = React.useRef()
+  const linkedinFileRef = React.useRef()
 
   const parsed = resume?.parsed && !resume.parsed.error ? resume.parsed : null
+  const linkedinProfile = profile?.linkedinParsedProfile && !profile.linkedinParsedProfile.error ? profile.linkedinParsedProfile : null
 
   async function handleAnalyze() {
     setAnalyzing(true); setAnalyzeError('')
@@ -1079,6 +1082,27 @@ function ResumeTab({ resume, profile, onUpdateResume, isMobile = false }) {
     finally { setUploading(false) }
   }
 
+  async function handleLinkedInUpload(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setLinkedinUploading(true); setLinkedinError('')
+    try {
+      const text = await extractTextFromPDF(file)
+      const raw = await parseLinkedInPDF(text)
+      const parsedProfile = JSON.parse(raw.replace(/```json|```/g, '').trim())
+      onUpdateProfile?.({
+        linkedinPdfName: file.name,
+        linkedinProfileText: text,
+        linkedinParsedProfile: parsedProfile,
+      })
+    } catch {
+      setLinkedinError('LinkedIn parse failed. Try a profile PDF saved from LinkedIn.')
+    } finally {
+      setLinkedinUploading(false)
+      if (linkedinFileRef.current) linkedinFileRef.current.value = ''
+    }
+  }
+
   const scoreColor = s => s >= 85 ? '#4ade80' : s >= 70 ? '#fbbf24' : s >= 50 ? '#fb923c' : '#f87171'
   const resumeStats = [
     { label: 'Experience', value: parsed?.experience?.length || 0, icon: ListChecks, accent: 'var(--green-text)' },
@@ -1087,12 +1111,24 @@ function ResumeTab({ resume, profile, onUpdateResume, isMobile = false }) {
     { label: 'Education', value: parsed?.education?.length || 0, icon: Target, accent: 'var(--rose)' },
   ]
   const topSkills = parsed?.skills?.slice(0, 10) || []
+  const careerGoal = profile?.goals?.trim()
   const resumeHeadline = parsed
     ? `${parsed.experience?.length || 0} experience entries, ${parsed.skills?.length || 0} skills, and ${parsed.projects?.length || 0} projects are ready for prep briefs and job matching.`
     : 'Upload a resume to turn your background into a usable career signal for prep briefs, job targeting, and networking follow-through.'
   const hasParsedContent = !!parsed
   const parsedGridColumns = isMobile ? '1fr' : 'minmax(0, 1.55fr) minmax(340px, 0.75fr)'
   const hasResumeSideRail = !isMobile && parsed?.skills?.length > 0
+  const linkedinStats = [
+    { label: 'Roles', value: linkedinProfile?.companies?.length || 0, accent: 'var(--green-text)' },
+    { label: 'Skills', value: linkedinProfile?.skills?.length || 0, accent: 'var(--cyan)' },
+    { label: 'Schools', value: linkedinProfile?.education?.length || 0, accent: 'var(--amber)' },
+  ]
+  const linkedinTips = linkedinProfile ? [
+    !linkedinProfile.website && 'Add a portfolio or project link so profile traffic has a next step.',
+    (linkedinProfile.skills?.length || 0) < 6 && 'Round out the skills section with the tools you want recruiters to associate with you.',
+    careerGoal && `Keep your headline and About section aligned with this goal: ${careerGoal}`,
+    parsed?.projects?.length ? 'Make your strongest project visible on LinkedIn, not only on the resume.' : 'Add one strong project so the profile has proof beyond roles.',
+  ].filter(Boolean).slice(0, 4) : []
 
   return (
     <div style={{ maxWidth: 1440, margin: '0 auto', padding: isMobile ? '0 0 calc(6rem + env(safe-area-inset-bottom))' : '1.25rem 1.5rem 1.5rem' }}>
@@ -1149,6 +1185,59 @@ function ResumeTab({ resume, profile, onUpdateResume, isMobile = false }) {
           })}
         </div>
       )}
+
+      <div className="dossier-panel" style={{ padding: isMobile ? 16 : 20, marginBottom: isMobile ? 14 : 20, display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 0.8fr) minmax(0, 1.2fr)', gap: isMobile ? 14 : 22, alignItems: 'start' }}>
+        <div>
+          <div className="section-kicker" style={{ color: 'var(--cyan)', marginBottom: 10 }}>LinkedIn profile</div>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: isMobile ? 22 : 26, lineHeight: 1.05, fontWeight: 800, marginBottom: 8 }}>Public signal check</div>
+          <div style={{ color: 'var(--text-tertiary)', fontSize: 13, lineHeight: 1.65, marginBottom: 14 }}>
+            Upload your LinkedIn profile PDF to compare what your public profile is saying against your resume and goals.
+          </div>
+          <input ref={linkedinFileRef} type="file" accept="application/pdf" style={{ display: 'none' }} onChange={handleLinkedInUpload} />
+          <button onClick={() => linkedinFileRef.current?.click()} disabled={linkedinUploading}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, width: isMobile ? '100%' : 'auto', padding: '9px 16px', background: linkedinProfile ? 'var(--surface-3)' : 'var(--accent)', color: linkedinProfile ? 'var(--text-secondary)' : 'var(--accent-fg)', border: linkedinProfile ? '1px solid var(--border-strong)' : 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: linkedinUploading ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-sans)', opacity: linkedinUploading ? 0.7 : 1 }}>
+            {linkedinUploading ? <Spinner /> : <Upload size={14} strokeWidth={1.8} aria-hidden="true" />}
+            {linkedinProfile ? 'Replace LinkedIn PDF' : 'Upload LinkedIn PDF'}
+          </button>
+          {profile?.linkedinPdfName && <div style={{ marginTop: 10, fontSize: 12, color: 'var(--text-tertiary)' }}>{profile.linkedinPdfName}</div>}
+          {linkedinError && <div style={{ marginTop: 10, fontSize: 12, color: 'var(--red-text)', lineHeight: 1.5 }}>{linkedinError}</div>}
+        </div>
+
+        {linkedinProfile ? (
+          <div style={{ display: 'grid', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, minmax(0, 1fr))' : 'repeat(3, minmax(0, 120px))', gap: 8 }}>
+              {linkedinStats.map(stat => (
+                <div key={stat.label} style={{ background: 'rgba(244,247,249,0.04)', border: '1px solid var(--border)', borderRadius: 12, padding: '10px 12px', minWidth: 0 }}>
+                  <div className="section-kicker" style={{ marginBottom: 8 }}>{stat.label}</div>
+                  <div style={{ fontFamily: 'var(--font-display)', fontSize: 26, lineHeight: 1, fontWeight: 800, color: stat.accent }}>{stat.value}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.65 }}>
+              {linkedinProfile.summary || 'LinkedIn profile parsed. Add more profile content to get a stronger readout.'}
+            </div>
+            {linkedinProfile.skills?.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                {linkedinProfile.skills.slice(0, 8).map((skill, i) => (
+                  <span key={`${skill}-${i}`} style={{ fontSize: 11, padding: '5px 10px', borderRadius: 100, color: i < 4 ? 'var(--accent)' : 'var(--cyan)', border: `1px solid ${i < 4 ? 'rgba(197,255,90,0.3)' : 'rgba(143,227,255,0.25)'}`, background: i < 4 ? 'rgba(197,255,90,0.09)' : 'rgba(143,227,255,0.08)', fontWeight: 700 }}>{skill}</span>
+                ))}
+              </div>
+            )}
+            {linkedinTips.length > 0 && (
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
+                {linkedinTips.map((tip, i) => (
+                  <div key={i} style={{ fontSize: 12, color: 'var(--text-primary)', lineHeight: 1.55, padding: '10px 12px', borderRadius: 12, background: i % 2 === 0 ? 'rgba(197,255,90,0.06)' : 'rgba(143,227,255,0.06)', border: `1px solid ${i % 2 === 0 ? 'rgba(197,255,90,0.18)' : 'rgba(143,227,255,0.18)'}` }}>{tip}</div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div style={{ border: '1px dashed rgba(143,227,255,0.28)', borderRadius: 14, padding: isMobile ? '18px' : '22px', minHeight: 150, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 8, color: 'var(--text-tertiary)' }}>
+            <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>No LinkedIn PDF yet</div>
+            <div style={{ fontSize: 13, lineHeight: 1.6 }}>From LinkedIn, open your profile, choose More, save as PDF, then upload it here.</div>
+          </div>
+        )}
+      </div>
 
       {!resume ? (
         /* No resume - show upload prompt + tips */
@@ -1254,11 +1343,20 @@ function ResumeTab({ resume, profile, onUpdateResume, isMobile = false }) {
           {/* Parsed resume data */}
           {parsed && (
             <div style={{ display: 'grid', gridTemplateColumns: parsedGridColumns, gap: isMobile ? 12 : 16, alignItems: 'start' }}>
-              {/* Summary */}
-              {parsed.summary && (
+              {/* Career goals */}
+              {(careerGoal || parsed.summary) && (
                 <div className="paper-panel" style={{ gridColumn: hasResumeSideRail ? '1 / 2' : '1 / -1', borderRadius: 14, padding: isMobile ? '16px' : '20px 24px' }}>
-                  <div className="section-kicker" style={{ color: 'rgba(16,25,35,0.62)', marginBottom: 10 }}>Summary</div>
-                  <div style={{ fontFamily: 'Georgia, serif', fontSize: isMobile ? 15 : 17, color: 'var(--text-ink)', lineHeight: isMobile ? 1.55 : 1.6 }}>{parsed.summary}</div>
+                  <div className="section-kicker" style={{ color: 'rgba(16,25,35,0.62)', marginBottom: 10 }}>Career goals</div>
+                  <div style={{ fontFamily: 'Georgia, serif', fontSize: isMobile ? 15 : 17, color: 'var(--text-ink)', lineHeight: isMobile ? 1.55 : 1.6 }}>
+                    {careerGoal || 'Add a career goal in your profile so NoShow OS can tune resume, LinkedIn, and job matching advice around where you are trying to go.'}
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 14 }}>
+                    {profile?.school && <span style={{ fontSize: 11, color: 'rgba(16,25,35,0.72)', border: '1px solid rgba(16,25,35,0.16)', borderRadius: 100, padding: '4px 9px' }}>{profile.school}</span>}
+                    {profile?.major && <span style={{ fontSize: 11, color: 'rgba(16,25,35,0.72)', border: '1px solid rgba(16,25,35,0.16)', borderRadius: 100, padding: '4px 9px' }}>{profile.major}</span>}
+                    {parsed.skills?.slice(0, 3).map(skill => (
+                      <span key={skill} style={{ fontSize: 11, color: 'rgba(16,25,35,0.72)', border: '1px solid rgba(16,25,35,0.16)', borderRadius: 100, padding: '4px 9px' }}>{skill}</span>
+                    ))}
+                  </div>
                 </div>
               )}
               {/* Experience */}
@@ -2300,6 +2398,11 @@ export default function App() {
           resume={resume}
           profile={profile}
           isMobile={isMobile}
+          onUpdateProfile={(patch) => {
+            const updated = { ...profile, ...patch }
+            saveProfile(currentUser, updated)
+            setProfile(updated)
+          }}
           onUpdateResume={(resumeName, resumeText, resumeParsed) => {
             const updated = { ...profile, resumeName, resumeText, resumeParsed }
             saveProfile(currentUser, updated)
