@@ -30,10 +30,10 @@ npm run dev
 Create a `.env` file:
 
 ```
-VITE_ANTHROPIC_API_KEY=your_key_here
+ANTHROPIC_API_KEY=your_key_here
 ```
 
-> **Important:** Never expose your Anthropic API key in client-side code in production. Route API calls through a backend (Next.js API routes, Express, Supabase Edge Functions, etc.).
+> **Important:** Never expose your Anthropic API key in client-side code. The local Vite proxy and Vercel serverless function read `ANTHROPIC_API_KEY` server-side.
 
 ## Calendar Integration
 
