@@ -23,7 +23,7 @@ export const STATUS_OPTIONS = [
   { value: 'schedule', label: 'Schedule', accent: '#8fe3ff', bg: 'rgba(143, 227, 255, 0.12)', border: 'rgba(143, 227, 255, 0.28)' },
   { value: 'scheduled', label: 'Scheduled', accent: '#a7f3ba', bg: 'rgba(128, 226, 155, 0.13)', border: 'rgba(128, 226, 155, 0.28)' },
   { value: 'follow up', label: 'Follow up', accent: '#ff7aa8', bg: 'rgba(255, 122, 168, 0.14)', border: 'rgba(255, 122, 168, 0.3)' },
-  { value: 'circle back', label: 'Circle back', accent: '#93c5fd', bg: 'rgba(99, 179, 255, 0.12)', border: 'rgba(99, 179, 255, 0.28)' },
+  { value: 'circle back', label: 'Circle back', accent: '#fbbf24', bg: 'rgba(251, 191, 36, 0.12)', border: 'rgba(251, 191, 36, 0.28)' },
   { value: 'one & done', label: 'One & done', accent: '#34d399', bg: 'rgba(52, 211, 153, 0.12)', border: 'rgba(52, 211, 153, 0.28)' },
   { value: 'followed up', label: 'Followed up', accent: '#c5ff5a', bg: 'rgba(197, 255, 90, 0.14)', border: 'rgba(197, 255, 90, 0.34)' },
   { value: 'complete', label: 'Complete', accent: '#d8d2c5', bg: 'rgba(216, 210, 197, 0.1)', border: 'rgba(216, 210, 197, 0.24)' },

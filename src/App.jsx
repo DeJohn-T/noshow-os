@@ -1823,7 +1823,7 @@ export default function App() {
     { label: 'Schedule', value: stats.schedule, icon: ContactIcon, accent: 'var(--cyan)', onClick: () => { setContactFilter('schedule'); setTab('contacts') } },
     { label: 'Scheduled', value: stats.scheduled, icon: CalendarDays, accent: 'var(--green-text)', onClick: () => setTab('upcoming') },
     { label: 'Follow up', value: stats.followUp, icon: MessageSquareText, accent: 'var(--rose)', onClick: () => { setContactFilter('follow up'); setTab('contacts') } },
-    { label: 'Circle back', value: stats.circleBack, icon: Clock3, accent: '#93c5fd', onClick: () => { setContactFilter('circle back'); setTab('contacts') } },
+    { label: 'Circle back', value: stats.circleBack, icon: Clock3, accent: '#fbbf24', onClick: () => { setContactFilter('circle back'); setTab('contacts') } },
     { label: 'Done', value: stats.done, icon: CheckCircle2, accent: 'var(--accent)', onClick: () => { setContactFilter('done'); setTab('contacts') } },
   ]
 
@@ -1832,7 +1832,7 @@ export default function App() {
     { label: 'Schedule', value: stats.schedule, color: '#8fe3ff', filter: 'schedule' },
     { label: 'Scheduled', value: stats.scheduled, color: '#a7f3ba', filter: 'scheduled' },
     { label: 'Follow up', value: stats.followUp, color: '#ff7aa8', filter: 'follow up' },
-    { label: 'Circle back', value: stats.circleBack, color: '#93c5fd', filter: 'circle back' },
+    { label: 'Circle back', value: stats.circleBack, color: '#fbbf24', filter: 'circle back' },
     { label: 'Done', value: stats.done, color: '#c5ff5a', filter: 'done' },
   ]
 
@@ -2232,7 +2232,7 @@ export default function App() {
                 { status: 'schedule', label: 'Schedule', color: '#8fe3ff' },
                 { status: 'scheduled', label: 'Scheduled', color: '#a7f3ba' },
                 { status: 'follow up', label: 'Follow up', color: '#ff7aa8' },
-                { status: 'circle back', label: 'Circle back', color: '#93c5fd' },
+                { status: 'circle back', label: 'Circle back', color: '#fbbf24' },
                 { status: 'one & done', label: 'One & done', color: '#34d399' },
                 { status: 'followed up', label: 'Followed up', color: '#c5ff5a' },
                 { status: 'complete', label: 'Complete', color: '#d8d2c5' },
