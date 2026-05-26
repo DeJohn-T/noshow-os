@@ -325,8 +325,14 @@ body {
     overscroll-behavior-x: none;
   }
 
+  .app-shell {
+    background:
+      radial-gradient(ellipse at top center, rgba(143, 227, 255, 0.05), transparent 50%),
+      var(--bg);
+  }
+
   .app-main {
-    padding: 10px 10px calc(118px + env(safe-area-inset-bottom));
+    padding: 14px 14px calc(118px + env(safe-area-inset-bottom));
   }
 
   .mobile-top-bar {
@@ -337,7 +343,17 @@ body {
 
   .dossier-panel,
   .paper-panel {
-    border-radius: 12px;
+    border-radius: 14px;
+  }
+
+  .dossier-panel {
+    background: var(--surface-2);
+    border-color: var(--border-strong);
+  }
+
+  .home-action-tile {
+    background: var(--surface-2) !important;
+    border-color: var(--border-strong) !important;
   }
 
   .section-kicker {
