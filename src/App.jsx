@@ -1753,14 +1753,30 @@ export default function App() {
   }, { total: 0, interested: 0, schedule: 0, scheduled: 0, followUp: 0, circleBack: 0, oneAndDone: 0, followedUp: 0, complete: 0, done: 0 })
 
   const todayStr = new Date().toISOString().split('T')[0]
-  const upcoming = contacts.filter(x => x.chatDate && normalizeStatus(x.status) === 'scheduled' && x.chatDate >= todayStr).sort((a, b) => new Date(a.chatDate + 'T12:00:00') - new Date(b.chatDate + 'T12:00:00'))
-  const needsFollowUp = contacts.filter(x => normalizeStatus(x.status) === 'follow up' && !x.followUpText)
+  const upcomingMeetings = contacts
+    .filter(x => x.chatDate && x.chatDate >= todayStr)
+    .sort((a, b) => new Date(a.chatDate + 'T12:00:00') - new Date(b.chatDate + 'T12:00:00'))
+
+  const _reminderOverdue = contacts.filter(x =>
+    x.followUpDate && x.followUpDate <= todayStr &&
+    x.nextAction !== 'done' && !isFinalStatus(x.status)
+  )
+  const _reminderFollowUp = contacts.filter(x =>
+    normalizeStatus(x.status) === 'follow up' &&
+    !_reminderOverdue.find(o => o.id === x.id)
+  )
+  const _reminderCircleBack = contacts.filter(x =>
+    normalizeStatus(x.status) === 'circle back' &&
+    !_reminderOverdue.find(o => o.id === x.id) &&
+    !_reminderFollowUp.find(o => o.id === x.id)
+  )
+  const deskReminders = [..._reminderOverdue, ..._reminderFollowUp, ..._reminderCircleBack]
   const recent = [...contacts].sort((a, b) => b.id - a.id).slice(0, 5)
   const resume = profile?.resumeText ? { text: profile.resumeText, parsed: profile.resumeParsed } : null
   const skills = profile?.skills || []
 
   const tomorrowStr = new Date(Date.now() + 86400000).toISOString().split('T')[0]
-  const soonChats = upcoming.filter(c => c.chatDate === todayStr || c.chatDate === tomorrowStr)
+  const soonChats = upcomingMeetings.filter(c => c.chatDate === todayStr || c.chatDate === tomorrowStr)
   const streak = calcStreak(contacts)
   const networkScore = calcNetworkScore(contacts)
   const todayDeskContact = soonChats[0] || null
