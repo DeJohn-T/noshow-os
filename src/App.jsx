@@ -1866,11 +1866,11 @@ export default function App() {
               <div className="home-priority-grid" style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1fr) minmax(0, 1fr)', gap: 12 }}>
                 {homeConfig.upcoming && (
                   <OrbitPanel title="Upcoming" icon={CalendarDays} accent="var(--green-text)" action={<button onClick={() => setTab('upcoming')} style={{ background: 'transparent', border: 'none', color: 'var(--green-text)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>View all</button>}>
-                    {upcoming.length === 0 ? (
-                      <div style={{ color: 'var(--text-tertiary)', fontSize: 13, padding: '16px 0' }}>No scheduled meetings yet.</div>
+                    {upcomingMeetings.length === 0 ? (
+                      <div style={{ color: 'var(--text-tertiary)', fontSize: 13, padding: '16px 0' }}>No meetings scheduled yet.</div>
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        {upcoming.slice(0, isMobile ? 3 : 4).map(c => (
+                        {upcomingMeetings.slice(0, isMobile ? 3 : 4).map(c => (
                           <button key={c.id} onClick={() => setDetail(c)} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 0', background: 'transparent', border: 'none', borderTop: '1px solid var(--border)', color: 'var(--text-primary)', textAlign: 'left', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
                             <Avatar name={c.name} company={c.company} size={32} />
                             <span style={{ flex: 1, minWidth: 0 }}>
