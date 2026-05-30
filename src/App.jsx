@@ -1476,6 +1476,8 @@ export default function App() {
   const [insightsProgress, setInsightsProgress] = useState({ done: 0, total: 0 })
   const [insightIdx, setInsightIdx] = useState(0)
   const [insightFade, setInsightFade] = useState(true)
+  const [reminderPage, setReminderPage] = useState(0)
+  const [reminderFade, setReminderFade] = useState(true)
 
   const allInsights = useMemo(() => {
     const items = []
@@ -1660,6 +1662,18 @@ export default function App() {
     return () => clearInterval(interval)
   }, [quotes])
 
+  useEffect(() => {
+    if (reminderTotalPages <= 1) return
+    const t = setInterval(() => {
+      setReminderFade(false)
+      setTimeout(() => {
+        setReminderPage(p => (p + 1) % reminderTotalPages)
+        setReminderFade(true)
+      }, 300)
+    }, 10000)
+    return () => clearInterval(t)
+  }, [reminderTotalPages])
+
   // Background-fetch job recs as soon as profile is ready
   useEffect(() => {
     if (!profile || !currentUser) return
@@ -1771,6 +1785,8 @@ export default function App() {
     !_reminderFollowUp.find(o => o.id === x.id)
   )
   const deskReminders = [..._reminderOverdue, ..._reminderFollowUp, ..._reminderCircleBack]
+  const reminderPageSize = isMobile ? 3 : 4
+  const reminderTotalPages = Math.ceil(deskReminders.length / reminderPageSize)
   const recent = [...contacts].sort((a, b) => b.id - a.id).slice(0, 5)
   const resume = profile?.resumeText ? { text: profile.resumeText, parsed: profile.resumeParsed } : null
   const skills = profile?.skills || []
@@ -1887,21 +1903,57 @@ export default function App() {
 
                 {homeConfig.followUp && (
                   <OrbitPanel title="Follow-ups" icon={Bell} accent="var(--rose)">
-                    {needsFollowUp.length === 0 ? (
+                    {deskReminders.length === 0 ? (
                       <div style={{ color: 'var(--text-tertiary)', fontSize: 13, padding: '16px 0' }}>All caught up.</div>
                     ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        {needsFollowUp.slice(0, isMobile ? 3 : 4).map(c => (
-                          <button key={c.id} onClick={() => setDetail(c)} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 0', background: 'transparent', border: 'none', borderTop: '1px solid var(--border)', color: 'var(--text-primary)', textAlign: 'left', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
-                            <MessageSquareText size={16} color="var(--rose)" strokeWidth={1.8} aria-hidden="true" />
-                            <span style={{ flex: 1, minWidth: 0 }}>
-                              <span style={{ display: 'block', fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</span>
-                              <span style={{ display: 'block', color: 'var(--text-tertiary)', fontSize: 11 }}>Needs follow-up</span>
-                            </span>
-                            <span style={{ color: 'var(--rose)', fontSize: 11 }}>Write</span>
-                          </button>
-                        ))}
-                      </div>
+                      <>
+                        <div
+                          style={{
+                            display: 'flex', flexDirection: 'column', gap: 8,
+                            opacity: reminderFade ? 1 : 0,
+                            transform: reminderFade ? 'none' : 'translateY(4px)',
+                            transition: 'all 0.3s ease'
+                          }}
+                        >
+                          {deskReminders
+                            .slice(reminderPage * reminderPageSize, (reminderPage + 1) * reminderPageSize)
+                            .map(c => {
+                              const isOverdue = c.followUpDate && c.followUpDate <= todayStr && c.nextAction !== 'done' && !isFinalStatus(c.status)
+                              const isCircleBack = normalizeStatus(c.status) === 'circle back'
+                              const tagLabel = isOverdue ? 'Overdue' : isCircleBack ? 'Circle back' : 'Follow-up'
+                              const tagColor = isCircleBack ? '#60a5fa' : 'var(--rose)'
+                              return (
+                                <button key={c.id} onClick={() => setDetail(c)} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 0', background: 'transparent', border: 'none', borderTop: '1px solid var(--border)', color: 'var(--text-primary)', textAlign: 'left', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
+                                  <Avatar name={c.name} company={c.company} size={32} />
+                                  <span style={{ flex: 1, minWidth: 0 }}>
+                                    <span style={{ display: 'block', fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</span>
+                                    <span style={{ display: 'block', color: 'var(--text-tertiary)', fontSize: 11, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{[c.role, c.company].filter(Boolean).join(' at ') || 'No role set'}</span>
+                                  </span>
+                                  <span style={{ color: tagColor, fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' }}>{tagLabel}</span>
+                                </button>
+                              )
+                            })}
+                        </div>
+                        {reminderTotalPages > 1 && (
+                          <div style={{ display: 'flex', gap: 4, marginTop: 10, justifyContent: 'center' }}>
+                            {Array.from({ length: reminderTotalPages }).map((_, i) => (
+                              <div
+                                key={i}
+                                onClick={() => {
+                                  setReminderFade(false)
+                                  setTimeout(() => { setReminderPage(i); setReminderFade(true) }, 200)
+                                }}
+                                style={{
+                                  width: i === reminderPage ? 14 : 5, height: 5,
+                                  borderRadius: 3,
+                                  background: i === reminderPage ? 'var(--rose)' : 'rgba(255,122,168,0.2)',
+                                  transition: 'all 0.3s', cursor: 'pointer'
+                                }}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </>
                     )}
                   </OrbitPanel>
                 )}
