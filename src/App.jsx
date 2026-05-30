@@ -1681,6 +1681,41 @@ export default function App() {
       .finally(() => setJobRecsLoading(false))
   }, [profile, currentUser])
 
+  useEffect(() => {
+    const todayStr = new Date().toISOString().split('T')[0]
+    const overdue = contacts.filter(x =>
+      x.followUpDate && x.followUpDate <= todayStr &&
+      x.nextAction !== 'done' && !isFinalStatus(x.status)
+    )
+    const followUp = contacts.filter(x =>
+      normalizeStatus(x.status) === 'follow up' &&
+      x.nextAction !== 'done' && !isFinalStatus(x.status) &&
+      !overdue.find(o => o.id === x.id)
+    )
+    const circleBack = contacts.filter(x =>
+      normalizeStatus(x.status) === 'circle back' &&
+      x.nextAction !== 'done' && !isFinalStatus(x.status) &&
+      !overdue.find(o => o.id === x.id) &&
+      !followUp.find(o => o.id === x.id)
+    )
+    const total = overdue.length + followUp.length + circleBack.length
+    const pageSize = isMobile ? 3 : 4
+    const totalPages = Math.ceil(total / pageSize)
+    if (totalPages <= 1) { setReminderPage(0); return }
+    const t = setInterval(() => {
+      setReminderFade(false)
+      setTimeout(() => {
+        setReminderPage(p => (p + 1) % totalPages)
+        setReminderFade(true)
+      }, 300)
+    }, 10000)
+    return () => clearInterval(t)
+  }, [contacts, isMobile])
+
+  useEffect(() => {
+    setReminderPage(0)
+  }, [contacts.length])
+
   function handleOnboardingComplete(p) { saveProfile(currentUser, p); setProfile(p); setShowOnboarding(false) }
   function handleEditSave(p) { saveProfile(currentUser, p); setProfile(p); setShowEdit(false) }
   function persist(u) { setContacts(u); saveContacts(currentUser, u) }
@@ -1777,20 +1812,6 @@ export default function App() {
   const deskReminders = [..._reminderOverdue, ..._reminderFollowUp, ..._reminderCircleBack]
   const reminderPageSize = isMobile ? 3 : 4
   const reminderTotalPages = Math.ceil(deskReminders.length / reminderPageSize)
-  useEffect(() => {
-    if (reminderTotalPages <= 1) return
-    const t = setInterval(() => {
-      setReminderFade(false)
-      setTimeout(() => {
-        setReminderPage(p => (p + 1) % reminderTotalPages)
-        setReminderFade(true)
-      }, 300)
-    }, 10000)
-    return () => clearInterval(t)
-  }, [reminderTotalPages])
-  useEffect(() => {
-    setReminderPage(0)
-  }, [deskReminders.length])
   const recent = [...contacts].sort((a, b) => b.id - a.id).slice(0, 5)
   const resume = profile?.resumeText ? { text: profile.resumeText, parsed: profile.resumeParsed } : null
   const skills = profile?.skills || []
