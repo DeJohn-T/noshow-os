@@ -1786,6 +1786,9 @@ export default function App() {
     }, 10000)
     return () => clearInterval(t)
   }, [reminderTotalPages])
+  useEffect(() => {
+    setReminderPage(0)
+  }, [deskReminders.length])
   const recent = [...contacts].sort((a, b) => b.id - a.id).slice(0, 5)
   const resume = profile?.resumeText ? { text: profile.resumeText, parsed: profile.resumeParsed } : null
   const skills = profile?.skills || []
