@@ -1662,18 +1662,6 @@ export default function App() {
     return () => clearInterval(interval)
   }, [quotes])
 
-  useEffect(() => {
-    if (reminderTotalPages <= 1) return
-    const t = setInterval(() => {
-      setReminderFade(false)
-      setTimeout(() => {
-        setReminderPage(p => (p + 1) % reminderTotalPages)
-        setReminderFade(true)
-      }, 300)
-    }, 10000)
-    return () => clearInterval(t)
-  }, [reminderTotalPages])
-
   // Background-fetch job recs as soon as profile is ready
   useEffect(() => {
     if (!profile || !currentUser) return
@@ -1787,6 +1775,17 @@ export default function App() {
   const deskReminders = [..._reminderOverdue, ..._reminderFollowUp, ..._reminderCircleBack]
   const reminderPageSize = isMobile ? 3 : 4
   const reminderTotalPages = Math.ceil(deskReminders.length / reminderPageSize)
+  useEffect(() => {
+    if (reminderTotalPages <= 1) return
+    const t = setInterval(() => {
+      setReminderFade(false)
+      setTimeout(() => {
+        setReminderPage(p => (p + 1) % reminderTotalPages)
+        setReminderFade(true)
+      }, 300)
+    }, 10000)
+    return () => clearInterval(t)
+  }, [reminderTotalPages])
   const recent = [...contacts].sort((a, b) => b.id - a.id).slice(0, 5)
   const resume = profile?.resumeText ? { text: profile.resumeText, parsed: profile.resumeParsed } : null
   const skills = profile?.skills || []
