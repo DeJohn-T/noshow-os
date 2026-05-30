@@ -155,7 +155,7 @@ export function UpcomingList({ contacts, onSelect, onSchedule, isMobile = false 
             onMouseLeave={e => e.currentTarget.style.borderColor = isToday ? 'rgba(124,111,255,0.25)' : 'var(--border)'}
           >
             <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: isToday ? 'var(--accent)' : 'var(--border-strong)' }} />
-            <LogoBg company={c.company} />
+            <CompanyLogoBackdrop company={c.company} opacity={0.45} size={150} />
             <div style={{ position: 'relative', zIndex: 1, display: 'flex', gap: isMobile ? 10 : 14, alignItems: isMobile ? 'flex-start' : 'center', width: '100%', paddingLeft: 3 }}>
               <div style={{ width: isMobile ? 38 : 44, height: isMobile ? 38 : 44, borderRadius: 10, background: isToday ? 'var(--accent)' : 'var(--surface-3)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 {isToday ? (
