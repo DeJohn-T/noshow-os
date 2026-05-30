@@ -1765,10 +1765,12 @@ export default function App() {
   )
   const _reminderFollowUp = contacts.filter(x =>
     normalizeStatus(x.status) === 'follow up' &&
+    x.nextAction !== 'done' && !isFinalStatus(x.status) &&
     !_reminderOverdue.find(o => o.id === x.id)
   )
   const _reminderCircleBack = contacts.filter(x =>
     normalizeStatus(x.status) === 'circle back' &&
+    x.nextAction !== 'done' && !isFinalStatus(x.status) &&
     !_reminderOverdue.find(o => o.id === x.id) &&
     !_reminderFollowUp.find(o => o.id === x.id)
   )
