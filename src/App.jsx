@@ -181,55 +181,6 @@ function HighlightsBox({ highlights, onAdd, onRemove, onReorder }) {
   )
 }
 
-function CircleBackReminder({ contacts, onSelect }) {
-  const [idx, setIdx] = useState(0)
-  const [fade, setFade] = useState(true)
-
-  useEffect(() => {
-    if (contacts.length <= 1) return
-    const t = setInterval(() => {
-      setFade(false)
-      setTimeout(() => { setIdx(i => (i + 1) % contacts.length); setFade(true) }, 300)
-    }, 12000)
-    return () => clearInterval(t)
-  }, [contacts.length])
-
-  const person = contacts[idx % contacts.length]
-  if (!person) return null
-
-  return (
-    <div style={{ background: 'linear-gradient(135deg, rgba(96,165,250,0.1), rgba(139,127,255,0.06))', border: '1px solid rgba(96,165,250,0.25)', borderRadius: 16, padding: '1rem 1.25rem', marginBottom: '1.25rem' }}>
-      <div style={{ fontSize: 11, color: '#60a5fa', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 7 }}>
-        <CalendarDays size={14} strokeWidth={1.8} aria-hidden="true" />
-        Circle Back
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <Avatar name={person.name} company={person.company} size={36} />
-        <div style={{ flex: 1, opacity: fade ? 1 : 0, transform: fade ? 'none' : 'translateY(4px)', transition: 'all 0.3s ease' }}>
-          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
-            Don't forget to circle back with <span style={{ color: '#60a5fa' }}>{person.name?.split(' ')[0]}</span>!
-          </div>
-          {(person.role || person.company) && (
-            <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 2 }}>
-              {[person.role, person.company].filter(Boolean).join(' · ')}
-            </div>
-          )}
-        </div>
-        <button onClick={() => onSelect(person)} style={{ background: 'rgba(96,165,250,0.15)', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.3)', borderRadius: 8, padding: '6px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap', flexShrink: 0 }}>
-          Open
-        </button>
-      </div>
-      {contacts.length > 1 && (
-        <div style={{ display: 'flex', gap: 4, marginTop: 10, justifyContent: 'center' }}>
-          {contacts.map((_, i) => (
-            <div key={i} onClick={() => { setFade(false); setTimeout(() => { setIdx(i); setFade(true) }, 200) }}
-              style={{ width: i === idx ? 14 : 5, height: 5, borderRadius: 3, background: i === idx ? '#60a5fa' : 'rgba(96,165,250,0.2)', transition: 'all 0.3s', cursor: 'pointer' }} />
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
 
 function ProTipBox() {
   const [idx, setIdx] = useState(0)
