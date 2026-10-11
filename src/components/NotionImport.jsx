@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { ArrowRight, X } from 'lucide-react'
+import { aiHeaders } from '../lib/ai.js'
 
 const PROMPT = `You are extracting contact information from networking notes.
 From the text below, identify every distinct person mentioned. For each person return a JSON object.
@@ -42,7 +43,7 @@ export default function NotionImport({ onImport, onClose, endpoint, isMobile = f
     try {
       const res = await fetch(endpoint, {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: await aiHeaders(),
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 2048,

@@ -17,6 +17,8 @@ export default defineConfig(({ mode }) => {
               proxyReq.setHeader('x-api-key', env.ANTHROPIC_API_KEY)
               proxyReq.setHeader('anthropic-version', '2023-06-01')
               proxyReq.setHeader('anthropic-dangerous-direct-browser-access', 'true')
+              // the Supabase token is for the production proxy, not Anthropic
+              proxyReq.removeHeader('authorization')
             })
           },
         },

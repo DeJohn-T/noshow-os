@@ -1,14 +1,27 @@
 // lib/ai.js
 // In dev, Vite proxies /api/anthropic/v1/messages to Anthropic directly
 // In production (Vercel), /api/anthropic is a serverless function
+import { supabase } from './supabase.js'
+
 const API = import.meta.env.DEV
   ? '/api/anthropic/v1/messages'
   : '/api/anthropic'
 
+// The production proxy only answers signed-in users, so every AI call carries
+// the current Supabase session token. getSession() refreshes it if it expired.
+export async function aiHeaders() {
+  const { data } = await supabase.auth.getSession()
+  const token = data.session?.access_token
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  }
+}
+
 export async function callClaude(system, user, maxTokens = 1000) {
   const res = await fetch(API, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: await aiHeaders(),
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
       max_tokens: maxTokens,
@@ -25,7 +38,7 @@ export async function callClaude(system, user, maxTokens = 1000) {
 export async function callClaudeChat(system, messages, maxTokens = 800) {
   const res = await fetch(API, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: await aiHeaders(),
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
       max_tokens: maxTokens,
